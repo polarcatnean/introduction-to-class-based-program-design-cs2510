@@ -1,0 +1,37 @@
+class House {
+  String kind;
+  int rooms;
+  int price;  // in USD
+  Address address;
+ 
+  House(String kind, int rooms, int price, Address address) {
+    this.kind = kind;
+    this.rooms = rooms;
+    this.price = price;
+    this.address = address;
+  }
+}
+
+class Address {
+  int streetNumber;
+  String streetName;
+  String city;
+  
+  Address(int streetNumber, String streetName, String city) {
+    this.streetNumber = streetNumber;
+    this.streetName = streetName;
+    this.city = city;
+  }
+}
+
+class ExamplesHouses {
+  ExamplesHouses() {}
+  
+  Address maplest23 = new Address(23, "Maple Street", "Brooklin");
+  Address joyerd5 = new Address(5, "Joye Road", "Newton");
+  Address winslow83 = new Address(83, "Winslow Road", "Waltham");
+  
+  House maple = new House("Ranch", 7, 375000, maplest23);
+  House joye = new House("Colonial", 9, 450000, joyerd5);
+  House winslow = new House("Cape", 6, 235000, winslow83);
+}

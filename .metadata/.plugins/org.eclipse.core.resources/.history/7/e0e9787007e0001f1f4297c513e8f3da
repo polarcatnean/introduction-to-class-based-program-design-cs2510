@@ -1,0 +1,63 @@
+package practice;
+
+// a location on a river
+class Location {
+  int x;
+  int y;
+  String name;
+  
+  Location(int x, int y, String name) {
+    this.x = x;
+    this.y = y;
+    this.name = name;
+  }
+  
+  /* mmm() {
+   * ...this.x...
+   * ...this.y...
+   * ...this.name...
+   */
+}
+
+// the end of river
+class Mouth {
+  Location loc;
+  IRiver river;
+}
+
+// a river system
+interface IRiver {
+  // nnn();
+}
+
+// the source of a river
+class Source implements IRiver {
+  Location loc;
+  
+  Source(Location loc) {
+    this.loc = loc;
+  }
+  
+  /* nnn() {
+   * ...this.loc.mmm()...
+   */
+}
+
+// a confluence of two rivers
+class Confluence implements IRiver {
+  Location loc;
+  IRiver left;
+  IRiver right;
+  
+  Confluence(Location loc, IRiver left, IRiver right) {
+    this.loc = loc;
+    this.left = left;
+    this.right = right;
+  }
+  
+  /* nnn() {
+   * ...this.loc.mmm()...
+   * ...this.left.nnn()...
+   * ...this.right.nnn()...
+   */
+}

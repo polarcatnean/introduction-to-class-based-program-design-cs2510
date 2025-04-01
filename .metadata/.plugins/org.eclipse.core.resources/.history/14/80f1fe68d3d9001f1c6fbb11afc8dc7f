@@ -1,0 +1,90 @@
+package note;
+import tester.*;
+
+interface IShape {
+  // interfaces define common functionality between classes
+  // any class that implements an interface 
+  // must also implement all of the methods that are defined in the interface 
+
+  double area();   // contains only the signature of the method
+                   // how these methods are implemented is 
+                   // up to the individual class that implements the interface
+  
+  // we must avoid adding methods in the class that are not in the interface.
+}
+
+class Square implements IShape {
+  int x;
+  int y;
+  int size;
+  String colour;
+  
+  Square(int x, int y, int size, String colour) {
+    this.x = x;
+    this.y = y;
+    this.size = size;
+    this.colour = colour;
+  }
+  
+  // produce the area of this square
+  public double area() {  // add "public" in front when a method is coming from an interface
+    return size * size;
+  }
+}
+
+class Circle implements IShape {
+  int x;
+  int y;
+  int radius;
+  String colour;
+  
+  Circle(int x, int y, int radius, String colour) {
+    this.x = x;
+    this.y = y;
+    this.radius = radius;
+    this.colour = colour;
+  }
+  
+//produce the area of this circle
+  public double area() {
+    return Math.PI * radius * radius;
+ }
+}
+
+class Triangle implements IShape {
+  int x;
+  int y;
+  int base;
+  int height;
+  String colour;
+  
+  Triangle(int x, int y, int base, int height, String colour) {
+    this.x = x;
+    this.y = y;
+    this.base = base;
+    this.height = height;
+    this.colour = colour;
+  }
+  
+  public double area() {
+    return 1/2 * base * height;
+  }
+}
+
+
+
+class ExamplesIShape {
+  ExamplesIShape() {}
+  
+  IShape s1 = new Square(0, 0, 30, "red");
+  IShape c1 = new Circle(0, 0, 10, "red");
+  IShape t1 = new Triangle(0, 0, 10, 5, "red");
+  
+  // Tests for methods
+  boolean testIShapeArea(Tester t) {
+    // checkInexact compares doubles
+    return t.checkInexact(s1.area(), 900, 0.01)
+        && t.checkInexact(c1.area(), 314 , 0.1)
+        && t.checkInexact(t1.area(), 25, 0.01);
+  }
+}

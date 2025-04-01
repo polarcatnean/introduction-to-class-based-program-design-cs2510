@@ -1,0 +1,280 @@
+package practice;
+
+import tester.Tester;
+
+// a location on a river
+class Location {
+  int x;
+  int y;
+  String name;
+  
+  Location(int x, int y, String name) {
+    this.x = x;
+    this.y = y;
+    this.name = name;
+  }
+  
+  // is this location the same as given location
+  public boolean same(Location loc) {
+    return this.x == loc.x && this.y == loc.y && this.name.equals(loc.name);
+  }
+  
+  /* mmm() {
+   * ...this.x...
+   * ...this.y...
+   * ...this.name...
+   */
+}
+
+// List of Location
+interface ILoLoc {
+  ILoLoc append(ILoLoc list);
+}
+
+class MtLoc implements ILoLoc {
+  MtLoc() {}
+
+  public ILoLoc append(ILoLoc list) {
+    return list;
+  };
+}
+
+class ConsLoc implements ILoLoc {
+  Location first;
+  ILoLoc rest;
+  
+  ConsLoc(Location first, ILoLoc rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+
+  public ILoLoc append(ILoLoc list) {
+    return new ConsLoc(this.first, this.rest.append(list));
+  }
+}
+
+// the end of river
+class Mouth {
+  Location loc;
+  IRiver river;
+  
+  Mouth(Location loc, IRiver river) {
+    this.loc = loc;
+    this.river = river;
+  }
+  
+  public boolean onRiver(Location loc) {
+    return this.loc.same(loc) || this.river.onRiver(loc);
+  }
+  
+  // the total length of the river system
+  int length() {
+    return this.river.length();
+  }
+
+  public int maxLength() {
+    return river.maxLength();
+  }
+
+  public int confluences() {
+    return river.confluences();
+  }
+
+  public ILoLoc locations() {
+    return new ConsLoc(this.loc, this.river.locations());
+  }
+}
+
+// a river system
+interface IRiver {
+  // nnn();
+  
+  // count how many sources feed this river system
+  int countSources();
+  
+  // return true if the given location is a part of this river system
+  boolean onRiver(Location loc);
+  
+  // compute the total length of the waterways that flow into this point
+  int length();
+  
+  // compute the length of the longest path through this river system
+  int maxLength();
+  
+  // counts the number of confluences in the river system
+  int confluences();
+  
+  // produce a list of all locations on this river (sources, mouths, and confluences).
+  ILoLoc locations();
+}
+
+// the source of a river
+class Source implements IRiver {
+  Location loc;
+  int length; // of the downward segment, in km
+  
+  Source(Location loc, int length) {
+    this.loc = loc;
+    this.length = length;
+  }
+
+  public int countSources() {
+    return 1;
+  }
+
+  public boolean onRiver(Location loc) {
+    return this.loc.same(loc);
+  }
+
+  public int length() {
+    return this.length;
+  }
+
+  public int maxLength() {
+    return this.length;
+  }
+
+  public int confluences() {
+    return 0;
+  }
+
+  public ILoLoc locations() {
+    return new ConsLoc(this.loc, new MtLoc());
+  }
+  
+  /* nnn() {
+   * ...this.loc.mmm()...
+   */
+}
+
+// a confluence of two rivers
+class Confluence implements IRiver {
+  Location loc;
+  int length;   // of the downward segment, in km
+  IRiver left;
+  IRiver right;
+  
+  Confluence(Location loc, int length, IRiver left, IRiver right) {
+    this.loc = loc;
+    this.length = length;
+    this.left = left;
+    this.right = right;
+  }
+
+  public int countSources() {
+    return left.countSources() + right.countSources();
+  }
+
+  public boolean onRiver(Location loc) {
+    if (this.loc.same(loc)) {
+      return true;
+    }
+    else {
+      return this.left.onRiver(loc) || this.right.onRiver(loc);
+    }
+  }
+
+  public int length() {
+    return this.length + this.left.length() + this.right.length();
+  }
+
+  public int maxLength() {
+    if (this.length > Math.max(this.left.maxLength(), this.right.maxLength())) {
+      return this.length;
+    }
+    else {
+      return Math.max(this.left.maxLength(), this.right.maxLength());
+    }
+  }
+
+  public int confluences() {
+    return 1 + left.confluences() + right.confluences();
+  }
+
+  public ILoLoc locations() {
+    return new ConsLoc(this.loc, this.left.locations().append(this.right.locations()));
+  }
+  
+  /* nnn() {
+   * ...this.loc.mmm()...
+   * ...this.left.nnn()...
+   * ...this.right.nnn()...
+   */
+}
+
+class RiverSystemExample {
+  RiverSystemExample() {}
+  
+  Location lm = new Location(7, 5, "m");
+  Location la = new Location(5, 5, "a");
+  Location lb = new Location(3, 3, "b");
+  Location ls = new Location(1, 1, "s");
+  Location lt = new Location(1, 5, "t");
+  Location lu = new Location(3, 7, "u");
+  
+  IRiver s = new Source(ls, 3);
+  IRiver t = new Source(lt, 2);
+  IRiver u = new Source(lu, 1);
+  
+  IRiver b = new Confluence(lb, 3, s, t);
+  IRiver a = new Confluence(la, 4, b, u);
+  
+  Mouth mouth1 = new Mouth(lm,a);
+  
+  ILoLoc empty = new MtLoc();
+
+  boolean testCountSources(Tester t) {
+    return t.checkExpect(s.countSources(), 1)
+        && t.checkExpect(a.countSources(), 3)
+        && t.checkExpect(b.countSources(), 2);
+  }
+  
+  boolean testSameLocation(Tester t) {
+    return t.checkExpect(lm.same(new Location(7, 5, "m")), true)
+        && t.checkExpect(lm.same(new Location(7, 5, "n")), false);
+  }
+  
+  boolean testOnRiver(Tester t) {
+    return t.checkExpect(mouth1.onRiver(new Location(7, 5, "m")), true)
+        && t.checkExpect(mouth1.onRiver(new Location(1, 5, "t")), true)
+        && t.checkExpect(mouth1.onRiver(new Location(1, 5, "m")), false);
+  }
+  
+  boolean testLength(Tester t) {
+    return t.checkExpect(this.s.length(), 3)
+        && t.checkExpect(this.t.length(), 2)
+        && t.checkExpect(this.u.length(), 1)
+        && t.checkExpect(this.b.length(), 8)
+        && t.checkExpect(this.a.length(), 13)
+        && t.checkExpect(this.mouth1.length(), 13);
+  }
+  
+  boolean testMaxLength(Tester t) {
+    return t.checkExpect(this.u.maxLength(), 1)
+        && t.checkExpect(this.b.maxLength(), 3)
+        && t.checkExpect(this.a.maxLength(), 4)
+        && t.checkExpect(this.mouth1.maxLength(), 4);
+  }
+  
+  boolean testConfluences(Tester t) {
+    return t.checkExpect(this.s.confluences(), 0)
+        && t.checkExpect(this.b.confluences(), 1)
+        && t.checkExpect(this.a.confluences(), 2)
+        && t.checkExpect(this.mouth1.confluences(), 2);
+  }
+  
+  boolean testLocations(Tester t) {
+    return t.checkExpect(this.s.locations(), new ConsLoc(ls, empty))
+        && t.checkExpect(this.b.locations(), new ConsLoc(lb, new ConsLoc(ls , new ConsLoc(lt, empty))))
+        && t.checkExpect(this.a.locations(), new ConsLoc(la,
+            new ConsLoc(lb, new ConsLoc(ls, new ConsLoc(lt, new ConsLoc(lu, empty))))))
+        && t.checkExpect(this.mouth1.locations(), new ConsLoc(lm, new ConsLoc(la,
+            new ConsLoc(lb, new ConsLoc(ls, new ConsLoc(lt, new ConsLoc(lu, empty)))))));
+  }
+  
+  boolean testAppend(Tester t) {
+    return t.checkExpect(empty.append(new ConsLoc(ls, empty)), new ConsLoc(ls, empty))
+        && t.checkExpect(new ConsLoc(lt, empty).append(new ConsLoc(ls, empty)),
+            new ConsLoc(lt, new ConsLoc(ls, empty)));
+  }
+}

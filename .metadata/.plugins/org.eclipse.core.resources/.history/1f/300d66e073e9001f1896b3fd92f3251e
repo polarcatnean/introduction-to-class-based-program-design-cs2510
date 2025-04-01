@@ -1,0 +1,45 @@
+package constructor;
+import tester.Tester;
+
+interface IDate {
+  
+}
+
+class Date implements IDate {
+  int year;
+  int month;
+  int day;
+  
+  Date(int year, int month, int day) {
+    if (year >= 1500 && year <= 2100) {
+      this.year = year;
+    }
+    else {
+      throw new IllegalArgumentException("Invalid year: " + Integer.toString(year));
+    }
+    
+    if (month >= 1 && month <= 12) {
+      this.month = month;
+    }
+    else {
+      throw new IllegalArgumentException("Invalid month: " + Integer.toString(month));
+    }
+    
+    if (day >= 1 && day <= 31) {
+      this.day = day;
+    }
+    else {
+      throw new IllegalArgumentException("Invalid day: " + Integer.toString(day));
+    }
+  }
+}
+
+class ExamplesDates {
+  
+  // Good dates
+  Date d20100228 = new Date(2010, 2, 28); // Feb 28, 2010
+  Date d20091012 = new Date(2009, 10, 12); // Oct 12, 2009
+
+  // Bad date
+  Date dn303323 = new Date(-30, 33, 23); // ???
+}

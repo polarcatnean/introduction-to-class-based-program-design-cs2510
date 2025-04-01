@@ -1,0 +1,70 @@
+interface IAccount { 
+  
+}
+
+class Checking implements IAccount {
+  int id;
+  String name;
+  int balance;
+  int min_balance;
+  
+  Checking(int id, String name, int balance, int min_balance) {
+    this.id = id;
+    this.name = name;
+    this.balance = balance;
+    this.min_balance = min_balance;
+  }
+}
+
+class Saving implements IAccount {
+  int id;
+  String name;
+  int balance;
+  double interest_rate;
+  
+  Saving(int id, String name, int balance, double interest_rate) {
+    this.id = id;
+    this.name = name;
+    this.balance = balance;
+    this.interest_rate = interest_rate;
+  }
+}
+
+class CertDep implements IAccount {
+  int id;
+  String name;
+  int balance;
+  double interest_rate;
+  Date maturity_date;
+  
+  CertDep(int id, String name, int balance, double interest_rate, Date maturity_date) {
+    this.id = id;
+    this.name = name;
+    this.balance = balance;
+    this.interest_rate = interest_rate;
+    this.maturity_date = maturity_date;
+  }
+}
+
+class Date {
+  int day;
+  int month;
+  int year;
+  
+  Date(int day, int month, int year) {
+    this.day = day;
+    this.month = month;
+    this.year = year;
+  }
+}
+
+class ExamplesAccounts {
+  ExamplesAccounts() {}
+  
+  Date D1 = new Date(1, 6, 2005);
+  
+  IAccount acc1 = new Checking(1729, "Earl Gray", 1250, 500);
+  IAccount acc2 = new CertDep(4104, "Ima Flatt", 10123, 4, this.D1);
+  IAccount acc3 = new Saving(2992, "Annie Proulx", 800, 3.5);
+}
+

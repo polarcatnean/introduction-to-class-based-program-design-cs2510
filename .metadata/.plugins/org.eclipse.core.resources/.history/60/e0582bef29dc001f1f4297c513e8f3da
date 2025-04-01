@@ -1,0 +1,219 @@
+package note;
+import tester.*;
+
+interface IShape {
+  // interfaces define common functionality between classes
+  // any class that implements an interface 
+  // must also implement all of the methods that are defined in the interface 
+
+  double area();   // contains only the signature of the method
+                   // how these methods are implemented is 
+                   // up to the individual class that implements the interface
+  
+  // we must avoid adding methods in the class that are not in the interface.
+  
+  
+  //to compute the distance from this shape to the origin
+  double distanceToOrigin();
+  
+  //to increase the size of this shape by the given increment
+  IShape grow(int inc);
+  
+  //is the area of this shape bigger than the area of the given shape?
+  boolean isBiggerThan(IShape that);
+  
+  // returns true if the given point is within the shape
+  boolean contains(CartPt point);
+}
+
+// To represent a 2-d point by Cartesian coordinates
+class CartPt {
+  int x;
+  int y;
+  
+  CartPt(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+  
+  double distanceToOrigin() {
+    return Math.sqrt((x * x) + (y * y));
+  }
+  
+  double distance(CartPt p2) {
+    return Math.sqrt(Math.pow((this.x - p2.x), 2) + Math.pow((this.y - p2.y), 2));
+  }
+}
+
+class Square implements IShape {
+  CartPt topLeft;
+  int size;
+  String colour;
+  
+  Square(CartPt topLeft, int size, String colour) {
+    this.topLeft = topLeft;
+    this.size = size;
+    this.colour = colour;
+  }
+  
+  // produce the area of this square
+  public double area() {  // add "public" in front when a method is coming from an interface
+    return size * size;
+  }
+  
+  public double distanceToOrigin() {
+    return topLeft.distanceToOrigin();
+  }
+  
+  public IShape grow(int inc) {
+    return new Square(topLeft, size * inc, colour);
+  }
+  
+  public boolean isBiggerThan(IShape that) {
+    return this.area() > that.area();
+  }
+  
+  public boolean contains(CartPt point) {
+    return point.x >= topLeft.x && point.x <= topLeft.x + size
+        && point.y >= topLeft.y && point.y <= topLeft.y + size;
+  }
+}
+
+class Circle implements IShape {
+  CartPt center;
+  int radius;
+  String colour;
+  
+  Circle(CartPt center, int radius, String colour) {
+    this.center = center;
+    this.radius = radius;
+    this.colour = colour;
+  }
+  
+ /* TEMPLATE
+    FIELDS:
+    ... this.center ...                    -- CartPt
+    ... this.radius ...                    -- int
+    ... this.color ...                     -- String
+    METHODS
+    ... this.area() ...                    -- double
+    ... this.distanceToOrigin() ...        -- double
+    METHODS ON FIELDS ----- NEW!
+    ... this.center.distanceToOrigin() ... -- double
+  */
+  
+  //produce the area of this circle
+  public double area() {
+    return Math.PI * radius * radius;
+ }
+  
+  public double distanceToOrigin() {
+    return center.distanceToOrigin() - radius;
+  }
+  
+  public IShape grow(int inc) {
+    return new Circle(center, radius * inc, colour);
+  }
+  
+  public boolean isBiggerThan(IShape that) {
+    return this.area() > that.area();
+  }
+  
+  public boolean contains(CartPt point) {
+    return center.distance(point)<= radius;
+  }
+}
+
+class Triangle implements IShape {
+  CartPt center;
+  int base;
+  int height;
+  String colour;
+  
+  Triangle(CartPt center, int base, int height, String colour) {
+    this.center = center;
+    this.base = base;
+    this.height = height;
+    this.colour = colour;
+  }
+  
+  public double area() {
+    return 0.5 * base * height;
+  }
+  
+  public double distanceToOrigin() {
+    return center.distanceToOrigin();
+  }
+  
+  public IShape grow(int inc) {
+    return new Triangle(center, base * inc, height * inc, colour);
+  }
+  
+  public boolean isBiggerThan(IShape that) {
+    return this.area() > that.area();
+  }
+  
+  public boolean contains(CartPt point) {
+    return true;
+  }
+}
+
+class ShapeUtil {
+  ShapeUtil() {}
+  
+  double doubleTheArea(IShape shape) {  // it doesn't know yet which kind of shape we pass
+    return shape.area() * 2;            // but it will figure out
+  }
+}
+
+class ExamplesIShape {
+  ExamplesIShape() {}
+  
+  ShapeUtil shapeUtil = new ShapeUtil();
+  
+  IShape s1 = new Square(new CartPt(0, 0), 30, "red");
+  IShape s2 = new Square(new CartPt(3, 4), 30, "red");
+  IShape c1 = new Circle(new CartPt(30, 40), 10, "red");
+  IShape t1 = new Triangle(new CartPt(0, 0), 10, 5, "red");
+  
+  // Tests for CartPt
+  boolean testDistance(Tester t) {
+    return t.checkInexact(new CartPt(0, 0).distance(new CartPt(1, 1)), 1.414, 0.01)
+        && t.checkInexact(new CartPt(4, 8).distance(new CartPt(1, 4)), 5.0, 0.01);
+  }
+  
+  // Tests for methods
+  boolean testIShapeArea(Tester t) {
+    // checkInexact compares doubles
+    return t.checkInexact(s1.area(), 900.0, 0.01)
+        && t.checkInexact(c1.area(), 314.0, 0.1)
+        && t.checkInexact(t1.area(), 25.0, 0.01);
+  }
+  
+  boolean testShapeUtil(Tester t) {
+    return t.checkInexact(shapeUtil.doubleTheArea(c1), 628.0, 0.01);
+  }
+  
+  boolean testDistanceToOrigin(Tester t) {
+    return t.checkInexact(s1.distanceToOrigin(), 0.0, 0.01)
+        && t.checkInexact(c1.distanceToOrigin(), 40.0, 0.01)
+        && t.checkInexact(s2.distanceToOrigin(), 5.0, 0.01);
+  }
+  
+  boolean testGrow(Tester t) {
+    return t.checkExpect(s1.grow(2), new Square(new CartPt(0, 0), 60, "red"))
+        && t.checkExpect(c1.grow(3), new Circle(new CartPt(30, 40), 30, "red"));
+  }
+  
+  boolean testIsBiggerThan(Tester t) {
+    return t.checkExpect(s1.isBiggerThan(c1), true)
+        && t.checkExpect(c1.isBiggerThan(s1), false);
+  }
+  
+  boolean testContains(Tester t) {
+    return t.checkExpect(s1.contains(new CartPt(3,2)), true)
+        && t.checkExpect(s1.contains(new CartPt(33,2)), false)
+        && t.checkExpect(s1.contains(new CartPt(30,30)), true)
+        && t.checkExpect(s1.contains(new CartPt(30,33)), false);
+  }
+}

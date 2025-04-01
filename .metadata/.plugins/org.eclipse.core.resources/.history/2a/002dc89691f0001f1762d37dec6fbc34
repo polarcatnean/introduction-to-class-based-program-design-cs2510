@@ -1,0 +1,250 @@
+// CS 2510, Assignment 3
+import tester.*;
+
+// to represent a list of Strings
+interface ILoString {
+  // combine all Strings in this list into one
+  String combine();
+  
+  // produces a new list, sorted in alphabetical order, treating all Strings as if they were given in all lowercase
+  ILoString sort();
+  ILoString insert(String s);
+  
+  boolean isSorted();
+  boolean isAfter(String s); // is the whole list alphabetically after s
+
+  // produces a list where the first, third, fifth... elements are from this list, 
+  // and the second, fourth, sixth... elements are from the given list.
+  // Any “leftover” elements (when one list is longer than the other) are left at the end.
+  ILoString interleave(ILoString los);
+  ILoString interleaveHelper(String s, ILoString los);
+  
+  ILoString merge(ILoString los);
+  ILoString mergeHelper(String s, ILoString los);
+  
+  // produces a new list of Strings containing the same elements as this list of Strings, but in reverse order.
+  ILoString reverse();
+  ILoString reverseHelper(ILoString rsf);  // result-so-far accumulator
+  
+  // determines if this list contains pairs of identical strings, 
+  // that is, the first and second strings are the same, the third and fourth are the same, the fifth and sixth are the same, etc.
+  //TODO boolean isDoubledList ();
+}
+
+// to represent an empty list of Strings
+class MtLoString implements ILoString {
+  MtLoString() {}
+
+  // combine all Strings in this list into one
+  public String combine() {
+    return "";
+  }
+
+  public ILoString sort() {
+    return this;
+  }
+
+  public ILoString insert(String s) {
+    return new ConsLoString(s, this);
+  }
+
+  public boolean isSorted() {
+    return true;
+  }
+
+  public boolean isAfter(String s) {
+    return true;
+  }
+
+  public ILoString interleave(ILoString los) {
+    return los;
+  }
+
+  public ILoString interleaveHelper(String s, ILoString los) {
+    return new ConsLoString(s ,los);
+  }
+
+  public ILoString merge(ILoString los) {
+    return los;
+  }
+
+  public ILoString mergeHelper(String s, ILoString los) {
+    return new ConsLoString(s ,los);
+  }
+
+  public ILoString reverse() {
+    return this;
+  }
+
+  public ILoString reverseHelper(ILoString rsf) {
+    return rsf;
+  }
+}
+
+// to represent a nonempty list of Strings
+class ConsLoString implements ILoString {
+  String first;
+  ILoString rest;
+
+  ConsLoString(String first, ILoString rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+    
+  /*
+     TEMPLATE
+     FIELDS:
+     ... this.first ...         -- String
+     ... this.rest ...          -- ILoString
+     
+     METHODS
+     ... this.combine() ...     -- String
+     
+     METHODS FOR FIELDS
+     ... this.first.concat(String) ...        -- String
+     ... this.first.compareTo(String) ...     -- int
+     ... this.rest.combine() ...              -- String
+     
+   */
+    
+  // combine all Strings in this list into one
+  public String combine() {
+    return this.first.concat(this.rest.combine());
+  }
+
+  public ILoString sort() {
+    // insert first into already sorted rest
+    return this.rest.sort().insert(this.first);
+  }
+
+  public ILoString insert(String s) {
+    if (s.toLowerCase().compareTo(this.first.toLowerCase()) < 0) {   // s comes before this.first
+      return new ConsLoString(s, this);
+    }
+    else {
+      return new ConsLoString(this.first, this.rest.insert(s));
+    }
+  }
+
+  public boolean isSorted() {
+    // is first in the correct position, assume rest is sorted
+    if (this.rest.isAfter(this.first)) {
+      return this.rest.isSorted();
+    }
+    else {
+      return false;
+    }
+  }
+
+  public boolean isAfter(String s) {
+    if (s.toLowerCase().compareTo(this.first.toLowerCase()) < 0) {
+      return this.rest.isAfter(this.first);
+    }
+    else {
+      return false;
+    }
+  }
+
+  public ILoString interleave(ILoString los) {
+    return los.interleaveHelper(this.first, this.rest);
+  }
+
+  public ILoString interleaveHelper(String s, ILoString los) {
+    return new ConsLoString(s, new ConsLoString(this.first, los.interleave(this.rest)));
+  }
+
+  public ILoString merge(ILoString los) {
+    return los.mergeHelper(this.first, this.rest);
+  }
+
+  public ILoString mergeHelper(String s, ILoString los) {
+    if (s.toLowerCase().compareTo(this.first) < 0) {
+      return new ConsLoString(s, los.merge(this));
+    }
+    return new ConsLoString(this.first, this.rest.merge(new ConsLoString(s, los)));
+  }
+
+  public ILoString reverse() {
+    // TODO 
+    return this.rest.reverseHelper(new ConsLoString(this.first, new MtLoString()));
+  }
+
+  public ILoString reverseHelper(ILoString rsf) {
+    // TODO Auto-generated method stub
+    return this.rest.reverseHelper(new ConsLoString(this.first, rsf));
+  }
+}
+
+// to represent examples for lists of strings
+class ExamplesStrings {
+
+  ILoString mary = new ConsLoString("Mary ", 
+                      new ConsLoString("had ", 
+                          new ConsLoString("a ",      
+                              new ConsLoString("little ", 
+                                  new ConsLoString("lamb.", new MtLoString())))));
+  ILoString ace = new ConsLoString("a", new ConsLoString("c", new ConsLoString("e", new MtLoString())));
+  ILoString bdf = new ConsLoString("b", new ConsLoString("d", new ConsLoString("f", new MtLoString())));
+  
+  ILoString abd = new ConsLoString("a", new ConsLoString("b", new ConsLoString("d", new MtLoString())));
+  ILoString cef = new ConsLoString("c", new ConsLoString("e", new ConsLoString("f", new MtLoString())));
+  
+  ILoString aceg = new ConsLoString("a", new ConsLoString("c", new ConsLoString("e", new ConsLoString("g", new MtLoString()))));
+  
+  ILoString abcdef = new ConsLoString("a", new ConsLoString("b", new ConsLoString("c", 
+      new ConsLoString("d", new ConsLoString("e", new ConsLoString("f", new MtLoString()))))));
+  ILoString acbedf = new ConsLoString("a", new ConsLoString("c", new ConsLoString("b", 
+      new ConsLoString("e", new ConsLoString("d", new ConsLoString("f", new MtLoString()))))));
+  ILoString abcdefg = new ConsLoString("a", new ConsLoString("b", new ConsLoString("c", 
+      new ConsLoString("d", new ConsLoString("e", new ConsLoString("f", new ConsLoString("g", new MtLoString())))))));
+
+  // test the method combine for the lists of Strings
+  boolean testCombine(Tester t) {
+    return t.checkExpect(this.mary.combine(), "Mary had a little lamb.");
+  }
+  
+  boolean testSort(Tester t) {
+    return t.checkExpect(mary.sort(), new ConsLoString("a ", 
+                                        new ConsLoString("had ", 
+                                            new ConsLoString("lamb.",      
+                                                new ConsLoString("little ", 
+                                                    new ConsLoString("Mary ", new MtLoString()))))));
+  }
+  
+  boolean testIsSorted(Tester t) {
+    return t.checkExpect(mary.isSorted(), false)
+        && t.checkExpect(new ConsLoString("a ", 
+                          new ConsLoString("had ", 
+                              new ConsLoString("lamb.",      
+                                  new ConsLoString("little ", 
+                                      new ConsLoString("Mary ", new MtLoString()))))).isSorted(), true)
+        && t.checkExpect(new ConsLoString("a", 
+                          new ConsLoString("b", 
+                              new ConsLoString("c",      
+                                  new ConsLoString("s", 
+                                      new ConsLoString("d", new MtLoString()))))).isSorted(), false)
+        && t.checkExpect(ace.isSorted(), true);
+  }
+  
+  boolean testInterleave(Tester t) {
+    return t.checkExpect(new MtLoString().interleave(new MtLoString()), new MtLoString())
+        && t.checkExpect(new MtLoString().interleave(ace), ace)
+        && t.checkExpect(ace.interleave(new MtLoString()), ace)
+        && t.checkExpect(ace.interleave(bdf), abcdef)
+        && t.checkExpect(aceg.interleave(bdf), abcdefg)
+        && t.checkExpect(abd.interleave(cef), acbedf);
+  }
+  
+  boolean testMerge(Tester t) {
+    return t.checkExpect(new MtLoString().merge(ace), ace)
+        && t.checkExpect(ace.merge(new MtLoString()), ace)
+        && t.checkExpect(ace.merge(bdf), abcdef)
+        && t.checkExpect(abd.merge(cef), abcdef)
+        && t.checkExpect(aceg.merge(bdf), abcdefg);
+  }
+  
+  boolean testReverse(Tester t) {
+    return t.checkExpect(new MtLoString().reverse(), new MtLoString())
+        && t.checkExpect(ace.reverse(), new ConsLoString("e", new ConsLoString("c", new ConsLoString("a", new MtLoString()))));
+  }
+}

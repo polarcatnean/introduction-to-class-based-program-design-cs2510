@@ -1,0 +1,34 @@
+/* 
+;; An IceCream is one of:
+;; -- EmptyServing
+;; -- Scooped
+ 
+;;An EmptyServing is a (make-empty-serving Boolean)
+(define-struct empty-serving (cone))
+ 
+;;A Scooped is a (make-scooped IceCream String)
+(define-struct scooped (more flavor))
+
+ */
+
+
+/*             +------------+
+ *             |  IceCream  |
+ *             +------------+
+ *             +------------+
+ *                    |
+ *                    |
+ *                   / \ 
+ *                   ---
+ *                    |
+ *        -------------------------------
+ *        |                              |
+ *   +--------------+       +---------------------+
+ *   | EmptyServing |       | Scooped             |
+ *   +--------------+       +---------------------+
+ *   | boolean cone |       | IceCream scooped    |
+ *   +--------------+       | String more_flavour |
+ *                          +---------------------+
+ */
+
+

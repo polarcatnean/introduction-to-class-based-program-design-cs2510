@@ -1,0 +1,83 @@
+package practice;
+
+class Date {
+  int day;
+  int month;
+  int year;
+  
+  Date(int day, int month, int year) {
+    this.day = day;
+    this.month = month;
+    this.year = year;
+  }
+  
+  /*
+   * ??? lll() {
+   * ...this.day...
+   * ...this.month...
+   * ...this.year...
+   * }
+   */
+}
+
+interface ILog {
+  /*
+   * ??? nnn();
+   */
+}
+
+class MtLog implements ILog {
+  MtLog() {}
+  
+  /*
+   * ??? nnn() {
+   * ...
+   * }
+   */
+}
+
+class ConsLog implements ILog {
+  Entry first;
+  ILog rest;
+  
+  ConsLog(Entry first, ILog rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+  
+  /* TEMPLATE
+   * FIELDS:
+   * ... this.first ...  -- Entry
+   * ... this.rest ...   -- ILog
+   * METHODS FOR FIELDS:
+   * ??? nnn() {
+   * ... this.first.mmm() ...
+   * ... this.rest.nnn() ...
+   * }
+   */
+}
+
+class Entry {
+  Date d;
+  double distance;  // miles
+  int duration;  // minutes
+  String comment;
+  
+  Entry(Date d, double distance, int duration, String comment) {
+    this.d = d;
+    this.distance = distance;
+    this.duration = duration;
+    this.comment = comment;
+  }
+  
+  /* TEMPLATE
+   * METHODS:
+   * ??? mmm() {
+   * ... this.d.lll()...
+   * ... this.distance ...
+   * ... this.duration ...
+   * ... this.comment...
+   * }
+   * 
+   */
+}

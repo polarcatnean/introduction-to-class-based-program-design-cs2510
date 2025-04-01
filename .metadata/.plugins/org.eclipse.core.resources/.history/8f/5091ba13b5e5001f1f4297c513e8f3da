@@ -1,0 +1,113 @@
+import tester.*;
+
+interface ILoInt {
+  // contain a number that is even, positive and odd, and between 5 and 10, inclusive
+  // Any number in the list may satisfy multiple requirements.
+  boolean variantA();
+  boolean variantAHelper(boolean b, boolean c, boolean d);
+  
+  // contain numbers satisfying the three requirements above,
+  // a given number in the list may only be used once to satisfy a single requirement; duplicate numbers are permitted
+  boolean variantB();
+  boolean combine(boolean a, boolean b, boolean c);
+  boolean checkConditions(boolean condA, boolean condB, boolean condC);
+}
+
+class MtLoInt implements ILoInt {
+  MtLoInt() {}
+  
+  public boolean variantA() {
+    return false;
+  }
+
+  public boolean variantB() {
+    return false;
+  }
+  
+  public boolean combine(boolean a, boolean b, boolean c) {
+    return a & b & c;
+  }
+  
+  public boolean checkConditions(boolean condA, boolean condB, boolean condC) {
+    return false;
+  }
+
+  public boolean variantAHelper(boolean b, boolean c, boolean d) {
+    // TODO Auto-generated method stub
+    return b & c & d;
+  }
+}
+
+class ConsLoInt implements ILoInt {
+  int first;
+  ILoInt rest;
+  
+  ConsLoInt(int first, ILoInt rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+
+  public boolean variantA() {
+    return this.variantAHelper(false, false, false);
+    //return this.isEven(first) || this.isOddandPos(first) || this.is5to10(first) || this.rest.variantA();
+  }
+  
+  public boolean variantAHelper(boolean a, boolean b, boolean c) {
+    return this.rest.variantAHelper(a || this.isEven(first),  
+                                     b || this.isOddandPos(first),  
+                                      c || this.is5to10(first));
+  }
+
+  private boolean isEven(int num) {
+    return num % 2 == 0;
+  }
+  
+  private boolean isOddandPos(int num) {
+    return num % 2 == 1 && num > 0;
+  }
+
+  private boolean is5to10(int num) {
+    return num >= 5 && num <= 10;
+  }
+
+  public boolean variantB() {
+    // TODO Auto-generated method stub
+    return this.checkConditions(false, false, false);
+  }
+  
+  // condA/condB/condC is true if the condition is already passed
+  // list is a list of int that still need to be checked with remaining conditions
+  public boolean checkConditions(boolean condA, boolean condB, boolean condC) {
+    if (!condA) {
+      return this.rest.checkConditions(this.first % 2 == 0, condB, condC);  
+    }
+    if (!condB) {
+      return this.rest.checkConditions(condA, this.first % 2 == 1, condC);  
+    }
+    return false;
+  }
+  
+  public boolean combine(boolean a, boolean b, boolean c) {
+    return a & b & c;
+  }
+}
+
+
+class ExampleLoInt {
+  
+  ILoInt empty = new MtLoInt();
+  ILoInt list1 = new ConsLoInt(6, new ConsLoInt(5, empty));
+  ILoInt list2 = new ConsLoInt(4, new ConsLoInt(3, empty));
+  ILoInt list3 = new ConsLoInt(6, new ConsLoInt(5, new ConsLoInt(6 ,empty)));
+  ILoInt list4 = new ConsLoInt(6, new ConsLoInt(5, new ConsLoInt(42 ,new ConsLoInt(6 ,empty))));
+  ILoInt listOdd = new ConsLoInt(1, new ConsLoInt(3, empty));
+  ILoInt listEven = new ConsLoInt(2, new ConsLoInt(8, empty));
+  
+  boolean testVariantA(Tester t) {
+    return t.checkExpect(empty.variantA(), false)
+        && t.checkExpect(list1.variantA(), true)
+        && t.checkExpect(list2.variantA(), false)
+        && t.checkExpect(list3.variantA(), true);
+  }
+  
+}

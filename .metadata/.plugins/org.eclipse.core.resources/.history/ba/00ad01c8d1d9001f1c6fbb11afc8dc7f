@@ -1,0 +1,58 @@
+package note;
+import tester.*;
+
+interface IShape {
+  
+}
+
+class Square implements IShape {
+  int x;
+  int y;
+  int size;
+  String colour;
+  
+  Square(int x, int y, int size, String colour) {
+    this.x = x;
+    this.y = y;
+    this.size = size;
+    this.colour = colour;
+  }
+  
+  // produce the area of this square
+  double area() {
+    return size * size;
+  }
+}
+
+class Circle implements IShape {
+  int x;
+  int y;
+  int radius;
+  String colour;
+  
+  Circle(int x, int y, int radius, String colour) {
+    this.x = x;
+    this.y = y;
+    this.radius = radius;
+    this.colour = colour;
+  }
+  
+//produce the area of this circle
+ double area() {
+   return Math.PI * radius * radius;
+ }
+}
+
+class ExamplesIShape {
+  ExamplesIShape() {}
+  
+  IShape s1 = new Square(0, 0, 30, "red");
+  IShape c1 = new Circle(0, 0, 10, "red");
+  
+  // Tests for methods
+  boolean testIShapeArea(Tester t) {
+    // checkInexact compares doubles
+    return t.checkInexact(this.s1.area(), 900, 0.01)
+        && t.checkInexact(this.c1.area(), 0, 0.01);
+  }
+}

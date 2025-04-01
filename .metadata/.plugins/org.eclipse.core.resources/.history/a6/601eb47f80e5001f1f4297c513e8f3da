@@ -1,0 +1,86 @@
+import tester.*;
+
+interface ILoInt {
+  // contain a number that is even
+  boolean containsEven();
+  
+  // contain a number that is positive and odd
+  boolean containsPosAndOdd();
+  boolean containsPos();
+  boolean containsOdd();
+  
+  // contain a number between 5 and 10, inclusive
+  
+}
+
+class MtLoInt implements ILoInt {
+  MtLoInt() {}
+  
+  public boolean containsEven() {
+    return false;
+  }
+
+  public boolean containsPosAndOdd() {
+    return false;
+  }
+
+  public boolean containsPos() {
+    return false;
+  }
+
+  public boolean containsOdd() {
+    return false;
+  }
+}
+
+class ConsLoInt implements ILoInt {
+  int first;
+  ILoInt rest;
+  
+  ConsLoInt(int first, ILoInt rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+
+  public boolean containsEven() {
+    return this.first % 2 == 0 || this.rest.containsEven();
+  }
+
+  public boolean containsPosAndOdd() {  // positive = true && odd = true
+    // TODO
+    return this.containsPos() && this.containsOdd();
+  }
+
+  public boolean containsOdd() {
+    // TODO Auto-generated method stub
+    return this.first % 2 == 1 || this.rest.containsOdd();
+  }
+
+  public boolean containsPos() {
+    // TODO Auto-generated method stub
+    return this.first > 0 || this.rest.containsPos();
+  }
+}
+
+
+class ExampleLoInt {
+  
+  ILoInt empty = new MtLoInt();
+  ILoInt list1 = new ConsLoInt(6, new ConsLoInt(5, empty));
+  ILoInt list2 = new ConsLoInt(4, new ConsLoInt(3, empty));
+  ILoInt listOdd = new ConsLoInt(1, new ConsLoInt(3, empty));
+  ILoInt listEven = new ConsLoInt(2, new ConsLoInt(8, empty));
+  
+  boolean testContainsEven(Tester t) {
+    return t.checkExpect(empty.containsEven(), false)
+        && t.checkExpect(listOdd.containsEven(), false)
+        && t.checkExpect(list1.containsEven(), true);
+  }
+  
+  boolean testContainsPosAndOdd(Tester t) {
+    return t.checkExpect(empty.containsPosAndOdd(), false)
+        && t.checkExpect(listOdd.containsPosAndOdd(), true)
+        && t.checkExpect(list1.containsPosAndOdd(), true)
+        && t.checkExpect(listEven.containsPosAndOdd(), false);
+  }
+}

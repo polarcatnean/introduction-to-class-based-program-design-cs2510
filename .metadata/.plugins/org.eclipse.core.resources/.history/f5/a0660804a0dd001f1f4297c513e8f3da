@@ -1,0 +1,117 @@
+import tester.Tester;
+
+// already defined
+
+//class Date {
+//  int day;
+//  int month;
+//  int year;
+//
+//  Date(int day, int month, int year) {
+//    this.day = day;
+//    this.month = month;
+//    this.year = year;
+//  }
+//}
+
+class WeatherRecord {
+  Date d;
+  TemperatureRange today;
+  TemperatureRange normal;
+  TemperatureRange record;
+  double precipitation;
+
+  WeatherRecord(Date d, TemperatureRange today, TemperatureRange normal, TemperatureRange record,
+      double precipitation) {
+    this.d = d;
+    this.today = today;
+    this.normal = normal;
+    this.record = record;
+    this.precipitation = precipitation;
+  }
+
+  // compute the difference between today's high & low
+  int differential() {
+    return this.today.difference();
+  }
+  
+  // determine whether today’s high and low were within the normal range
+  boolean withinRange() {
+    return this.today.high < this.normal.high 
+        && this.today.low > this.normal.low;
+  }
+  
+  // determines whether the precipitation is higher than some given value
+  boolean rainyDay(int val) {
+    return this.precipitation > val;
+  }
+  
+  // determines whether the temperature broke either the high or the low record
+  // low < record low or high > record high
+  boolean recordDay() {
+    return this.today.high > this.record.high 
+        || this.today.low < this.record.low;
+  }
+}
+
+class TemperatureRange {
+  int low;
+  int high;
+
+  TemperatureRange(int low, int high) {
+    this.high = high;
+    this.low = low;
+  }
+
+  // compute the difference between this range's high & low
+  int difference() {
+    return this.high - this.low;
+  }
+}
+
+class RangeExamples {
+  Date d1 = new Date(2, 9, 1959);
+  Date d2 = new Date(8, 8, 2004);
+  Date d3 = new Date(12, 12, 1999);
+  Date d4 = new Date(29, 1, 2025);
+
+  TemperatureRange tr1 = new TemperatureRange(66, 88);
+  TemperatureRange tr2 = new TemperatureRange(70, 99);
+  TemperatureRange tr3 = new TemperatureRange(28, 31);
+  TemperatureRange tr4 = new TemperatureRange(60, 90);
+
+  WeatherRecord r1 = new WeatherRecord(d1, tr1, tr2, tr3, 0);
+  WeatherRecord r2 = new WeatherRecord(d2, tr2, tr3, tr1, 10);
+  WeatherRecord r3 = new WeatherRecord(d3, tr3, tr1, tr2, 9);
+  WeatherRecord r4 = new WeatherRecord(d4, tr1, tr4, tr3, 20);
+  WeatherRecord r5 = new WeatherRecord(d4, tr1, tr3, tr4, 20);
+
+  boolean testDifference(Tester t) {
+    return t.checkExpect(tr1.difference(), 88 - 66);
+  }
+  
+  boolean testDifferential(Tester t) {
+    return t.checkExpect(r1.differential(), 22);
+  }
+  
+  boolean testWithinRange(Tester t) {
+    return t.checkExpect(r1.withinRange(), false)
+        && t.checkExpect(r2.withinRange(), false)
+        && t.checkExpect(r3.withinRange(), false)
+        && t.checkExpect(r4.withinRange(), true);
+        
+  }
+  
+  boolean testRainyDay(Tester t) {
+    return t.checkExpect(r1.rainyDay(10), false)
+        && t.checkExpect(r2.rainyDay(5), true);
+  }
+  
+  boolean testRecordDay(Tester t) {
+    return t.checkExpect(r1.recordDay(), true)
+        && t.checkExpect(r2.recordDay(), true)
+        && t.checkExpect(r5.recordDay(), false)
+        && t.checkExpect(r4.recordDay(), true);
+    
+  }
+}

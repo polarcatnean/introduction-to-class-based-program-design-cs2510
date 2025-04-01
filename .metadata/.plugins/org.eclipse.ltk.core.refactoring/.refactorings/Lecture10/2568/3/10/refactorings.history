@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Move 2 elements to &apos;Lectures/src/lecture10&apos;&#x0D;&#x0A;- Original project: &apos;Lecture10&apos;&#x0D;&#x0A;- Destination element: &apos;Lectures/src/lecture10&apos;&#x0D;&#x0A;- Original elements:&#x0D;&#x0A;     constructor.Tetris.java&#x0D;&#x0A;     constructor.Exception.java&#x0D;&#x0A;- Update references to refactored element" description="Move compilation units" destination="=Lectures/src&lt;lecture10" element1="/src&lt;constructor{Tetris.java" element2="/src&lt;constructor{Exception.java" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.move" patterns="*" policy="org.eclipse.jdt.ui.moveResources" qualified="false" references="true" stamp="1741144887253" units="2" version="1.0"/>
+</session>

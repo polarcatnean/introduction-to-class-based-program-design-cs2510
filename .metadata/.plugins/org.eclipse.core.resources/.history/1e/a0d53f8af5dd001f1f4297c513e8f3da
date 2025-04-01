@@ -1,0 +1,148 @@
+// import tester.Tester;
+
+interface IItem {
+  // compute the unit price (cents per gram) of this item
+  double unitPrice();
+  
+  // determines whether the unit price of this item is lower than some given amount
+  boolean lowerUnitPrice(double amount);
+  
+  // determines whether this item’s unit price is less than 
+  // some other (presumably) comparable item’s unit price
+  boolean cheaperThan(IItem that);
+}
+
+class IceCream implements IItem {
+  String brand;
+  String flavour;
+  int weight;  // in grams
+  int price;   // in cents
+  
+  IceCream(String brand, String flavour, int weight, int price) {
+    this.brand = brand;
+    this.flavour = flavour;
+    this.weight = weight;
+    this.price = price;
+  }
+  
+  /* TEMPLATE
+   * FIELDS:
+   * ... this.brand ...    -- String
+   * ... this.flavour ...  -- String
+   * ... this.weight ...   -- int
+   * ... this.price ...    -- int
+   * METHODS:
+   * ... this.unitPrice() ...                  -- double
+   * ... this.lowerUnitPrice(int amount) ...   -- boolean
+   * ... this.cheaperThan(IItem that) ...      -- boolean
+   */
+  
+  public double unitPrice() {
+    return (double) this.price / this.weight;
+  }
+  
+  public boolean lowerUnitPrice(double amount) {
+    return this.unitPrice() < amount;
+  }
+  
+  public boolean cheaperThan(IItem that) {
+    return false;
+  }
+}
+
+class Coffee implements IItem {
+  String brand;
+  boolean decaf; // false means regular
+  int weight;  // in grams
+  int price;   // in cents
+  
+  Coffee(String brand, boolean decaf, int weight, int price) {
+    this.brand = brand;
+    this.decaf = decaf;
+    this.weight = weight;
+    this.price = price;
+  }
+  
+  public double unitPrice() {
+    return (double) this.price / this.weight;
+  }
+  
+  public boolean lowerUnitPrice(double amount) {
+    return this.unitPrice() < amount;
+  }
+  
+  public boolean cheaperThan(IItem that) {
+    return false;
+  }
+}
+
+class Juice implements IItem {
+  String brand;
+  String flavour;
+  String packaged;  // frozen, fresh, bottled, canned
+  int weight;  // in grams
+  int price;   // in cents
+  
+  Juice(String brand, String flavour, String packaged, int weight, int price) {
+    this.brand = brand;
+    this.flavour = flavour;
+    this.packaged = packaged;
+    this.weight = weight;
+    this.price = price;
+  }
+  
+  public double unitPrice() {
+    return (double) this.price / this.weight;
+  }
+  
+  public boolean lowerUnitPrice(double amount) {
+    return this.unitPrice() < amount;
+  }
+  
+  public boolean cheaperThan(IItem that) {
+    return false;
+  }
+}
+
+
+class ExamplesItems {
+  ExamplesItems() {}
+  
+  IItem coolway1 = new IceCream("Cool Way", "Cookies and Cream", 500, 599);
+  IItem parlour1 = new IceCream("Parlour", "Butterscotch Flavoured Sundae Frozen Dessert", 1500, 399);
+  IItem haagen1 = new IceCream("Haagen-Dazs", "Salted Caramel", 450, 549);
+  
+  IItem coffee1 = new Coffee("Irresitible", false, 340, 699);
+  IItem coffee2 = new Coffee("Tim Hortons", true, 300, 1049);
+  IItem coffee3 = new Coffee("Nescafe", true, 90, 699);
+  IItem coffee4 = new Coffee("Nescafe", false, 170, 599);
+  
+  IItem juice1 = new Juice("Irresitible", "Orange, Peach and Mango", "bottled", 165, 549);
+  IItem juice2 = new Juice("Minute Maid", "Orange", "frozen", 295, 249);
+  IItem juice3 = new Juice("Irresitible", "Apple", "fresh", 165, 529);
+  IItem juice4 = new Juice("Dole", "Apple", "canned", 340*12, 799);
+  
+  // Tests
+//  boolean testUnitPrice(Tester t) {
+//    return t.checkInexact(coolway1.unitPrice(), 1.198, 0.01)
+//        && t.checkInexact(coffee1.unitPrice(), 2.056, 0.01)
+//        && t.checkInexact(juice1.unitPrice(), 3.327, 0.01);
+//  }
+//  
+//  boolean testLowerUnitPrice(Tester t) {
+//    return t.checkExpect(parlour1.lowerUnitPrice(1), true)
+//        && t.checkExpect(haagen1.lowerUnitPrice(1), false);
+//  }
+//  
+//  boolean testCheaperThan(Tester t) {
+//    return t.checkExpect(coolway1.cheaperThan(haagen1), true)
+//        && t.checkExpect(parlour1.cheaperThan(coolway1), true)
+//        && t.checkExpect(coffee1.cheaperThan(coffee2), false);
+//  }
+  
+  public static void main(String[] args) {
+    IItem ice1 = new IceCream("Cool Way", "Cookies and Cream", 500, 599);
+    System.out.println("Unit price: $" + ice1.unitPrice());
+  }
+  
+}

@@ -1,0 +1,79 @@
+interface IHousing {
+  
+}
+
+class Hut implements IHousing {
+  int capacity;
+  int population;
+  
+  Hut(int capacity, int population) {
+    this.capacity = capacity;
+    this.population = population;  // must be less than capacity
+  }
+}
+
+class Inn implements IHousing {
+  String name;
+  int capacity;
+  int population;  // must be less than capacity
+  int stalls;
+  
+  Inn(String name, int capacity, int population, int stalls) {
+    this.name = name;
+    this.capacity = capacity;
+    this.population = population;
+    this.stalls = stalls;
+  }
+}
+
+class Castle  implements IHousing {
+  String name;
+  String family_name;
+  int population; 
+  int carriage_house;
+  
+  Castle(String name, String family_name, int population, int carriage_house) {
+    this.name = name;
+    this.family_name = family_name;
+    this.population = population;
+    this.carriage_house = carriage_house;
+  }
+}
+
+
+interface ITransport {
+  
+}
+
+class Horse {
+  IHousing from;
+  IHousing to;
+  String name;
+  String colour;
+  
+  Horse(IHousing from, IHousing to, String name, String colour) {
+    this.from = from;
+    this.to = to;
+    this.name = name;
+    this.colour = colour;
+  }
+}
+
+class Carriage {
+  IHousing from;   // only travel from Inns to Castles or vice versa
+  IHousing to;
+  double tonnage;
+
+  Carriage(IHousing from, IHousing to, double tonnage) {
+    this.from = from;
+    this.to = to;
+    this.tonnage = tonnage;
+  }
+}
+
+
+class ExamplesTravel {
+  ExamplesTravel() {}
+  
+  
+}

@@ -1,0 +1,152 @@
+import tester.*;
+
+interface IDocument {
+  // Format the entries as “Last name, First name. "Title".” (only for books)
+  String format();
+  
+  // produce a bibliography containing just the authors and titles of the books , 
+  // either directly or transitively through the bibliographies of other documents.
+  IBiblio makeBiblio();
+}
+
+class Book implements IDocument {
+  Author author;
+  String title;
+  String publisher;
+  IBiblio listofb;
+  
+  Book(Author author, String title, String publisher, IBiblio listofb) {
+    this.author = author;
+    this.title = title;
+    this.publisher = publisher;
+    this.listofb = listofb;
+  }
+
+  public String format() {
+    return String.format("%s \"%s\".", author.formatName(), this.title) ;
+  }
+
+  public IBiblio makeBiblio() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+}
+
+class Wiki implements IDocument {
+  Author author;
+  String title;
+  String url;
+  IBiblio listofb;
+  
+  Wiki(Author author, String title, String url, IBiblio listofb) {
+    this.author = author;
+    this.title = title;
+    this.url = url;
+    this.listofb = listofb;
+  }
+
+  public String format() {
+    return "";
+  }
+
+  public IBiblio makeBiblio() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+}
+
+class Author {
+  String first;
+  String last;
+  
+  Author(String first, String last) {
+    this.first = first;
+    this.last = last;
+  }
+
+  public String formatName() {
+    return  last + ", " + first + ".";
+  }
+  
+  public boolean sameAuthor(Author other) {
+    return this.first.equals(other.first) && this.last.equals(other.last);
+  }
+}
+
+
+interface IBiblio {
+  // sort this bibliography by the authors’ last name
+  // TODO sortByLastName();
+  
+  // Remove any duplicates (defined as the same author name and the same title)
+  // TODO removeDup();
+}
+
+class MtB implements IBiblio {
+  MtB() {}
+}
+
+class ConsB implements IBiblio {
+  IDocument first;
+  IBiblio rest;
+  
+  ConsB(IDocument first, IBiblio rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+}
+
+
+class ExampleBiblio {
+  IBiblio empty = new MtB();
+  
+  Author vernor = new Author("Vernor", "Vinge");
+  Author peter = new Author("Peter F.", "Hamilton");
+  Author charles = new Author("Charles", "Stross");
+  Author casella = new Author("Casella", "Berger");
+  Author jeremy = new Author("Jeremy", "Kim");
+  
+  IDocument book1 = new Book(vernor, "Across Realtime", "Orion Publishing Group", empty);
+  IDocument book2 = new Book(peter, "The Reality Dysfunction", "PAN", new ConsB(book1, empty));
+  IDocument book3 = new Book(peter, "Mindstar Rising", "TOR", new ConsB(book1, empty));
+  
+  IBiblio bib1 = new ConsB(book1, empty);
+  IBiblio bib2 = new ConsB(book2, bib1);
+  
+  IDocument book4 = new Book(charles, "Halting State", "ACE", bib2);
+  
+  IBiblio bib3 = new ConsB(book2, bib2);
+  IBiblio bib4 = new ConsB(book3, bib3);
+  
+  IDocument book5 = new Book(casella, "Statistical Inference", "Cengage", bib3);
+  IDocument book6 = new Book(jeremy, "A Programmer's Introduction to Mathematics", "PIM", new ConsB(book4, bib4));
+  
+  IBiblio bibwiki1 = new ConsB(
+      new Book(new Author("Constance", "Carter"),
+          "John Gould Stephenson: Largely Known and Much Liked",
+          "The Quarterly Journal of the Library of Congress", bib1),
+      new ConsB(new Book(new Author("John Y.", "Cole"),
+          "The Main Building of the Library of Congress: A Chronology, 1871–1965",
+          "The Quarterly Journal of the Library of Congress", bib1), empty));
+  IDocument wiki1 = new Wiki(vernor, "John Silva Meehan", "https://en.wikipedia.org/wiki/John_Silva_Meehan", bibwiki1);
+  
+  IBiblio bibwiki2 = new ConsB(
+      new Book(new Author("K.", "Matsuura"), "Balistapus undulatus",
+          "IUCN Red List of Threatened Species", bib2),
+      new ConsB(
+          new Book(new Author("William N.", "Eschmeyer"), "Species in the genus Balistapus",
+              "California Academy of Sciences", bib2),
+          new ConsB(new Book(new Author("Francesco", "Santini"),
+              "A new multi-locus timescale reveals the evolutionary basis of diversity patterns in triggerfishes and filefishes (Balistidae, Monacanthidae; Tetraodontiformes)",
+              " Molecular Phylogenetics and Evolution", bib3), empty)));
+  
+  
+  boolean testSameAuthor(Tester t) {
+    return t.checkExpect(vernor.sameAuthor(casella), false)
+        && t.checkExpect(vernor.sameAuthor(new Author("Vernor", "Vinge")), true);
+  }
+  
+  boolean testFormat(Tester t) {
+    return t.checkExpect(book1.format(), "Vinge, Vernor. \"Across Realtime\".");
+  }
+}

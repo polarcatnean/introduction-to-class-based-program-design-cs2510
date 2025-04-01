@@ -1,0 +1,169 @@
+import tester.Tester;
+
+class EmbroideryPiece {
+  String name;
+  IMotif motif;
+  
+  EmbroideryPiece(String name, IMotif motif) {
+    this.name = name;
+    this.motif = motif;
+  }
+  
+  // computes the average difficulty of all of the motifs in this EmbroideryPiece
+  double averageDifficulty() {
+    return 0;
+  } 
+}
+
+
+interface IMotif {
+  int count();
+  double sumDiff();
+  
+}
+
+class CrossStitch implements IMotif {
+  String description;
+  double difficulty;  // number between 0 and 5, with 5 being the most difficult
+  
+  CrossStitch(String description, double difficulty) {
+    this.description = description;
+    this.difficulty = difficulty;
+  }
+
+  public int count() {
+    return 1;
+  }
+
+  public double sumDiff() {
+    return difficulty;
+  }
+}
+
+class ChainStitch implements IMotif {
+  String description;
+  double difficulty;  // number between 0 and 5, with 5 being the most difficult
+  
+  ChainStitch(String description, double difficulty) {
+    this.description = description;
+    this.difficulty = difficulty;
+  }
+
+  public int count() {
+    return 1;
+  }
+
+  public double sumDiff() {
+    return difficulty;
+  }
+}
+
+class GroupMotif implements IMotif {
+  String description;
+  ILoMotif motifs;
+  
+  GroupMotif(String description, ILoMotif motifs) {
+    this.description = description;
+    this.motifs = motifs;
+  }
+
+  public int count() {
+    return motifs.countMotifs();
+  }
+
+  public double sumDiff() {
+    return motifs.sumDiff();
+  }
+}
+
+
+
+interface ILoMotif {
+  double averageDifficulty();
+  double sumDiff();
+  int countMotifs();
+}
+
+class MtLoMotif implements ILoMotif {
+  MtLoMotif() {}
+
+  public double averageDifficulty() {
+    return 0;
+  };
+  
+  public int countMotifs() {
+    return 0;
+  }
+
+  public double sumDiff() {
+    return 0;
+  }
+}
+
+class ConsLoMotif implements ILoMotif {
+  IMotif first;
+  ILoMotif rest;
+  
+  ConsLoMotif(IMotif first, ILoMotif rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+
+  public double averageDifficulty() {
+    return this.sumDiff() / this.countMotifs();
+  }
+
+  public int countMotifs() {
+    return this.first.count() + this.rest.countMotifs();
+  }
+
+  public double sumDiff() {
+    return this.first.sumDiff() + this.rest.sumDiff();
+  }
+}
+
+class ExamplesEmbroidery {
+  ExamplesEmbroidery() {};
+  
+  IMotif bird = new CrossStitch("Bird", 4.5);
+  IMotif tree = new ChainStitch("Tree", 3.0);
+  IMotif rose = new CrossStitch("Roses", 5.0);
+  IMotif poppy = new ChainStitch("Poppies", 4.75);
+  IMotif daisy = new CrossStitch("Daisies", 3.2);
+  
+  ILoMotif empty = new MtLoMotif();
+  ILoMotif listFlowers = new ConsLoMotif(rose,
+      new ConsLoMotif(poppy, new ConsLoMotif(daisy, empty)));
+  ILoMotif listNature = new ConsLoMotif(bird, new ConsLoMotif(tree,
+      new ConsLoMotif(rose, new ConsLoMotif(poppy, new ConsLoMotif(daisy, empty)))));
+  
+  IMotif flowers = new GroupMotif("3 kinds of flowers", listFlowers);
+  IMotif nature = new GroupMotif("Bird, tree, flowers", listNature);
+      
+  EmbroideryPiece pillowCover  = new EmbroideryPiece("Nature Pillow", nature);
+  EmbroideryPiece pillowFlowers  = new EmbroideryPiece("Flower part", flowers);
+  EmbroideryPiece pillowBird = new EmbroideryPiece("Bird part", bird);
+  
+  
+  boolean testSumDiff(Tester t) {
+    return t.checkInexact(empty.sumDiff(), 0.0, 0.01)
+        && t.checkInexact(bird.sumDiff(), 4.5, 0.01)
+        && t.checkInexact(listFlowers.sumDiff(), (5.0+4.75+3.2), 0.01)
+        && t.checkInexact(listNature.sumDiff(), (4.5+3.0+5.0+4.75+3.2), 0.01);
+  }
+  
+  boolean testCount(Tester t) {
+    return t.checkExpect(bird.count(), 1)
+        && t.checkExpect(flowers.count(), 3)
+        && t.checkExpect(empty.countMotifs(), 0)
+        && t.checkExpect(listFlowers.countMotifs(), 3)
+        && t.checkExpect(listNature.countMotifs(), 5);
+  }
+  
+//  boolean testAverageDifficulty(Tester t) {
+//    return t.checkInexact(empty.averageDifficulty(), 0, 0.01)
+//        && t.checkInexact(pillowBird.averageDifficulty(), 4.5, 0.01)
+//        && t.checkInexact(pillowFlowers.averageDifficulty(), (5.0+4.75+3.2)/3.0, 0.01)
+//        && t.checkInexact(pillowCover.averageDifficulty(), (4.5+3.0+5.0+4.75+3.2)/5.0, 0.01);
+//  }
+}

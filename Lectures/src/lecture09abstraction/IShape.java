@@ -1,0 +1,230 @@
+package lecture09abstraction;
+import tester.Tester;
+
+class CartPt {
+  double x;
+  double y;
+  
+  CartPt(double x, double y) {
+   this.x = x;
+   this.y = y;
+  }
+  
+  public double distanceToOrigin() {
+   return Math.sqrt((x * x) + (y * y));
+  }
+
+  public double distance(CartPt p) {
+    return Math.sqrt(Math.pow((this.x - (p.x)), 2) + Math.pow((this.y - p.y), 2));
+  }
+}
+
+interface IShape {
+  double area();
+  double distanceToOrigin();
+  IShape grow(int inc);
+  boolean isBiggerThan(IShape shape);
+  boolean contains(CartPt point);
+}
+
+abstract class AShape implements IShape{  // for Abstraction, can partially implement some of the interface
+  CartPt location;
+  String colour;
+  
+  AShape(CartPt location, String colour) {
+    this.location = location;
+    this.colour = colour;
+  }
+  
+  public boolean isBiggerThan(IShape shape) {
+    return this.area() > shape.area();
+  }
+  
+  public double distanceToOrigin() {
+    return location.distanceToOrigin();
+  }
+  
+  public abstract double area();
+  public abstract IShape grow(int inc);
+  public abstract boolean contains(CartPt point);
+ 
+}
+
+//class Combo implements IShape {
+//  IShape one;
+//  IShape two;
+//  
+//  Combo(IShape one, IShape two) {
+//    this.one =  one;
+//    this.two = two;
+//  }
+//  
+//  public double area() {
+//    return one.area() + two.area();
+//  }
+//}
+
+class Circle extends AShape {  // extends = inherit or get everything inside AShape
+  int radius;
+  
+  Circle(CartPt center, int radius, String colour) {
+    super(center, colour);  // super refers to the constructor of the abstract class
+    this.radius = radius;
+  }
+  
+  public double area() {
+    return Math.PI * radius * radius;
+ }
+  
+  @Override
+  public double distanceToOrigin() {  // this overrides distanceToOrigin() from AShape
+    return super.distanceToOrigin() - radius;
+  }
+  
+  public IShape grow(int inc) {
+    return new Circle(location, radius + inc, colour);
+  }
+  
+  public boolean contains(CartPt point) {
+    return location.distance(point)<= radius;
+  }
+}
+
+class Square extends Rect {
+  Square(CartPt topLeft, int size, String colour) {
+    super(topLeft, size, size, colour);  // invokes the constructor in its superclass, Rect.
+  }
+  
+  // need to override the one from Rect, since it needs to produce an instance of Square
+  public IShape grow(int inc) {
+    return new Square(location, width + inc, colour);
+  }
+  
+  // the methods area() and contains() for Square are defined in the Rect class
+}
+
+class Rect extends AShape {
+  int width;
+  int height;
+  
+  Rect(CartPt topLeft, int width, int height, String colour) {
+    super(topLeft, colour);
+    this.width = width;
+    this.height = height;
+  }
+  
+  public double area() { 
+    return width * height;
+  }
+  
+  public IShape grow(int inc) {
+    return new Rect(location, width + inc, height + inc, colour);
+  }
+
+  public boolean contains(CartPt point) {
+    return point.x >= location.x && point.x <= location.x + width
+        && point.y >= location.y && point.y <= location.y + height;
+  }
+}
+
+class ExamplesIShape {
+  ExamplesIShape() {}
+  
+  CartPt pt1 = new CartPt(0, 0);
+  CartPt pt2 = new CartPt(3, 4);
+  CartPt pt3 = new CartPt(7, 1);
+  
+  IShape s1 = new Square(new CartPt(0, 0), 30, "red");
+  IShape s2 = new Square(new CartPt(3, 4), 30, "red");
+  IShape s3 = new Square(new CartPt(20, 40), 10, "green");
+  IShape s4 = new Square(new CartPt(50, 50), 50, "red");
+  IShape s5 = new Square(new CartPt(50, 50), 30, "red");
+  
+  IShape c1 = new Circle(new CartPt(30, 40), 10, "red");
+  IShape c2 = new Circle(new CartPt(50, 50), 30, "red");
+  IShape c3 = new Circle(new CartPt(30, 100), 30, "blue");
+  
+  IShape r1 = new Rect(new CartPt(50, 50), 30, 20, "red");
+  IShape r2 = new Rect(new CartPt(50, 50), 50, 40, "red");
+  IShape r3 = new Rect(new CartPt(20, 40), 10, 20, "green");
+  
+  // Tests for CartPt
+  boolean testDistToOrigin(Tester t) {
+    return t.checkInexact(this.pt1.distanceToOrigin(), 0.0, 0.001) 
+        && t.checkInexact(this.pt2.distanceToOrigin(), 5.0, 0.001);
+  }
+  
+  boolean testDistance(Tester t) {
+    return t.checkInexact(new CartPt(0, 0).distance(new CartPt(1, 1)), 1.414, 0.01)
+        && t.checkInexact(new CartPt(4, 8).distance(new CartPt(1, 4)), 5.0, 0.01);
+  }
+  
+  // Tests for methods
+  boolean testIShapeArea(Tester t) {
+    // checkInexact compares doubles
+    return t.checkInexact(s1.area(), 900.0, 0.01)
+        && t.checkInexact(c1.area(), 314.0, 0.1);
+  }
+  
+  boolean testDistanceToOrigin(Tester t) {
+    return t.checkInexact(s1.distanceToOrigin(), 0.0, 0.01)
+        && t.checkInexact(s2.distanceToOrigin(), 5.0, 0.01)
+        && t.checkInexact(s5.distanceToOrigin(), 70.71, 0.01)
+        && t.checkInexact(s3.distanceToOrigin(), 44.72, 0.01)
+        && t.checkInexact(c1.distanceToOrigin(), 40.0, 0.01)
+        && t.checkInexact(c3.distanceToOrigin(), 74.40, 0.01);
+  }
+  
+  boolean testGrow(Tester t) {
+    return t.checkExpect(s1.grow(2), new Square(new CartPt(0, 0), 32, "red"))
+        && t.checkExpect(c1.grow(3), new Circle(new CartPt(30, 40), 13, "red"));
+  }
+  
+  boolean testIsBiggerThan(Tester t) {
+    return t.checkExpect(s1.isBiggerThan(c1), true)
+        && t.checkExpect(c1.isBiggerThan(s1), false);
+  }
+  
+  boolean testContains(Tester t) {
+    return t.checkExpect(s1.contains(new CartPt(3,2)), true)
+        && t.checkExpect(s1.contains(new CartPt(33,2)), false)
+        && t.checkExpect(s1.contains(new CartPt(30,30)), true)
+        && t.checkExpect(s1.contains(new CartPt(30,33)), false)
+        
+        && t.checkExpect(c1.contains(new CartPt(31,41)), true)
+        && t.checkExpect(c1.contains(new CartPt(40,40)), true)
+        && t.checkExpect(c1.contains(new CartPt(30,50)), true)
+        && t.checkExpect(c1.contains(new CartPt(40,50)), false);  //out x
+  }
+  
+  // test the method area in the class Rect
+  boolean testRectArea(Tester t) {
+    return t.checkInexact(this.r1.area(), 600.0, 0.01);
+  }
+
+  // test the method distTo0 in the class Rect
+  boolean testRectDistTo0(Tester t) {
+    return t.checkInexact(this.r1.distanceToOrigin(), 70.71, 0.01)
+        && t.checkInexact(this.r3.distanceToOrigin(), 44.72, 0.01);
+  }
+
+  // test the method grow in the class Rect
+  boolean testRectGrow(Tester t) {
+    return t.checkExpect(this.r1.grow(20), this.r2);
+  }
+
+  // test the method biggerThan in the class Rect
+  boolean testRectBiggerThan(Tester t) {
+    return t.checkExpect(this.r1.isBiggerThan(this.r2), false)
+        && t.checkExpect(this.r2.isBiggerThan(this.r1), true)
+        && t.checkExpect(this.r1.isBiggerThan(this.r1), false)
+        && t.checkExpect(this.r3.isBiggerThan(this.r1), false);
+  }
+
+  // test the method contains in the class Rect
+  boolean testRectContains(Tester t) {
+    return t.checkExpect(this.r1.contains(new CartPt(100, 100)), false)
+        && t.checkExpect(this.r2.contains(new CartPt(55, 60)), true);
+  }
+ 
+}

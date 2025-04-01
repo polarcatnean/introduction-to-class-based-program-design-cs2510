@@ -1,0 +1,144 @@
+package practice;
+
+import tester.Tester;
+
+// a location on a river
+class Location {
+  int x;
+  int y;
+  String name;
+  
+  Location(int x, int y, String name) {
+    this.x = x;
+    this.y = y;
+    this.name = name;
+  }
+  
+  // is this location the same as given location
+  public boolean same(Location loc) {
+    return this.x == loc.x && this.y == loc.y && this.name.equals(loc.name);
+  }
+  
+  /* mmm() {
+   * ...this.x...
+   * ...this.y...
+   * ...this.name...
+   */
+}
+
+// the end of river
+class Mouth {
+  Location loc;
+  IRiver river;
+  
+  Mouth(Location loc, IRiver river) {
+    this.loc = loc;
+    this.river = river;
+  }
+  
+  public boolean onRiver(Location loc) {
+    return this.river.onRiver(loc);
+  }
+}
+
+// a river system
+interface IRiver {
+  // nnn();
+  
+  // count how many sources feed this river system
+  int countSources();
+  
+  // return true if the given location is a part of this river system
+  boolean onRiver(Location loc);
+  
+}
+
+// the source of a river
+class Source implements IRiver {
+  Location loc;
+  
+  Source(Location loc) {
+    this.loc = loc;
+  }
+
+  public int countSources() {
+    return 1;
+  }
+
+  public boolean onRiver(Location loc) {
+    if (this.loc.same(loc)) {
+      return true;
+    }
+    return false;
+  }
+  
+  /* nnn() {
+   * ...this.loc.mmm()...
+   */
+}
+
+// a confluence of two rivers
+class Confluence implements IRiver {
+  Location loc;
+  IRiver left;
+  IRiver right;
+  
+  Confluence(Location loc, IRiver left, IRiver right) {
+    this.loc = loc;
+    this.left = left;
+    this.right = right;
+  }
+
+  public int countSources() {
+    return left.countSources() + right.countSources();
+  }
+
+  public boolean onRiver(Location loc) {
+    if (this.loc.same(loc)) {
+      return true;
+    }
+    else if (this.left.onRiver(loc)) {
+      return true;
+    }
+    else {
+      return this.right.onRiver(loc);
+    }
+  }
+  
+  /* nnn() {
+   * ...this.loc.mmm()...
+   * ...this.left.nnn()...
+   * ...this.right.nnn()...
+   */
+}
+
+class RiverSystemExample {
+  RiverSystemExample() {}
+  
+  Location lm = new Location(7, 5, "m");
+  Location la = new Location(5, 5, "a");
+  Location lb = new Location(3, 3, "b");
+  Location ls = new Location(1, 1, "s");
+  Location lt = new Location(1, 5, "t");
+  Location lu = new Location(3, 7, "u");
+  
+  IRiver s = new Source(ls);
+  IRiver t = new Source(lt);
+  IRiver u = new Source(lu);
+  
+  IRiver b = new Confluence(lb, s, t);
+  IRiver a = new Confluence(la, b, u);
+  
+  Mouth mouth1 = new Mouth(lm,a);
+
+  boolean testCountSources(Tester t) {
+    return t.checkExpect(s.countSources(), 1)
+        && t.checkExpect(a.countSources(), 3)
+        && t.checkExpect(b.countSources(), 2);
+  }
+  
+  boolean testOnRiver(Tester t) {
+    return t.checkExpect(mouth1.onRiver(new Location(7,5,"m")), true)
+        && t.checkExpect(mouth1.onRiver(new Location(1,5,"m")), false);
+  }
+}

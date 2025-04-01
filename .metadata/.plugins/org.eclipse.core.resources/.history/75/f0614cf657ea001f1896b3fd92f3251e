@@ -1,0 +1,47 @@
+// page 229
+package practice;
+
+interface IVehicle {
+  // compute the cost of refueling this vehicle, given the current price of fuel
+  double cost(double price);
+}
+
+abstract class AVehicle implements IVehicle { 
+  double tank; // gallons
+
+  AVehicle(double tank) {
+    this.tank = tank;
+  }
+  
+  public double cost(double price) {
+    return this.tank * price;
+  }
+}
+
+class Car extends AVehicle {
+  Car(double tank) {
+    super(tank);
+  }
+}
+
+class Truck extends AVehicle {
+  Truck(double tank) {
+    super(tank);
+  }
+}
+
+class Bus extends AVehicle {
+  Bus(double tank) {
+    super(tank);
+  }
+}
+
+
+class ExamplesVehicles {
+  
+  IVehicle car1 = new Car(10.0);
+  IVehicle truck1 = new Truck(56.7);
+  IVehicle bus1 = new Bus(40.0);
+  
+  
+}

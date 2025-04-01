@@ -1,0 +1,185 @@
+import tester.*;
+
+interface ILoInt {
+  // contain a number that is even, positive and odd, and between 5 and 10, inclusive
+  // Any number in the list may satisfy multiple requirements.
+  boolean variantA();
+  boolean variantAHelper(boolean b, boolean c, boolean d);
+  
+  // contain numbers satisfying the three requirements above,
+  // a given number in the list may only be used *once* to satisfy a single requirement; duplicate numbers are permitted
+  boolean variantB();
+  boolean variantBHelper(boolean condA, boolean condB, boolean condC);
+  
+  // same as variantB but the list may not contain any extraneous numbers
+  boolean variantC();
+  boolean variantCHelper(boolean a, boolean b, boolean c, boolean hasExtra);
+}
+
+class MtLoInt implements ILoInt {
+  MtLoInt() {}
+  
+  public boolean variantA() {
+    return false;
+  }
+
+  public boolean variantAHelper(boolean a, boolean b, boolean c) {
+    return a && b && c;
+  }
+  
+  public boolean variantB() {
+    return false;
+  }
+  
+  public boolean variantBHelper(boolean condA, boolean condB, boolean condC) {
+    return condA && condB && condC;
+  }
+
+  public boolean variantC() {
+    return false;
+  }
+  
+  public boolean variantCHelper(boolean a, boolean b, boolean c, boolean hasExtra) {
+    System.out.println(" a:" + a + ", b:" + b + ", c:" + c + ", hasExtra:" + hasExtra + " Final:" + (a && b && c && !hasExtra));
+    return a && b && c && !hasExtra;
+  }
+  
+
+}
+
+class ConsLoInt implements ILoInt {
+  int first;
+  ILoInt rest;
+  
+  ConsLoInt(int first, ILoInt rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+  
+  private boolean isEven(int num) {
+    return num % 2 == 0;
+  }
+  
+  private boolean isOddandPos(int num) {
+    return num % 2 == 1 && num > 0;
+  }
+
+  private boolean is5to10(int num) {
+    return num >= 5 && num <= 10;
+  }
+  
+  public boolean variantA() {
+    return this.variantAHelper(false, false, false);
+  }
+  
+  public boolean variantAHelper(boolean a, boolean b, boolean c) {
+    return this.rest.variantAHelper(a || this.isEven(first),  
+                                     b || this.isOddandPos(first),  
+                                      c || this.is5to10(first));
+  }
+
+  public boolean variantB() {
+    return this.variantBHelper(false, false, false);
+  }
+  
+  // condA/condB/condC is true if the condition is already passed
+  // remaining is a list of int that still need to be checked with remaining conditions
+  public boolean variantBHelper(boolean condA, boolean condB, boolean condC) {
+    return this.rest.variantBHelper(this.isEven(first), condB, condC) 
+        || this.rest.variantBHelper(condA, this.isOddandPos(first), condC)
+        || this.rest.variantBHelper(condA, condB, this.is5to10(first));
+  }
+
+  public boolean variantC() {
+    // TODO 
+    return this.variantCHelper(false, false, false, false);
+  }
+
+  public boolean variantCHelper(boolean a, boolean b, boolean c, boolean hasExtra) {
+    // Check if this current number is extraneous
+    hasExtra = hasExtra || this.isExtra(first, a, b, c);
+    System.out.println(first);
+    //System.out.println(hasExtra);
+    
+    boolean newA = a;
+    boolean newB = b;
+    boolean newC = c;
+    
+    if (!newA) {
+      newA = this.isEven(first);
+    }
+    
+    if (!newB) {
+      newB = this.isOddandPos(first);
+    }
+    
+    if (!newC) {
+      newC = this.is5to10(first);
+    }
+
+    // Recursively check the rest of the list
+    return this.rest.variantCHelper(newA, b, c, hasExtra)  
+        || this.rest.variantCHelper(a, newB, c, hasExtra)   
+        || this.rest.variantCHelper(a, b, newC, hasExtra);  
+  }
+  
+  // return true when num doesn't fulfills any false condition
+  private boolean isExtra(int num, boolean a, boolean b, boolean c) {
+//    System.out.println(num);
+//    System.out.println(!( (!a && this.isEven(num)) 
+//        || (!b && this.isOddandPos(num)) 
+//        || (!c && this.is5to10(num))));
+    
+    return !( (!a && this.isEven(num)) 
+           || (!b && this.isOddandPos(num)) 
+           || (!c && this.is5to10(num)) );
+    
+//    return   (this.isEven(num)      || a)   // true from 6
+//          || (this.isOddandPos(num) || b)   // true from 5
+//          || (this.is5to10(num)     || c);  // false
+  }
+  
+}
+
+
+class ExampleLoInt {
+  
+  ILoInt empty = new MtLoInt();
+  ILoInt list1 = new ConsLoInt(6, new ConsLoInt(5, empty));
+  ILoInt list2 = new ConsLoInt(4, new ConsLoInt(3, empty));
+  ILoInt list3 = new ConsLoInt(6, new ConsLoInt(5, new ConsLoInt(6 ,empty)));
+  ILoInt list4 = new ConsLoInt(6, new ConsLoInt(5, new ConsLoInt(42 ,new ConsLoInt(8 ,empty))));
+  ILoInt list4s = new ConsLoInt(6, new ConsLoInt(5, new ConsLoInt(6 ,new ConsLoInt(42 ,empty))));
+  ILoInt list5 = new ConsLoInt(10, new ConsLoInt(5, new ConsLoInt(2 ,empty)));
+  
+  ILoInt listOdd = new ConsLoInt(1, new ConsLoInt(3, empty));
+  ILoInt listEven = new ConsLoInt(2, new ConsLoInt(8, empty));
+  
+  boolean testVariantA(Tester t) {
+    return t.checkExpect(empty.variantA(), false)
+        && t.checkExpect(list1.variantA(), true)
+        && t.checkExpect(list2.variantA(), false)
+        && t.checkExpect(list3.variantA(), true)
+        && t.checkExpect(list5.variantA(), true);
+  }
+  
+  boolean testVariantB(Tester t) {
+    return t.checkExpect(empty.variantB(), false)
+        && t.checkExpect(list1.variantB(), false)
+        && t.checkExpect(list2.variantB(), false)
+        && t.checkExpect(list3.variantB(), true)
+        && t.checkExpect(list4.variantB(), true)
+        && t.checkExpect(list4s.variantB(), true)
+        && t.checkExpect(list5.variantB(), true);
+  }
+  
+  boolean testVariantC(Tester t) {
+    return t.checkExpect(empty.variantC(), false)
+//        && t.checkExpect(list1.variantC(), false)
+//        && t.checkExpect(list2.variantC(), false)
+//        && t.checkExpect(list3.variantC(), true)
+//        && t.checkExpect(list4.variantC(), false);
+//        && t.checkExpect(list4s.variantC(), false)
+        && t.checkExpect(list5.variantC(), true);
+  }
+}

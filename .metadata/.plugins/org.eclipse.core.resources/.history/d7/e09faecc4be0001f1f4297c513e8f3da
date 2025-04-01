@@ -1,0 +1,199 @@
+import tester.Tester;
+
+class EmbroideryPiece {
+  String name;
+  IMotif motif;
+  
+  EmbroideryPiece(String name, IMotif motif) {
+    this.name = name;
+    this.motif = motif;
+  }
+  
+  // computes the average difficulty of all of the motifs in this EmbroideryPiece
+  double averageDifficulty() {
+    return motif.sumDiff() / motif.count();
+  } 
+  
+  // produces one String that has names and stitch types of all motifs in this EmbroideryPiece
+  // TODO ...this.name... ...this.motif.mmm()...
+  String embroideryInfo() {
+    return this.name + ":" + this.motif.info() + ".";  
+  }
+}
+
+
+interface IMotif {
+  int count();
+  String info();
+  double sumDiff();
+  
+}
+
+class CrossStitch implements IMotif {
+  String description;
+  double difficulty;  // number between 0 and 5, with 5 being the most difficult
+  
+  CrossStitch(String description, double difficulty) {
+    this.description = description;
+    this.difficulty = difficulty;
+  }
+
+  public int count() {
+    return 1;
+  }
+
+  public double sumDiff() {
+    return difficulty;
+  }
+
+  public String info() {
+    // TODO 
+    return this.description + " (cross stitch)";
+  }
+}
+
+class ChainStitch implements IMotif {
+  String description;
+  double difficulty;  // number between 0 and 5, with 5 being the most difficult
+  
+  ChainStitch(String description, double difficulty) {
+    this.description = description;
+    this.difficulty = difficulty;
+  }
+
+  public int count() {
+    return 1;
+  }
+
+  public double sumDiff() {
+    return difficulty;
+  }
+
+  public String info() {
+    // TODO Auto-generated method stub
+    return this.description + " (chain stitch)";
+  }
+}
+
+class GroupMotif implements IMotif {
+  String description;
+  ILoMotif motifs;
+  
+  GroupMotif(String description, ILoMotif motifs) {
+    this.description = description;
+    this.motifs = motifs;
+  }
+
+  public int count() {
+    return motifs.countMotifs();
+  }
+
+  public double sumDiff() {
+    return motifs.sumDiff();
+  }
+
+  public String info() {
+    // TODO Auto-generated method stub
+    return this.motifs.info();
+  }
+}
+
+
+
+interface ILoMotif {
+  double sumDiff();
+  String info();
+  int countMotifs();
+}
+
+class MtLoMotif implements ILoMotif {
+  MtLoMotif() {}
+  
+  public int countMotifs() {
+    return 0;
+  }
+
+  public double sumDiff() {
+    return 0;
+  }
+
+  public String info() {
+    // TODO Auto-generated method stub
+    return "";
+  }
+}
+
+class ConsLoMotif implements ILoMotif {
+  IMotif first;
+  ILoMotif rest;
+  
+  ConsLoMotif(IMotif first, ILoMotif rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+
+  public int countMotifs() {
+    return this.first.count() + this.rest.countMotifs();
+  }
+
+  public double sumDiff() {
+    return this.first.sumDiff() + this.rest.sumDiff();
+  }
+
+  public String info() {
+    // TODO Auto-generated method stub
+    return this.first.info() + ", " + this.rest.info();
+  }
+}
+
+class ExamplesEmbroidery {
+  ExamplesEmbroidery() {};
+  
+  IMotif bird = new CrossStitch("bird", 4.5);
+  IMotif tree = new ChainStitch("tree", 3.0);
+  IMotif rose = new CrossStitch("rose", 5.0);
+  IMotif poppy = new ChainStitch("poppy", 4.75);
+  IMotif daisy = new CrossStitch("daisy", 3.2);
+  
+  ILoMotif empty = new MtLoMotif();
+  ILoMotif listFlowers = new ConsLoMotif(rose,
+      new ConsLoMotif(poppy, new ConsLoMotif(daisy, empty)));
+  ILoMotif listNature = new ConsLoMotif(bird, new ConsLoMotif(tree,
+      new ConsLoMotif(rose, new ConsLoMotif(poppy, new ConsLoMotif(daisy, empty)))));
+  
+  IMotif flowers = new GroupMotif("3 kinds of flowers", listFlowers);
+  IMotif nature = new GroupMotif("Bird, tree, flowers", listNature);
+      
+  EmbroideryPiece pillowCover  = new EmbroideryPiece("Pillow Cover", nature);
+  EmbroideryPiece pillowFlowers  = new EmbroideryPiece("Flower part", flowers);
+  EmbroideryPiece pillowBird = new EmbroideryPiece("Bird part", bird);
+  
+  
+  boolean testSumDiff(Tester t) {
+    return t.checkInexact(empty.sumDiff(), 0.0, 0.01)
+        && t.checkInexact(bird.sumDiff(), 4.5, 0.01)
+        && t.checkInexact(listFlowers.sumDiff(), (5.0+4.75+3.2), 0.01)
+        && t.checkInexact(listNature.sumDiff(), (4.5+3.0+5.0+4.75+3.2), 0.01);
+  }
+  
+  boolean testCount(Tester t) {
+    return t.checkExpect(bird.count(), 1)
+        && t.checkExpect(flowers.count(), 3)
+        && t.checkExpect(empty.countMotifs(), 0)
+        && t.checkExpect(listFlowers.countMotifs(), 3)
+        && t.checkExpect(listNature.countMotifs(), 5);
+  }
+  
+  boolean testAverageDifficulty(Tester t) {
+    return t.checkInexact(pillowBird.averageDifficulty(), 4.5, 0.01)
+        && t.checkInexact(pillowFlowers.averageDifficulty(), (5.0+4.75+3.2)/3.0, 0.01)
+        && t.checkInexact(pillowCover.averageDifficulty(), (4.5+3.0+5.0+4.75+3.2)/5.0, 0.01);
+  }
+  
+  boolean testInfo(Tester t) {
+    return t.checkExpect(pillowBird.embroideryInfo(), "Bird part: bird (cross stitch).")
+        && t.checkExpect(pillowFlowers.embroideryInfo(), "Flower part: rose (cross stitch), poppy (chain stitch), daisy (cross stitch).")
+        && t.checkExpect(pillowCover.embroideryInfo(), 
+                         "Pillow Cover: bird (cross stitch), tree (chain stitch), rose (cross stitch), poppy (chain stitch), daisy (cross stitch).");
+  }
+}

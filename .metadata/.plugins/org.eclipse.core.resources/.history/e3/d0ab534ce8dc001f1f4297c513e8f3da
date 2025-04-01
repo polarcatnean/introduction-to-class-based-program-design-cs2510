@@ -1,0 +1,85 @@
+package note;
+
+import tester.Tester;
+
+class Book {
+  String title;
+  String author;
+  int price;
+  
+  Book(String title, String author, int price) {
+    this.title = title;
+    this.author = author;
+    this.price = price;
+  }
+}
+
+interface ILoBook {  // ListOfBook
+  // count the number of books in the list
+  int count();
+  
+  // count the total price of all the books in the list
+  int totalPrice();
+}
+
+class MtLoBook implements ILoBook {  // empty LoB
+  MtLoBook() {}
+  
+  public int count() {
+    return 0;
+  }
+  
+  public int totalPrice() {
+    return 0;
+  }
+}
+
+class ConsLoBook implements ILoBook {   // cons + LoB
+  Book first;
+  ILoBook rest;
+  
+  ConsLoBook(Book first, ILoBook rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+  
+  // methods
+  public int count() {
+    return 1 + rest.count();
+  }
+  
+  public int totalPrice() {
+    return first.price + rest.totalPrice();
+  }
+}
+
+class ILoBookExample {
+  ILoBookExample() {}
+  
+  Book hp1 = new Book("HP1", "JKR", 20);
+  Book hp2 = new Book("HP2", "JKR", 30);
+  Book hp3 = new Book("HP3", "JKR", 40);
+  
+  ILoBook emptyList = new MtLoBook();
+  ILoBook hpList1 = new ConsLoBook(hp1, emptyList);
+  ILoBook hpList3 = new ConsLoBook(hp1, 
+                                   new ConsLoBook(hp2, 
+                                                  new ConsLoBook(hp3, emptyList)));
+  ILoBook hpList4 = new ConsLoBook(hp1, hpList3);
+
+  // Test for methods
+  boolean testILoBookCount(Tester t) {
+    return t.checkExpect(hpList3.count(), 3)
+        && t.checkExpect(hpList1.count(), 1)
+        && t.checkExpect(emptyList.count(), 0)
+        && t.checkExpect(hpList4.count(), 4);
+  }
+  
+  boolean testILoBookTotalPrice(Tester t) {
+    return t.checkExpect(emptyList.totalPrice(), 0)
+        && t.checkExpect(hpList3.totalPrice(), 90)
+        && t.checkExpect(hpList1.totalPrice(), 20)
+        && t.checkExpect(hpList4, 110);
+  }
+  
+}

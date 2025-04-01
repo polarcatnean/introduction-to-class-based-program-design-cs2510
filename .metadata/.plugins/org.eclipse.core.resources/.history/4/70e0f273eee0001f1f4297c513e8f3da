@@ -1,0 +1,66 @@
+interface IPicture {
+  
+}
+
+class Shape implements IPicture {
+  String kind;  // e.g., "circle" or "square"
+  int size;
+  
+  Shape(String kind, int size) {
+    this.kind = kind;
+    this.size = size;
+  }
+}
+
+class Combo implements IPicture {
+  String name;
+  IOperation operation;
+  
+  Combo(String name, IOperation operation) {
+    this.name = name;
+    this.operation = operation;
+  }
+}
+
+
+interface IOperation {
+
+}
+
+class Scale implements IOperation {
+  IPicture pic;
+  
+  Scale(IPicture pic) {
+    this.pic = pic;
+  }
+}
+
+class Beside implements IOperation {
+  IPicture pic1;
+  IPicture pic2;
+  
+  Beside(IPicture pic1, IPicture pic2) {
+    this.pic1 = pic1;
+    this.pic2 = pic2;
+  }
+}
+
+class Overlay implements IOperation {
+  IPicture topPic;
+  IPicture bottomPic;
+  
+  Overlay(IPicture topPic, IPicture bottomPic) {
+    this.topPic = topPic;
+    this.bottomPic = bottomPic;
+  }
+}
+
+class ExamplesPicture {
+  ExamplesPicture() {}
+  
+  IPicture circle = new Shape("circle", 20);
+  IPicture square = new Shape("square", 30);
+  IPicture bigCircle = new Combo("big circle", new Scale(this.circle));
+  IPicture squareOnCircle = new Combo("square on circle", new Overlay(this.square, this.bigCircle));
+  IPicture doubledSquareOnCircle = new Combo("doubled square on circle", new Beside(this.squareOnCircle, this.squareOnCircle));
+}

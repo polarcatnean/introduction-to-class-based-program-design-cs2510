@@ -1,0 +1,53 @@
+package lecture15absTypes;
+
+class Book {
+  String title;
+  String author;
+  int price;
+  
+  Book(String title, String author, int price) {
+    this.title = title;
+    this.author = author;
+    this.price = price;
+  }
+}
+
+interface IPred<T> {
+  boolean apply(T t);
+}
+
+class BookByAuthor implements IPred<Book> {
+
+  public boolean apply(Book b) {
+    return false;
+  }
+  
+}
+
+interface IComparator<T> {
+  
+}
+
+interface IList<T> {
+  IList<T> filter(IPred<T> pred);
+  IList<T> sort(IComparator<T> comp);
+  int length();
+}
+
+class MtList<T> implements IList<T> {
+
+  public IList<T> filter(IPred<T> pred) {
+    return this;
+  }
+
+  public IList<T> sort(IComparator<T> comp) {
+    return this;
+  }
+
+  public int length() {
+    return 0;
+  }
+  
+}
+
+

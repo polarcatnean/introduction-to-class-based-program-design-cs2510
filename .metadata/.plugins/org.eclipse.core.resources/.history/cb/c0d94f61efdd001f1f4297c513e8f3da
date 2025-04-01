@@ -1,0 +1,55 @@
+interface IItem {
+  
+}
+
+class IceCream implements IItem {
+  String brand;
+  String flavour;
+  int weight;  // in grams
+  int price;   // in cents
+  
+  IceCream(String brand, String flavour, int weight, int price) {
+    this.brand = brand;
+    this.flavour = flavour;
+    this.weight = weight;
+    this.price = price;
+  }
+}
+
+class Coffee implements IItem {
+  String brand;
+  boolean decaf; // false means regular
+  int weight;  // in grams
+  int price;   // in cents
+  
+  Coffee(String brand, boolean decaf, int weight, int price) {
+    this.brand = brand;
+    this.decaf = decaf;
+    this.weight = weight;
+    this.price = price;
+  }
+}
+
+class Juice implements IItem {
+  String brand;
+  String flavour;
+  String packaged;  // frozen, fresh, bottled, canned
+  int weight;  // in grams
+  int price;   // in cents
+  
+  Juice(String brand, String flavour, String packaged, int weight, int price) {
+    this.brand = brand;
+    this.flavour = flavour;
+    this.packaged = packaged;
+    this.weight = weight;
+    this.price = price;
+  }
+}
+
+
+class ExamplesItems {
+  ExamplesItems() {}
+  
+  IItem coolway = new IceCream("Cool Way", "Cookies and Cream", 500, 599);
+  
+}

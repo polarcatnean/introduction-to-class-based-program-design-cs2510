@@ -1,0 +1,22 @@
+package practice;
+
+// page 238
+
+interface ISalesItem {
+  
+}
+
+class Item {
+  int price;
+}
+
+class DeepDiscount implements ISalesItem { 
+  int originalPrice;
+
+}
+
+class RegularDiscount implements ISalesItem { 
+  int originalPrice;
+  int discountPercentage;
+
+}

@@ -1,0 +1,146 @@
+package practice;
+import tester.Tester;
+// page 263
+
+
+//a list of integers
+interface ILin {
+  int howMany(int i);
+  int size();
+}
+
+class MTin implements ILin {
+  MTin() {};
+  
+  public int howMany(int i) {
+    return 0;
+  }
+
+  public int size() {
+    return 0;
+  }
+  
+}
+
+class Cin implements ILin {
+  int first;
+  ILin rest;
+  
+  Cin(int first, ILin rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+  
+  public int howMany(int i) {
+    if (this.first == i) {
+      return 1 + this.rest.howMany(i);
+    }
+    return this.rest.howMany(i);
+  }
+
+  public int size() {
+    return 1 + this.rest.size();
+  }
+  
+}
+
+
+interface ICollection {
+  int howMany(int i);
+  boolean in(int i);
+  int size();
+}
+
+abstract class ACollection implements ICollection {
+  ILin elements;
+  
+  ACollection(ILin elements) {
+    this.elements = elements;
+  }
+  
+  // how often is i in this collection?
+  public int howMany(int i) {
+    return this.elements.howMany(i);
+  }
+  
+  // is i in this collection
+  public boolean in(int i) {
+    return this.elements.howMany(i) > 0;
+  }
+  
+  public int size() {
+    return this.elements.size();
+  }
+}
+
+//a set of integers:
+//contains an integer at most once
+class Set extends ACollection {
+  ILin elements;
+
+  Set(ILin elements) {
+    super(elements);
+  }
+
+  // add i to this set unless it is already in there
+  Set add(int i) {
+    if (this.in(i)) {
+      return this;
+    }
+    else {
+      return new Set(new Cin(i, this.elements));
+    }
+  }
+
+}
+
+
+// a bag of integers
+class Bag extends ACollection {
+  ILin elements;
+
+  Bag(ILin elements) {
+    super(elements);
+  }
+
+  // add i to this bag
+  Bag add(int i) {
+    return new Bag(new Cin(i, this.elements));
+  }
+
+}
+
+
+class ExamplesSetAndBag {
+  
+  ILin empty = new MTin();
+  
+  ICollection set1 = new Set(new Cin(1, empty));
+  ICollection set2 = new Set(new Cin(1, new Cin(2, empty)));
+  ICollection set3 = new Set(new Cin(1, new Cin(2, new Cin(3, empty))));
+  
+  ICollection bag1 = new Set(new Cin(1, empty));
+  ICollection bag2 = new Set(new Cin(1, new Cin(1, empty)));
+  ICollection bag3 = new Set(new Cin(1, new Cin(1, new Cin(1, empty))));
+  
+  // Tests
+  boolean testIn(Tester t) {
+    return t.checkExpect(set1.in(0), false)
+        && t.checkExpect(set3.in(3), true)
+        && t.checkExpect(bag1.in(4), false)
+        && t.checkExpect(bag3.in(1), true);
+  }
+  
+  boolean testHowMany(Tester t) {
+    return t.checkExpect(empty.howMany(1), 0)
+        && t.checkExpect(set1.howMany(0), 0)
+        && t.checkExpect(set1.howMany(1), 1)
+        && t.checkExpect(bag3.howMany(1), 3);
+  }
+  
+  boolean testSize(Tester t) {
+    return t.checkExpect(empty.size(), 0)
+        && t.checkExpect(set3.size(), 3)
+        && t.checkExpect(bag2.size(), 2);
+  }
+}

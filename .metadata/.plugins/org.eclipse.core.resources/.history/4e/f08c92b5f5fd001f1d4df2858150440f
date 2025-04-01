@@ -1,0 +1,214 @@
+package lab5;
+
+import tester.*;                // The tester library
+import javalib.worldimages.*;   // images, like RectangleImage or OverlayImages
+import javalib.funworld.*;      // the abstract World class and the big-bang library
+import javalib.worldcanvas.WorldSceneBase;
+
+import java.awt.Color;          // general colors (as triples of red,green,blue values)
+                                // and predefined colors (Color.RED, Color.GRAY, etc.)
+
+/*
+ *  A player is going to click a point on the screen and a circle will appear. 
+ *  Then, it will move off the edge of the screen. 
+ *  The game will end once some amount of circles have left the screen.
+ */
+
+
+
+class MyPosn extends Posn {
+  // standard constructor
+  MyPosn(int x, int y) {
+    super(x, y);
+  }
+
+  // constructor to convert from a Posn to a MyPosn
+  MyPosn(Posn p) {
+    this(p.x, p.y);
+  }
+  
+  MyPosn add(MyPosn other) {
+    return new MyPosn(this.x + other.x, this.y + other.y);
+  }
+  
+  boolean isOffScreen(int width, int height) {
+    return this.x < 0 && this.x > width
+        && this.y < 0 && this.y > height;
+  }
+
+  public MyPosn update(MyPosn velocity) {
+    return new MyPosn(this.x + velocity.x,
+                      this.y + velocity.y);
+  }
+}
+
+class Circle {
+  MyPosn position; // in pixels
+  MyPosn velocity; // in pixels/tick
+  
+  Circle(MyPosn position, MyPosn velocity) {
+    this.position = position;
+    this.velocity = velocity;
+  }
+  
+  Circle move() {
+    return new Circle(this.position.update(this.velocity), this.velocity);
+  }
+  
+  boolean isOffScreen(int width, int height) {
+    return this.position.isOffScreen(width, height);
+  }
+  
+  WorldImage draw() {
+    int radius = 10;
+    OutlineMode solid = OutlineMode.SOLID;
+    Color color = Color.BLUE;
+    
+    return new CircleImage(radius, solid, color);
+  }
+  
+  WorldScene place(WorldScene s) {
+    return s.placeImageXY(this.draw(), this.position.x, this.position.y);
+  }
+}
+
+interface ILoCircle {
+  ILoCircle moveAll();  
+  ILoCircle removeOffscreen(int width, int height);
+  WorldScene placeAll(WorldScene s);
+  int numberOffScreen(int width, int height);
+  
+}
+
+class MtLoCircle implements ILoCircle {
+
+  public ILoCircle moveAll() {
+    return this;
+  }
+
+  public ILoCircle removeOffscreen(int width, int height) {
+    return this;
+  }
+
+  public WorldScene placeAll(WorldScene s) {
+    return s;
+  }
+
+  public int numberOffScreen(int width, int height) {
+    return 0;
+  }
+  
+}
+
+class ConsLoCircle implements ILoCircle {
+  Circle first;
+  ILoCircle rest;
+
+  ConsLoCircle(Circle first, ILoCircle rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+
+  public ILoCircle moveAll() {
+    return new ConsLoCircle(this.first.move(), this.rest.moveAll());
+  }
+
+  public ILoCircle removeOffscreen(int width, int height) {
+    if (this.first.isOffScreen(width, height)) {
+      return this.rest.removeOffscreen(width, height);
+    }
+    return new ConsLoCircle(this.first, this.rest.removeOffscreen(width, height));
+  }
+
+  public WorldScene placeAll(WorldScene s) {
+    // TODO Auto-generated method stub
+    return this.rest.placeAll(this.first.place(s));
+  }
+
+  public int numberOffScreen(int width, int height) {
+    if (this.first.isOffScreen(width, height)) {
+      return 1 + this.rest.numberOffScreen(width, height);
+    }
+    return this.rest.numberOffScreen(width, height);
+  }
+}
+
+class CircleGame extends World {
+  int HEIGHT = 400;
+  int WIDTH = 600;
+  WorldScene gameScene = new WorldScene(WIDTH, HEIGHT);
+  
+  MyPosn VELOCITY = new MyPosn(0, 1);  // circle should move straight up
+
+      
+  ILoCircle circles;      // current list of circle on the gameScene
+  int remaining;          // number representing how many circles will go offscreen until the game is over.
+  
+  
+  // default constructor
+  CircleGame(ILoCircle circles, int remaining) {
+    this.circles = circles;
+    this.remaining = remaining;
+  }
+  
+  // convenience constructor for the player, starting with no circles
+  CircleGame(int remaining) {
+    this.circles = new MtLoCircle();
+    this.remaining = remaining;
+  }
+
+  // METHODS 
+  public WorldScene makeScene() {
+    // TODO return the WorldScene to be shown on each clock tick
+    return circles.placeAll(gameScene);
+  }
+  
+  // add a circle where the player clicked
+  public World onMouseClicked(Posn pos) {
+    return new CircleGame(new ConsLoCircle(new Circle(new MyPosn(pos), VELOCITY), circles), 
+                          remaining);
+  }
+  
+  public World onTick() {
+    if (this.remaining <= 0) {
+      return this.endOfWorld("Game Over");
+    }
+    return new CircleGame(circles.moveAll().removeOffscreen(WIDTH, HEIGHT), 
+                          remaining - circles.moveAll().numberOffScreen(WIDTH, HEIGHT));
+  }
+
+}
+
+
+class ExampleGame {
+ 
+  MyPosn posn0 = new MyPosn(0, 0);
+  MyPosn posn1 = new MyPosn(1, 1);
+  
+  MyPosn velo1 = new MyPosn(1, 1);
+  MyPosn velo2 = new MyPosn(1, 0);
+  MyPosn velo3 = new MyPosn(0, 1);
+  
+  
+  Circle circle1 = new Circle(posn0, velo1);
+  Circle circle2 = new Circle(posn1, velo2);
+  
+  ILoCircle empty = new MtLoCircle();
+  ILoCircle list1 = new ConsLoCircle(circle1, empty);
+  ILoCircle list2 = new ConsLoCircle(circle1, new ConsLoCircle(circle2, empty));
+  
+  boolean testMove(Tester t) {
+    return t.checkExpect(circle1.move(), new Circle(posn1, velo1));
+  }
+  
+  boolean testMoveAll(Tester t) {
+    return t.checkExpect(list2.moveAll(), new ConsLoCircle(new Circle(posn1, velo1), 
+                                          new ConsLoCircle(new Circle(new MyPosn(2, 1), velo2), empty)));
+  }
+  
+  boolean testImages(Tester t) {
+    return t.checkExpect(new RectangleImage(30, 20, OutlineMode.SOLID, Color.GRAY),
+                         new RectangleImage(30, 20, OutlineMode.SOLID, Color.GRAY));
+  } 
+
+}

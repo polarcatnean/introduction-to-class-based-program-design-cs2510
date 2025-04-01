@@ -1,0 +1,228 @@
+import tester.Tester;
+
+// List of String
+interface ILoString {
+  ILoString append(ILoString list);
+}
+
+class MtLoString implements ILoString {
+  MtLoString() {}
+
+  public ILoString append(ILoString list) {
+    return list;
+  };
+}
+
+class ConsLoString implements ILoString {
+  String first;
+  ILoString rest;
+  ConsLoString(String first, ILoString rest) {
+      this.first = first;
+      this.rest = rest;
+  }
+
+  public ILoString append(ILoString list) {
+    return new ConsLoString(this.first, this.rest.append(list));
+  }
+}
+
+
+
+// Ancestor Tree
+interface IAT {
+  
+  // compute the number of known ancestors of this ancestor tree
+  // (excluding this ancestor tree itself)
+  int count();
+  int countHelper();
+  
+  // compute how many ancestors of this ancestor tree (excluding this
+  // ancestor tree itself) are women older than 40 (in the current year)?
+  int countFemaleAncOver40();
+  int countFemaleAncHelper();
+  
+  // check if the ancestor tree is well-formed (parents are older than children)
+  boolean wellFormed();
+  boolean wellFormedHelper(int childYob);  // "ACCUMULATOR METHOD"
+  
+  // return a list of all names in the ancestor tree (including this ancestor tree itself)
+  ILoString ancNames();
+  ILoString ancNamesHelper();
+  
+  // return this ancestor tree's youngest grandparent
+  // TODO IAT youngestGrandparent();
+}
+
+class Unknown implements IAT {
+  Unknown() {}
+  
+  public int count() {
+    return 0;
+  }
+
+  public int countHelper() {
+    return 0;
+  }
+
+  public int countFemaleAncOver40() {
+    return 0;
+  }
+
+  public int countFemaleAncHelper() {
+    return 0;
+  }
+
+  public boolean wellFormed() {
+    return true;
+  }
+
+  public boolean wellFormedHelper(int childYob) {
+    return true;
+  }
+
+  public ILoString ancNames() {
+    return new MtLoString();
+  }
+  
+  public ILoString ancNamesHelper() {
+    // TODO Auto-generated method stub
+    return new MtLoString();
+  }
+}
+
+class Person implements IAT {
+  String name;
+  int yob;
+  boolean isMale;
+  IAT mom;
+  IAT dad;
+  Person(String name, int yob, boolean isMale, IAT mom, IAT dad) {
+      this.name = name;
+      this.yob = yob;
+      this.isMale = isMale;
+      this.mom = mom;
+      this.dad = dad;
+    }
+  
+  public int count() {
+    return mom.countHelper() + dad.countHelper();
+  }
+
+  public int countHelper() {
+    return 1 + mom.countHelper() + dad.countHelper();
+  }
+
+  public int countFemaleAncOver40() {
+    return mom.countFemaleAncHelper() + dad.countFemaleAncHelper();
+  }
+
+  public int countFemaleAncHelper() {
+   if (!this.isMale && this.isOver(40)) {
+     return 1 + mom.countFemaleAncHelper() + dad.countFemaleAncHelper();
+   }
+   else {
+     return mom.countFemaleAncHelper() + dad.countFemaleAncHelper();
+   }
+  }
+
+  private boolean isOver(int age) {
+    return 2015 - this.yob > age;
+  }
+
+  public boolean wellFormed() {
+    return this.mom.wellFormedHelper(this.yob) && this.dad.wellFormedHelper(this.yob); 
+        // && this.mom.wellFormed() && this.dad.wellFormed();  
+    // the recursive call can either be here or in the helper
+  }
+  
+  //*** "ACCUMULATOR" -- we pass/accumulate data as we go through the recursion here
+  public boolean wellFormedHelper(int childYob) {  // <- this argument = accumulator
+    return this.yob < childYob
+        && this.mom.wellFormedHelper(this.yob)  //here, this.yob = mom's yob ****
+        && this.dad.wellFormedHelper(this.yob);
+  }
+
+  public ILoString ancNames() {
+    return new ConsLoString(this.name, this.ancNamesAppend(this.mom, this.dad));
+  }
+
+  // return listof mom & dad's name of this person, and recurse
+  public ILoString ancNamesAppend(IAT mom, IAT dad) {
+    // TODO Auto-generated method stub
+    return 
+  }
+
+  @Override
+  public ILoString ancNamesHelper() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+}
+
+
+class ExamplesIAT {
+  ExamplesIAT() {}
+  
+  IAT enid = new Person("Enid", 1904, false, new Unknown(), new Unknown());
+  IAT edward = new Person("Edward", 1902, true, new Unknown(), new Unknown());
+  IAT emma = new Person("Emma", 1906, false, new Unknown(), new Unknown());
+  IAT eustace = new Person("Eustace", 1907, true, new Unknown(), new Unknown());
+
+  IAT david = new Person("David", 1925, true, new Unknown(), this.edward);
+  IAT daisy = new Person("Daisy", 1927, false, new Unknown(), new Unknown());
+  IAT dana = new Person("Dana", 1933, false, new Unknown(), new Unknown());
+  IAT darcy = new Person("Darcy", 1930, false, this.emma, this.eustace);
+  IAT darren = new Person("Darren", 1935, true, this.enid, new Unknown());
+  IAT dixon = new Person("Dixon", 1936, true, new Unknown(), new Unknown());
+
+  IAT clyde = new Person("Clyde", 1955, true, this.daisy, this.david);
+  IAT candace = new Person("Candace", 1960, false, this.dana, this.darren);
+  IAT cameron = new Person("Cameron", 1959, true, new Unknown(), this.dixon);
+  IAT claire = new Person("Claire", 1956, false, this.darcy, new Unknown());
+
+  IAT bill = new Person("Bill", 1980, true, this.candace, this.clyde);
+  IAT bree = new Person("Bree", 1981, false, this.claire, this.cameron);
+
+  IAT andrew = new Person("Andrew", 2001, true, this.bree, this.bill);
+  
+  ILoString empty = new MtLoString();
+  ILoString list1 = new ConsLoString("David", new ConsLoString("Edward", new MtLoString()));
+  
+  boolean testAppend(Tester t) {
+    return t.checkExpect(new MtLoString().append(list1), list1)
+        && t.checkExpect(list1.append(empty), list1)
+        && t.checkExpect(list1.append(list1), 
+            new ConsLoString("David", new ConsLoString("Edward",
+                new ConsLoString("David", new ConsLoString("Edward", empty)))));
+  }
+  
+  boolean testCount(Tester t) {
+    return t.checkExpect(this.andrew.count(), 16) 
+        && t.checkExpect(this.david.count(), 1)
+        && t.checkExpect(this.enid.count(), 0) 
+        && t.checkExpect(new Unknown().count(), 0);
+  }
+  
+  boolean testCountFemaleAnc(Tester t) {
+    return t.checkExpect(andrew.countFemaleAncOver40(), 7)
+        && t.checkExpect(this.bree.countFemaleAncOver40(), 3)
+        && t.checkExpect(this.darcy.countFemaleAncOver40(), 1)
+        && t.checkExpect(this.enid.countFemaleAncOver40(), 0)
+        && t.checkExpect(new Unknown().countFemaleAncOver40(), 0);
+  }
+  
+  boolean testWellFormed(Tester t) {
+    return t.checkExpect(new Unknown().wellFormed(), true) 
+        && t.checkExpect(andrew.wellFormed(), true)
+        && t.checkExpect(
+               new Person("Zane", 2000, true, this.andrew, this.bree).wellFormed(), false);
+  }
+  
+//  boolean testAncNames(Tester t) {
+//    return t.checkExpect(new Unknown().ancNames(), new MtLoString())
+//        && t.checkExpect(this.david.ancNames(),
+//            new ConsLoString("David", new ConsLoString("Edward", new MtLoString())))
+//        && t.checkExpect(this.eustace.ancNames(),
+//            new ConsLoString("Eustace", new MtLoString()));
+//  }
+}

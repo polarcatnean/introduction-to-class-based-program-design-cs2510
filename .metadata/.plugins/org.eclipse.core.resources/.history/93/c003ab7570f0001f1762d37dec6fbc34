@@ -1,0 +1,147 @@
+// CS 2510, Assignment 3
+import tester.*;
+
+// to represent a list of Strings
+interface ILoString {
+  // combine all Strings in this list into one
+  String combine();
+  
+  // produces a new list, sorted in alphabetical order, treating all Strings as if they were given in all lowercase
+  ILoString sort();
+  ILoString insert(String s);
+  
+  boolean isSorted();
+  boolean isAfter(String s); // is the whole list alphabetically after s
+
+  
+}
+
+// to represent an empty list of Strings
+class MtLoString implements ILoString {
+  MtLoString() {}
+
+  // combine all Strings in this list into one
+  public String combine() {
+    return "";
+  }
+
+  public ILoString sort() {
+    return this;
+  }
+
+  public ILoString insert(String s) {
+    return new ConsLoString(s, this);
+  }
+
+  public boolean isSorted() {
+    return true;
+  }
+
+  public boolean isAfter(String s) {
+    return true;
+  }
+}
+
+// to represent a nonempty list of Strings
+class ConsLoString implements ILoString {
+  String first;
+  ILoString rest;
+
+  ConsLoString(String first, ILoString rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+    
+  /*
+     TEMPLATE
+     FIELDS:
+     ... this.first ...         -- String
+     ... this.rest ...          -- ILoString
+     
+     METHODS
+     ... this.combine() ...     -- String
+     
+     METHODS FOR FIELDS
+     ... this.first.concat(String) ...        -- String
+     ... this.first.compareTo(String) ...     -- int
+     ... this.rest.combine() ...              -- String
+     
+   */
+    
+  // combine all Strings in this list into one
+  public String combine() {
+    return this.first.concat(this.rest.combine());
+  }
+
+  public ILoString sort() {
+    // insert first into already sorted rest
+    return this.rest.sort().insert(this.first);
+  }
+
+  public ILoString insert(String s) {
+    if (s.toLowerCase().compareTo(this.first.toLowerCase()) < 0) {   // s comes before this.first
+      return new ConsLoString(s, this);
+    }
+    else {
+      return new ConsLoString(this.first, this.rest.insert(s));
+    }
+  }
+
+  public boolean isSorted() {
+    // is first in the correct position, assume rest is sorted
+    if (this.rest.isAfter(this.first)) {
+      return this.rest.isSorted();
+    }
+    else {
+      return false;
+    }
+  }
+
+  public boolean isAfter(String s) {
+    // TODO 
+    if (s.toLowerCase().compareTo(this.first.toLowerCase()) < 0) {
+      return this.rest.isAfter(this.first);
+    }
+    else {
+      return false;
+    }
+  }
+
+  }
+
+// to represent examples for lists of strings
+class ExamplesStrings {
+
+  ILoString mary = new ConsLoString("Mary ", 
+                      new ConsLoString("had ", 
+                          new ConsLoString("a ",      
+                              new ConsLoString("little ", 
+                                  new ConsLoString("lamb.", new MtLoString())))));
+
+  // test the method combine for the lists of Strings
+  boolean testCombine(Tester t) {
+    return t.checkExpect(this.mary.combine(), "Mary had a little lamb.");
+  }
+  
+  boolean testSort(Tester t) {
+    return t.checkExpect(mary.sort(), new ConsLoString("a ", 
+                                        new ConsLoString("had ", 
+                                            new ConsLoString("lamb.",      
+                                                new ConsLoString("little ", 
+                                                    new ConsLoString("Mary ", new MtLoString()))))));
+  }
+  
+  boolean testIsSorted(Tester t) {
+    return t.checkExpect(mary.isSorted(), false)
+        && t.checkExpect(new ConsLoString("a ", 
+                          new ConsLoString("had ", 
+                              new ConsLoString("lamb.",      
+                                  new ConsLoString("little ", 
+                                      new ConsLoString("Mary ", new MtLoString()))))).isSorted(), true)
+        && t.checkExpect(new ConsLoString("a ", 
+                          new ConsLoString("b ", 
+                              new ConsLoString("c",      
+                                  new ConsLoString("s ", 
+                                      new ConsLoString("d ", new MtLoString()))))).isSorted(), false);
+  }
+}

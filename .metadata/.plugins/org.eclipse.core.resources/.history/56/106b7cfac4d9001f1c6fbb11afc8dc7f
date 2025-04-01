@@ -1,0 +1,38 @@
+
+class Author1 {
+  String name;
+  int yob;
+  
+  Author1(String name, int yob) {
+    this.name = name;
+    this.yob = yob;
+  }
+}
+
+class Book1 {
+  String title;
+  Author1 author;
+  int price;
+  
+  Book1(String title, Author1 author, int price) {
+    this.title = title;
+    this.author = author;
+    this.price = price;
+  }
+}
+
+// examples and tests for the classes that represent
+// books and authors
+class ExampleBooks {
+  ExampleBooks() {}
+
+  
+  
+// examples of authors
+  Author1 pat = new Author1("Pat Conroy", 1948);
+// examples of books
+  Book1 beaches = new Book1("Beaches", this.pat, 20);
+
+ // test the method salePrice for the class Book
+
+ }

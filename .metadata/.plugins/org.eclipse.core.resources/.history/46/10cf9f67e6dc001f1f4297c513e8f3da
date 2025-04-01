@@ -1,0 +1,46 @@
+package note;
+
+class Book {
+  String title;
+  String author;
+  int price;
+  
+  Book(String title, String author, int price) {
+    this.title = title;
+    this.author = author;
+    this.price = price;
+  }
+}
+
+interface ILoBook {  // ListOfBook
+  
+}
+
+class MtLoBook implements ILoBook {  // empty LoB
+  MtLoBook() {}
+}
+
+class ConsLoBook implements ILoBook {   // cons + LoB
+  Book first;
+  ILoBook rest;
+  
+  ConsLoBook(Book first, ILoBook rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+}
+
+class ILoBookExample {
+  ILoBookExample() {}
+  
+  Book hp1 = new Book("HP1", "JKR", 20);
+  Book hp2 = new Book("HP2", "JKR", 30);
+  Book hp3 = new Book("HP3", "JKR", 40);
+  
+  ILoBook hpList3 = new ConsLoBook(hp1, 
+                                   new ConsLoBook(hp2, 
+                                                  new ConsLoBook(hp3, 
+                                                                 new MtLoBook())));
+  
+  
+}

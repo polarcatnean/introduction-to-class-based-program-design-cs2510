@@ -1,0 +1,55 @@
+package lecture10constructor;
+
+// To represent a Tetris piece
+interface ITetrisPiece { 
+  int SCREEN_HEIGHT = 30;
+}
+ 
+// To share implementations common to all Tetris pieces                                                                                                                                                                                                   
+abstract class ATetrisPiece implements ITetrisPiece {
+  int xPos;
+  int yPos;
+  
+  ATetrisPiece(int x, int y) {                 //  <-------------------------------+
+    this.xPos = x;                             //                                  |
+    this.yPos = y;                             //                                  | 
+  }                                            //                                  |
+                                               //                                  | 
+  ATetrisPiece(int x) {                        // "overloading", must have different signatures (number/types)
+    this(x, SCREEN_HEIGHT);                    // invoking the other constructor ---  
+  }
+}
+
+// To represent a 2x2 square Tetris piece
+class Square extends ATetrisPiece {
+  
+  Square(int topLeftX, int topLeftY) {
+    super(topLeftX, topLeftY);                 // superconstructor from the superclass ATetrisPiece
+  }
+  
+  Square(int topLeftX) {
+    super(topLeftX);  
+  }
+}
+
+// To represent an L-shaped Tetris piece
+class LShape extends ATetrisPiece {
+  
+  LShape(int cornerX, int cornerY) {
+    super(cornerX, cornerY);
+  }
+  
+  LShape(int cornerX) {
+    super(cornerX);
+  }
+} 
+
+class ExamplesITetrisPiece {
+  ExamplesITetrisPiece() {}
+  
+  ITetrisPiece square1 = new Square(3, 15);
+  ITetrisPiece square2 = new Square(3);
+  ITetrisPiece lshape1 = new LShape(3, 15);
+  ITetrisPiece lshape2 = new LShape(3);
+  
+}

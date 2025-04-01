@@ -1,0 +1,52 @@
+package assignment3.practice;
+
+// page 238
+
+interface IZooAnimal {
+  
+}
+
+class Animal implements IZooAnimal {
+  String name;
+  int weight;
+  
+  Animal(String name, int weight) {
+    this.name = name;
+    this.weight = weight;
+  }
+}
+
+class Lion extends Animal {
+  int meat;
+  
+  Lion(String name, int weight, int meat) {
+    super(name, weight);
+    this.meat = meat;
+  }
+}
+
+class Snake extends Animal {
+  int length;
+  
+  Snake(String name, int weight, int length) {
+    super(name, weight);
+    this.length = length;
+  }
+}
+
+class Monkey extends Animal {
+  String food;
+  
+  Monkey(String name, int weight, String food) {
+    super(name, weight);
+    this.food = food;
+  }
+}
+
+
+class ExamplesAnimals {
+  
+  IZooAnimal lion1 = new Lion("King", 80, 2);
+  IZooAnimal snake1 = new Snake("Basilisk", 40, 10);
+  IZooAnimal monkey1 = new Monkey("Ling", 20, "Banana");
+}

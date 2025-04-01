@@ -1,0 +1,94 @@
+package practice;
+
+abstract class ARecording {
+  int high;
+  int today;
+  int low;
+
+  ARecording(int high, int today, int low) {
+    this.high = high;
+    this.today = today;
+    this.low = low;
+  }
+  
+  int dHigh() { 
+    return this.high - this.today;
+  }
+
+  int dLow() { 
+    return this.today - this.low;
+  }
+  
+  String asString() {
+    return String.valueOf(low)
+        .concat("-")
+        .concat(String.valueOf(high))
+        .concat(this.unit());
+  }
+
+  abstract String unit();
+  
+}
+
+
+abstract class ATemperature extends ARecording {
+  ATemperature(int high, int today, int low) {
+    super(high, today, low);
+  }
+
+  String unit() {
+    return "degrees "
+        .concat(this.name());
+  }
+
+  abstract String name();
+}
+
+class Celsius extends ATemperature {
+  Celsius(int high, int today, int low) {
+    super(high, today, low);
+  }
+  
+  String name() {
+    return "Celsius";
+  }
+}
+
+class Fahrenheit extends ATemperature {
+  Fahrenheit(int high, int today, int low) {
+    super(high, today, low);
+  }
+  
+  String name() {
+    return "Fahrenheit";
+  }
+}
+
+
+class Pressure extends ARecording {
+  Pressure(int high, int today, int low) {
+    super(high, today, low);
+  }
+
+  String unit() {
+    return "hPa";
+  }
+}
+
+
+//recording precipitation measurements [in mm]
+class Precipitation extends ARecording {
+  Precipitation(int high, int today) {
+    super(high, today, 0);
+  }
+
+//override asString to report a maximum value
+  String asString() {
+    return "up to ".concat(String.valueOf(high)).concat(this.unit());
+  }
+
+//required method
+  String unit() {
+    return "mm";
+  }
+}

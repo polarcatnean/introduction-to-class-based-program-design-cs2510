@@ -1,0 +1,42 @@
+interface IItem {
+  
+}
+
+class IceCream {
+  String name;
+  String flavour;
+  int weight;  // in grams
+  int price;   // in cents
+  
+  IceCream(String name, int weight, int price) {
+    this.name = name;
+    this.weight = weight;
+    this.price = price;
+  }
+}
+
+class Coffee {
+  String name;
+  int weight;  // in grams
+  int price;   // in cents
+  
+  Coffee(String name, int weight, int price) {
+    this.name = name;
+    this.weight = weight;
+    this.price = price;
+  }
+}
+
+class Juice {
+  String name;
+  String flavor;
+  String packaged;  // frozen, fresh, bottled, canned
+  int weight;  // in grams
+  int price;   // in cents
+  
+  Juice(String name, int weight, int price) {
+    this.name = name;
+    this.weight = weight;
+    this.price = price;
+  }
+}

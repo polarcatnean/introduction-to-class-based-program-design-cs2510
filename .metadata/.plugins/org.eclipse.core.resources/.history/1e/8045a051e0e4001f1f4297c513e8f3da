@@ -1,0 +1,391 @@
+import tester.*;
+
+interface IDocument {
+  boolean isBook();
+  boolean sameDoc(IDocument other);
+  boolean sameDocHelper(Author author, String title, String publisher);
+  
+  // Format the entries as “Last name, First name. "Title".” (only for books)
+  String format();
+  
+  // produce a bibliography containing just the authors and titles of the books , 
+  // either directly or transitively through the bibliographies of other documents.
+  IBiblio makeBiblio();
+  
+  boolean authorBefore(IDocument doc);
+  boolean authorBeforeHelper(Author author);
+
+}
+
+class Book implements IDocument {
+  Author author;
+  String title;
+  String publisher;
+  IBiblio listofb;
+  
+  Book(Author author, String title, String publisher, IBiblio listofb) {
+    this.author = author;
+    this.title = title;
+    this.publisher = publisher;
+    this.listofb = listofb;
+  }
+  
+  public boolean isBook() {
+    return true;
+  }
+
+  public boolean sameDoc(IDocument other) {
+    return other.sameDocHelper(this.author, this.title, this.publisher);
+  }
+  public boolean sameDocHelper(Author author2, String title2, String publisher2) {
+    return this.author.sameAuthor(author2) && this.title.equals(title2)
+        && this.publisher.equals(publisher2);
+  }
+  
+  public String format() {
+    return String.format("%s \"%s\".", author.formatName(), this.title) ;
+  }
+
+  public IBiblio makeBiblio() {
+    return new ConsB(this, this.listofb.removeWiki().makeBiblio());
+  }
+
+  public boolean authorBefore(IDocument doc) {
+    if (doc.authorBeforeHelper(this.author)) {
+      return false;
+    }
+    else {
+      return true;
+    }
+  }
+  public boolean authorBeforeHelper(Author other) {
+    if (this.author.isBefore(other)) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+
+}
+
+class Wiki implements IDocument {
+  Author author;
+  String title;
+  String url;
+  IBiblio listofb;
+  
+  Wiki(Author author, String title, String url, IBiblio listofb) {
+    this.author = author;
+    this.title = title;
+    this.url = url;
+    this.listofb = listofb;
+  }
+
+  public boolean isBook() {
+    return false;
+  }
+  
+  public boolean sameDoc(IDocument other) {
+    return other.sameDocHelper(this.author, this.title, this.url);
+  }
+  public boolean sameDocHelper(Author author2, String title2, String url2) {
+    return this.author.sameAuthor(author2) && this.title.equals(title2)
+        && this.url.equals(url2);
+  }
+  
+  public String format() {
+    return "";
+  }
+
+  public IBiblio makeBiblio() {
+    return this.listofb.removeWiki().makeBiblio();
+  }
+
+  public boolean authorBefore(IDocument doc) {
+    return !doc.authorBeforeHelper(this.author);
+  }
+  public boolean authorBeforeHelper(Author other) {
+    return this.author.isBefore(other);
+  }
+
+}
+
+class Author {
+  String first;
+  String last;
+  
+  Author(String first, String last) {
+    this.first = first;
+    this.last = last;
+  }
+  
+ // is this author's name before the other author's name (compare last name, then first name)
+  public boolean isBefore(Author other) {
+    if (this.last.compareTo(other.last) != 0) {
+      return this.last.compareTo(other.last) < 0;
+    }
+    else {
+      return this.first.compareTo(other.first) < 0;
+    }
+  }
+
+  public String formatName() {
+    return  last + ", " + first + ".";
+  }
+  
+  public boolean sameAuthor(Author other) {
+    return this.first.equals(other.first) && this.last.equals(other.last);
+  }
+}
+
+
+interface IBiblio {
+  IBiblio append(IBiblio biblio);
+  IBiblio makeBiblio();
+  IBiblio removeWiki();
+  
+  // TODO String formatBiblio();
+  
+  // sort this bibliography by the authors’ last name
+  IBiblio sortByLastName();
+  IBiblio insert(IDocument doc);
+  
+  // Remove any duplicates (defined as the same author name and the same title)
+  IBiblio removeDuplicates();
+  boolean has(IDocument doc);
+  
+}
+
+class MtB implements IBiblio {
+  MtB() {}
+
+  public IBiblio removeDuplicates() {
+    return this;
+  }
+  
+  public boolean has(IDocument doc) {
+    return false;
+  }
+
+  public IBiblio makeBiblio() {
+    return this;
+  }
+
+  public IBiblio append(IBiblio biblio) {
+    return biblio;
+  }
+
+  public IBiblio removeWiki() {
+    return this;
+  }
+
+  public IBiblio sortByLastName() {
+    return this;
+  }
+
+  public IBiblio insert(IDocument doc) {
+    return new ConsB(doc, new MtB());
+  }
+}
+
+class ConsB implements IBiblio {
+  IDocument first;
+  IBiblio rest;
+  
+  ConsB(IDocument first, IBiblio rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+  
+  public IBiblio append(IBiblio biblio) {
+    return new ConsB(this.first, this.rest.append(biblio));
+  }
+  
+  // helper boolean list.has(element)
+  public IBiblio removeDuplicates() {
+    if (this.rest.has(first)) {
+      return this.rest.removeDuplicates();
+    }
+    else {
+      return new ConsB(this.first, this.rest.removeDuplicates());
+    }
+  }
+  public boolean has(IDocument doc) {
+    if (doc.sameDoc(this.first)) {
+      return true;
+    }
+    else {
+      return this.rest.has(doc);
+    }
+  }
+
+  public IBiblio makeBiblio() {
+    return this.first.makeBiblio().append(this.rest.makeBiblio()).removeDuplicates();
+  }
+  
+  public IBiblio removeWiki() {
+    if (this.first.isBook()) {
+      return new ConsB(this.first, this.rest.removeWiki());
+    }
+    else {
+      return this.rest.removeWiki();
+    }
+  }
+
+  public IBiblio sortByLastName() {
+    // Assume rest is already sorted
+    System.out.println("first: " + this.first);
+    System.out.println("Rest: " + this.rest);
+    
+    return this.rest.sortByLastName().insert(this.first);
+    //[book1, book2, empty].sortByLastName
+    //[book2, empty].sortByLastName().insert(book1)
+    //[empty].sortByLastName().insert(book2) -> [book2, empty].insert(book1)
+  }
+
+  public IBiblio insert(IDocument doc) {
+    // TODO Auto-generated method stub
+    if (doc.authorBefore(this.first)) {
+      return new ConsB(doc, this);
+    }
+    else {
+      return new ConsB(this.first, this.rest.insert(doc));
+    }
+  }
+}
+
+
+class ExampleBiblio {
+  IBiblio empty = new MtB();
+  
+  Author vernor = new Author("Vernor", "Vinge");
+  Author vernor2 = new Author("Vernor", "Ving");
+  Author peter = new Author("Peter F.", "Hamilton");
+  Author charles = new Author("Charles", "Stross");
+  Author casella = new Author("Casella", "Berger");
+  Author jeremy = new Author("Jeremy", "Kim");
+  
+  IDocument book1 = new Book(vernor, "Across Realtime", "Orion Publishing Group", empty);
+  IDocument book1fake = new Book(vernor2, "Across Realtime", "Orion Publishing Group", empty);
+  IDocument book2 = new Book(peter, "The Reality Dysfunction", "PAN", new ConsB(book1, empty));
+  IDocument book3 = new Book(peter, "Mindstar Rising", "TOR", new ConsB(book1, empty));
+  
+  IBiblio bib1 = new ConsB(book1, empty);
+  IBiblio bib2 = new ConsB(book2, bib1);
+  IBiblio bibwiki1 = new ConsB(
+      new Book(new Author("Constance", "Carter"),
+          "John Gould Stephenson: Largely Known and Much Liked",
+          "The Quarterly Journal of the Library of Congress", bib1),
+      new ConsB(new Book(new Author("John Y.", "Cole"),
+          "The Main Building of the Library of Congress: A Chronology, 1871–1965",
+          "The Quarterly Journal of the Library of Congress", bib1), empty));
+  
+  IDocument wiki1 = new Wiki(casella, "John Silva Meehan",
+      "https://en.wikipedia.org/wiki/John_Silva_Meehan", bibwiki1);
+
+  IDocument book4 = new Book(charles, "Halting State", "ACE", bib2);
+  
+  IBiblio bib3 = new ConsB(book2, bib2);
+  IBiblio bib3wiki = new ConsB(wiki1, bib3);
+  IBiblio bib4 = new ConsB(book3, bib3);
+  IBiblio bib4wiki = new ConsB(book3, bib3wiki);
+  
+  IBiblio bibwiki2 = new ConsB(
+      new Book(new Author("K.", "Matsuura"), "Balistapus undulatus",
+          "IUCN Red List of Threatened Species", bib2),
+      new ConsB(
+          new Book(new Author("William N.", "Eschmeyer"), "Species in the genus Balistapus",
+              "California Academy of Sciences", bib2),
+          new ConsB(new Book(new Author("Francesco", "Santini"),
+              "A new multi-locus timescale reveals the evolutionary basis of diversity patterns in triggerfishes and filefishes (Balistidae, Monacanthidae; Tetraodontiformes)",
+              " Molecular Phylogenetics and Evolution", bib3), empty)));
+  
+  IDocument wiki2 = new Wiki(new Author("William", "Avery"), "Orange-lined triggerfish",
+      "https://en.wikipedia.org/wiki/Orange-lined_triggerfish", bibwiki2);
+  
+  IBiblio bib5wiki = new ConsB(book4, new ConsB(wiki2, bib4wiki));
+  IDocument book5 = new Book(casella, "Statistical Inference", "Cengage", bib3);
+  IDocument book6 = new Book(jeremy, "A Programmer's Introduction to Mathematics", "PIM", bib5wiki);
+ 
+  
+  boolean testSameAuthor(Tester t) {
+    return t.checkExpect(vernor.sameAuthor(casella), false)
+        && t.checkExpect(vernor.sameAuthor(new Author("Vernor", "Vinge")), true);
+  }
+  
+  boolean testSameDoc(Tester t) {
+    return t.checkExpect(book1.sameDoc(book2), false) 
+        && t.checkExpect(book1.sameDoc(new Book(vernor, "Across Realtime", "Orion Publishing Group", empty)), true)
+        && t.checkExpect(wiki1.sameDoc(wiki2), false)
+        && t.checkExpect(wiki2.sameDoc(new Wiki(new Author("William", "Avery"), "Orange-lined triggerfish",
+                "https://en.wikipedia.org/wiki/Orange-lined_triggerfish", bibwiki2)),true);
+  }
+  
+  boolean testFormat(Tester t) {
+    return t.checkExpect(book1.format(), "Vinge, Vernor. \"Across Realtime\".");
+  }
+  
+  boolean testMakeBiblio(Tester t) {
+    return t.checkExpect(book1.makeBiblio(), bib1) 
+        && t.checkExpect(book2.makeBiblio(), bib2)
+        && t.checkExpect(wiki1.makeBiblio(),
+            new ConsB(
+                new Book(new Author("Constance", "Carter"),
+                    "John Gould Stephenson: Largely Known and Much Liked",
+                    "The Quarterly Journal of the Library of Congress", bib1),
+                new ConsB(new Book(new Author("John Y.", "Cole"),
+                    "The Main Building of the Library of Congress: A Chronology, 1871–1965",
+                    "The Quarterly Journal of the Library of Congress", bib1), bib1))) // remove
+                                                                                       // duplicates
+                                                                                       // (bib1)
+        && t.checkExpect(book6.makeBiblio(),
+            new ConsB(book6, new ConsB(book4, new ConsB(book3, bib2)))); // remove wiki2, wiki1 &
+                                                                         // duplicates
+  }
+  
+  boolean testRemoveDuplicates(Tester t) {
+    return t.checkExpect(empty.removeDuplicates(), empty)
+        && t.checkExpect(bib3.removeDuplicates(), bib2)   // 1 duplicate, 3 elements
+        && t.checkExpect(new ConsB(book1, new ConsB(wiki2, bib4wiki)).removeDuplicates(), 
+            new ConsB(wiki2, new ConsB(book3, new ConsB(wiki1, bib2))));  // 1 duplicate removed
+  }
+  
+  boolean testRemoveWiki(Tester t) {
+    return t.checkExpect(empty.removeWiki(), empty)
+        && t.checkExpect(bib2.removeWiki(), bib2)
+        && t.checkExpect(bib3wiki.removeWiki(), bib3)
+        && t.checkExpect(bib4wiki.removeWiki(), bib4);
+  }
+  
+  boolean testAuthorBefore(Tester t) {
+    return t.checkExpect(book1.authorBefore(book2), false)
+        && t.checkExpect(book2.authorBefore(book1), true)
+        && t.checkExpect(book1.authorBefore(book1fake), false)
+        && t.checkExpect(wiki2.authorBefore(book1fake), true);
+  }
+  
+  boolean testInsert(Tester t) {
+    return t.checkExpect(empty.insert(book1), bib1)
+        && t.checkExpect(new ConsB(book2, empty).insert(book1), new ConsB(book2, new ConsB(book1, empty)))
+        && t.checkExpect(new ConsB(book1, empty).insert(book2), new ConsB(book2, new ConsB(book1, empty)))
+        && t.checkExpect(bib2.insert(wiki2), new ConsB(wiki2, bib2))
+        && t.checkExpect(new ConsB(wiki2, new ConsB(wiki1,
+                           new ConsB(book3, new ConsB(book2, new ConsB(book2, new ConsB(book1, empty)))))).insert(book4),
+            new ConsB(wiki2, new ConsB(wiki1, new ConsB(book3,
+                new ConsB(book2, new ConsB(book2, new ConsB(book4, new ConsB(book1, empty))))))));
+    
+  }
+  
+  boolean testSortByLastName(Tester t) {
+    return t.checkExpect(empty.sortByLastName(), empty)
+        && t.checkExpect(bib1.sortByLastName(), bib1) 
+        && t.checkExpect(bib2.sortByLastName(), bib2)
+        && t.checkExpect(new ConsB(book1, new ConsB(book2, empty).sortByLastName()), 
+            new ConsB(book2, new ConsB(book1, empty).sortByLastName()))
+        && t.checkExpect(bib5wiki.sortByLastName(),
+            new ConsB(wiki2, new ConsB(wiki1, 
+                    new ConsB(book3, new ConsB(book2, 
+                        new ConsB(book2, new ConsB(book4, new ConsB(book1, empty))))))));
+  }
+}

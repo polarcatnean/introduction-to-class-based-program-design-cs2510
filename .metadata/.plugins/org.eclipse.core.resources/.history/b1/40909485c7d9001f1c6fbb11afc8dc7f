@@ -1,0 +1,61 @@
+package note;
+import tester.*;
+
+class Author {
+  String name;
+  int yob;
+  
+  Author(String name, int yob) {
+    this.name = name;
+    this.yob = yob;
+  }
+}
+
+class Book {
+  String title;
+  Author author;
+  int price;
+  
+  Book(String title, Author author, int price) {
+    this.title = title;
+    this.author = author;
+    this.price = price;
+    }
+  
+  
+  /* TEMPLATE
+   * 
+   * Fields:
+   * ... this.title ... -- String
+   * ... this.author ... -- Author
+   * ... this.price ... -- int
+   */
+  
+  // Compute the sale price of this Book given, using the given
+  // discount rate as a percentage
+  int salePrice(int discount) {
+    return this.price - (this.price * discount) / 100;
+  }
+}
+  
+
+// examples and tests for the classes that represent
+// books and authors
+class ExamplesBooks {
+  ExamplesBooks() {}
+
+// examples of authors
+  Author pat = new Author("Pat Conroy", 1948);
+  Author jkr = new Author("J.K.R.", 1965);
+  
+// examples of books
+  Book beaches = new Book("Beaches", this.pat, 60);
+  Book hp1 = new Book("HP1", this.jkr, 20);
+
+ // test the method salePrice for the class Book
+  boolean testSalePrice(Tester t) {
+    return t.checkExpect(this.beaches.salePrice(30), 42) &&
+        t.checkExpect(this.hp1.salePrice(20), 16);
+  }
+
+ }

@@ -1,0 +1,103 @@
+import tester.*; 
+import java.awt.Color;
+import javalib.worldimages.*;
+import javalib.funworld.*;      // the abstract World class and the big-bang library
+import javalib.worldcanvas.WorldCanvas;
+
+interface ITree {
+  // renders this ITree to a picture
+  WorldImage draw();  
+}
+
+class Leaf implements ITree {
+  int size; // represents the radius of the leaf
+  Color color; // the color to draw it
+
+  Leaf(int size, Color color) {
+    this.size = size;
+    this.color = color;
+  }
+  
+  public WorldImage draw() {
+    // TODO Auto-generated method stub
+    return new CircleImage(this.size, OutlineMode.SOLID, this.color);
+  }
+  
+}
+
+class Stem implements ITree {
+  int length; // How long this stick is
+  double theta; // The angle (in degrees) of this stem, relative to the +x axis
+  ITree tree; // The rest of the tree
+
+  Stem(int length, double theta, ITree tree){
+    this.length = length;
+    this.theta = theta;
+    this.tree = tree;
+  }
+  
+  public WorldImage draw() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+}
+
+class Branch implements ITree {
+  // How long the left and right branches are
+  int leftLength;
+  int rightLength;
+  // The angle (in degrees) of the two branches, relative to the +x axis,
+  double leftTheta;
+  double rightTheta;
+  // The remaining parts of the tree
+  ITree left;
+  ITree right;
+
+  Branch(int leftLength, int rightLength, double leftTheta, double rightTheta, ITree left, ITree right) {
+    this.leftLength = leftLength;
+    this.rightLength = rightLength;
+    this.leftTheta = leftTheta;
+    this.rightTheta = rightTheta;
+    this.left = left;
+    this.right = right;
+  }
+  
+  public WorldImage draw() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+}
+
+class ExamplesTrees {
+  
+  WorldImage rect = new RectangleImage(30, 20, OutlineMode.SOLID, Color.GRAY);
+  
+  ITree leaf1 = new Leaf(10, Color.RED);
+  ITree leaf2 = new Leaf(15, Color.BLUE);
+  ITree leaf3 = new Leaf(15, Color.GREEN);
+  ITree leaf4 = new Leaf(8, Color.ORANGE);
+  
+  ITree tree1 = new Branch(30, 30, 135, 40, leaf1, leaf2);
+  ITree tree2 = new Branch(30, 30, 115, 65, leaf3, leaf4);
+  
+  boolean testImages(Tester t) {
+    return t.checkExpect(new RectangleImage(30, 20, OutlineMode.SOLID, Color.GRAY),
+                         new RectangleImage(30, 20, OutlineMode.SOLID, Color.GRAY));
+  } 
+  
+  boolean testDrawLeaf(Tester t) {
+    WorldCanvas c = new WorldCanvas(500, 500);
+    WorldScene s = new WorldScene(500, 500);
+    
+    return c.drawScene(s.placeImageXY(new BesideImage(leaf1.draw(), leaf2.draw()), 250, 250))
+        && c.show();
+  }
+  
+//  boolean testDrawTree(Tester t) {
+//    WorldCanvas c = new WorldCanvas(500, 500);
+//    WorldScene s = new WorldScene(500, 500);
+//    
+//    return c.drawScene(s.placeImageXY(tree1.draw(), 250, 250))
+//        && c.show();
+//  } 
+}

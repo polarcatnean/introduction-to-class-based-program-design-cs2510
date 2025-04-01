@@ -1,0 +1,130 @@
+package note;
+import tester.*;
+
+interface IShape {
+  // interfaces define common functionality between classes
+  // any class that implements an interface 
+  // must also implement all of the methods that are defined in the interface 
+
+  double area();   // contains only the signature of the method
+                   // how these methods are implemented is 
+                   // up to the individual class that implements the interface
+  
+  // we must avoid adding methods in the class that are not in the interface.
+  
+  
+  //to compute the distance from this shape to the origin
+  double distanceToOrigin();
+  
+  //to increase the size of this shape by the given increment
+  // IShape grow(int inc);
+  
+  //is the area of this shape bigger than
+  //the area of the given shape?
+  // boolean isBiggerThan(IShape that);
+}
+
+class Square implements IShape {
+  int x;
+  int y;
+  int size;
+  String colour;
+  
+  Square(int x, int y, int size, String colour) {
+    this.x = x;
+    this.y = y;
+    this.size = size;
+    this.colour = colour;
+  }
+  
+  // produce the area of this square
+  public double area() {  // add "public" in front when a method is coming from an interface
+    return size * size;
+  }
+  
+  public double distanceToOrigin() {
+    return Math.sqrt((x * x) + (y * y));
+  }
+}
+
+class Circle implements IShape {
+  int x;
+  int y;
+  int radius;
+  String colour;
+  
+  Circle(int x, int y, int radius, String colour) {
+    this.x = x;
+    this.y = y;
+    this.radius = radius;
+    this.colour = colour;
+  }
+  
+//produce the area of this circle
+  public double area() {
+    return Math.PI * radius * radius;
+ }
+  
+  public double distanceToOrigin() {
+    return Math.sqrt((x * x) + (y * y));
+  }
+}
+
+class Triangle implements IShape {
+  int x;
+  int y;
+  int base;
+  int height;
+  String colour;
+  
+  Triangle(int x, int y, int base, int height, String colour) {
+    this.x = x;
+    this.y = y;
+    this.base = base;
+    this.height = height;
+    this.colour = colour;
+  }
+  
+  public double area() {
+    return 0.5 * base * height;
+  }
+  
+  public double distanceToOrigin() {
+    return Math.sqrt((x * x) + (y * y));
+  }
+}
+
+class ShapeUtil {
+  ShapeUtil() {}
+  
+  double doubleTheArea(IShape shape) {  // it doesn't know yet which kind of shape we pass
+    return shape.area() * 2;            // but it will figure out
+  }
+}
+
+class ExamplesIShape {
+  ExamplesIShape() {}
+  
+  ShapeUtil shapeUtil = new ShapeUtil();
+  
+  IShape s1 = new Square(0, 0, 30, "red");
+  IShape c1 = new Circle(3, 4, 10, "red");
+  IShape t1 = new Triangle(0, 0, 10, 5, "red");
+  
+  // Tests for methods
+  boolean testIShapeArea(Tester t) {
+    // checkInexact compares doubles
+    return t.checkInexact(s1.area(), 900.0, 0.01)
+        && t.checkInexact(c1.area(), 314.0, 0.1)
+        && t.checkInexact(t1.area(), 25.0, 0.01);
+  }
+  
+  boolean testShapeUtil(Tester t) {
+    return t.checkInexact(shapeUtil.doubleTheArea(c1), 628.0, 0.01);
+  }
+  
+  boolean testDistanceToOrigin(Tester t) {
+    return t.checkInexact(s1.distanceToOrigin(), 0.0, 0.01)
+        && t.checkInexact(c1.distanceToOrigin(), 5.0, 0.01);
+  }
+}

@@ -1,0 +1,306 @@
+package assignment2.practice;
+import tester.Tester;
+
+interface IComposite {
+  // nnn();
+  
+  // compute the distance of this shape to the origin
+  double distTo0();
+  
+  // is the given point within the bounds of this shape
+  boolean in(CartPt p);
+  
+  // compute the bounding box for this shape
+  BoundingBox bb();
+  
+  // compute the bounding box (rectangle) for this shape
+  Rectangle recBb();
+}
+
+
+class Dot implements IComposite {
+  CartPt loc;
+  
+  Dot(CartPt loc) {
+    this.loc = loc;
+  }
+
+  public double distTo0() {
+    return this.loc.distTo0();
+  }
+
+  public boolean in(CartPt p) {
+    return false;
+  }
+
+  public BoundingBox bb() {
+    return null;
+  }
+
+  public Rectangle recBb() {
+    return null;
+  }
+  
+  /* nnn() {
+   * ...this.loc...
+   */
+}
+
+class Square implements IComposite {
+  CartPt loc;
+  int size;
+  
+  Square(CartPt loc, int size) {
+    this.loc = loc;   // top left
+    this.size = size;
+  }
+
+  public double distTo0() {
+    return this.loc.distTo0();
+  }
+  
+  public boolean in(CartPt p) {
+    return p.x >= this.loc.x && p.x <= this.loc.x + size
+        && p.y >= this.loc.y && p.y <= this.loc.y + size;
+  }
+
+  public BoundingBox bb() {
+    return new BoundingBox(this.loc.x, this.loc.x + this.size,
+                           this.loc.y, this.loc.y + this.size);
+  }
+  
+  public Rectangle recBb() {
+    return new Rectangle(this.loc, this.size, this.size);
+  }
+  
+  /* nnn() {
+   * ...this.loc...
+   * ...this.size...
+   */
+}
+
+class Circle implements IComposite {
+  CartPt loc;   // center
+  int radius;
+  
+  Circle(CartPt loc, int radius) {
+    this.loc = loc;
+    this.radius = radius;
+  }
+
+  public double distTo0() {
+    return this.loc.distTo0() - this.radius; 
+  }
+  
+  public boolean in(CartPt p) {
+    return this.loc.distTo(p) <= this.radius;
+  }
+
+  public BoundingBox bb() {
+    return new BoundingBox(this.loc.x - this.radius, this.loc.x + this.radius,
+                           this.loc.y - this.radius, this.loc.y + this.radius);
+  }
+  
+  public Rectangle recBb() {
+    return new Rectangle(new CartPt(this.loc.x - this.radius, this.loc.y - this.radius),
+                                    this.radius * 2, this.radius * 2);
+  }
+  
+  /* nnn() {
+   * ...this.loc...
+   * ...this.radius...
+   */
+}
+
+class Rectangle implements IComposite {
+  CartPt loc;
+  int width;
+  int height;
+  
+  Rectangle(CartPt loc, int width, int height) {
+    this.loc = loc;
+    this.width = width;
+    this.height = height;
+  }
+
+  public double distTo0() {
+    return this.loc.distTo0();
+  }
+
+  public boolean in(CartPt p) {
+    return p.x >= this.loc.x && p.x <= this.loc.x + this.width
+        && p.y >= this.loc.y && p.y <= this.loc.y + this.height;
+  }
+
+  public BoundingBox bb() {
+    return new BoundingBox(this.loc.x, this.loc.x + this.width,
+                           this.loc.y, this.loc.y + this.height);
+  }
+  
+  public Rectangle recBb() {
+    return this;
+  }
+
+  public Rectangle combineRec(Rectangle rec) {
+    return new Rectangle(this.loc.topLeft(rec.loc), 
+                         Math.max(this.xRight(), rec.xRight()) - this.loc.topLeft(rec.loc).x,
+                         Math.max(this.yBottom(), rec.yBottom()) - this.loc.topLeft(rec.loc).y);
+  }
+
+  // produce the x position of the right side of this rectangle
+  private int xRight() {
+    return this.loc.x + this.width;
+  }
+  
+  // produce the y position of the bottom side of this rectangle
+  private int yBottom() {
+    return this.loc.y + this.height;
+  }
+  
+    
+}
+
+class SuperImp implements IComposite {
+  IComposite bottom;
+  IComposite top;
+  
+  SuperImp(IComposite bottom, IComposite top) {
+    this.bottom = bottom;
+    this.top = top;
+  }
+
+  // shortest distance of all composed shapes / of the two shapes
+  // computes the distance of the two shape recursively and pick the minimum
+  public double distTo0() {
+    return Math.min(this.bottom.distTo0(), this.top.distTo0());
+  }
+  
+  public boolean in(CartPt p) {
+    return this.bottom.in(p) || this.top.in(p);
+  }
+
+  public BoundingBox bb() {
+    return this.bottom.bb().combine(this.top.bb());
+  }
+  
+  public Rectangle recBb() {
+    return this.bottom.recBb().combineRec(this.top.recBb());
+  }
+  
+  /* nnn() {
+   * ...this.bottom.nnn()...
+   * ...this.top.nnn()...
+   */
+}
+
+class BoundingBox {
+  int left;
+  int right;
+  int top;
+  int bottom;
+  
+  BoundingBox(int left, int right, int top, int bottom) {
+    this.left = left;
+    this.right = right;
+    this.top = top;
+    this.bottom = bottom;
+  }
+  
+  // combine this bounding box with that one
+  BoundingBox combine(BoundingBox that) {
+    return new BoundingBox(Math.min(this.left, that.left),
+                           Math.max(this.right, that.right),
+                           Math.min(this.top, that.top),
+                           Math.max(this.bottom, that.bottom));
+  }
+}
+
+class CartPt {
+  int x;
+  int y;
+  
+  CartPt(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+  
+  // compute the distance from this to origin (0, 0)
+  public double distTo0() {
+    return Math.sqrt((x * x) + (y * y));
+   }
+  
+  // compute the distance from this to given CartPt
+  public double distTo(CartPt p) {
+    return Math.sqrt(Math.pow((this.x - (p.x)), 2) + Math.pow((this.y - p.y), 2));
+   }
+  
+  // get a new TopLeft point of this CartPt and the given one
+  public CartPt topLeft(CartPt p) {
+    return new CartPt(Math.min(this.x, p.x), Math.min(this.y, p.y));
+  }
+}
+
+
+class CompositeExamples {
+  CompositeExamples() {}
+  IComposite s1 = new Square(new CartPt(40, 30), 40);
+  IComposite s2 = new Square(new CartPt(120, 50), 50);
+  
+  IComposite c1 = new Circle(new CartPt(50, 120), 20);
+  IComposite c2 = new Circle(new CartPt(30, 40), 20);
+  
+  IComposite rec1 = new Rectangle(new CartPt(10, 10), 30, 40);
+  
+  IComposite u1 = new SuperImp(s1, s2);
+  IComposite u2 = new SuperImp(s1, c2);
+  IComposite u3 = new SuperImp(c1, u1);  // SuperImp may also contain another SuperImp
+  IComposite u4 = new SuperImp(u3, u2);  // two SuperImps
+
+  boolean testDistTo0(Tester t) {
+    return t.checkInexact(s1.distTo0(), 50.0, 0.01)
+        && t.checkInexact(s2.distTo0(), 130.0, 0.01)
+        && t.checkInexact(c1.distTo0(), 110.0, 0.01)
+        && t.checkInexact(c2.distTo0(), 30.0, 0.01);
+  }
+  
+  boolean testDistTo0SuperImp(Tester t) {
+    return t.checkInexact(u1.distTo0(), 50.0, 0.01)
+        && t.checkInexact(u2.distTo0(), 30.0, 0.01)
+        && t.checkInexact(u3.distTo0(), 50.0, 0.01)
+        && t.checkInexact(u4.distTo0(), 30.0, 0.01);
+  }
+  
+  boolean testIn(Tester t) {
+    return t.checkExpect(u1.in(new CartPt(42, 42)), true)
+        && t.checkExpect(u2.in(new CartPt(45, 40)), true)
+        && t.checkExpect(u2.in(new CartPt(20, 5)), false);
+  }
+  
+  boolean testBb(Tester t) {
+    return t.checkExpect(s1.bb(), new BoundingBox(40, 80, 30, 70))
+        && t.checkExpect(s2.bb(), new BoundingBox(120, 170, 50, 100))
+        && t.checkExpect(c1.bb(), new BoundingBox(30, 70, 100, 140))
+        && t.checkExpect(c2.bb(), new BoundingBox(10, 50, 20, 60))
+        
+        && t.checkExpect(u1.bb(), new BoundingBox(40, 170, 30, 100))
+        && t.checkExpect(u2.bb(), new BoundingBox(10, 80, 20, 70))
+        && t.checkExpect(u3.bb(), new BoundingBox(30, 170, 30, 140))
+        && t.checkExpect(u4.bb(), new BoundingBox(10, 170, 20, 140));
+  }
+  
+  boolean testRecBb(Tester t) {
+    return t.checkExpect(s1.recBb(), new Rectangle(new CartPt(40, 30), 40, 40))
+        && t.checkExpect(c1.recBb(), new Rectangle(new CartPt(30, 100), 40, 40))
+        && t.checkExpect(rec1.recBb(), rec1)
+        
+        && t.checkExpect(u1.recBb(), new Rectangle(new CartPt(40, 30), 130, 70))
+        && t.checkExpect(u2.recBb(), new Rectangle(new CartPt(10, 20), 70, 50))
+        && t.checkExpect(u3.recBb(), new Rectangle(new CartPt(30, 30), 140, 110))
+        && t.checkExpect(u4.recBb(), new Rectangle(new CartPt(10, 20), 160, 120));
+  }
+  
+  boolean testTopLeft(Tester t) {
+    return t.checkExpect(new CartPt(40,30).topLeft(new CartPt(120,50)), new CartPt(40, 30))
+        && t.checkExpect(new CartPt(0,1).topLeft(new CartPt(1,0)), new CartPt(0, 0));
+  }
+}

@@ -1,0 +1,87 @@
+package lab3;
+import tester.Tester;
+/*
+;; A GamePiece is one of
+;; -- (make-base-tile Number)
+;; -- (make-merge-tile GamePiece GamePiece)
+ 
+(define-struct base-tile [value])
+(define-struct merge-tile [piece1 piece2])
+
+*/
+
+
+interface IGamePiece {
+  // returns the value of a game piece
+  int getValue();
+  
+  // combines this game piece with the given game piece to form a merged piece
+  MergeTile merge(IGamePiece piece);
+  
+  // checks whether this game piece was created according to the rules of 2048: 
+  // only equal-valued pieces can merge.
+  boolean isValid();
+}
+
+class BaseTile implements IGamePiece {
+  int value;
+  
+  BaseTile(int value) {
+    this.value = value;
+  }
+  
+  public int getValue() {
+    return this.value; 
+  }
+  
+  public MergeTile merge(IGamePiece piece) {
+    return new MergeTile(this, piece);
+  }
+  
+  public boolean isValid() {
+    return true;
+  }
+}
+
+class MergeTile implements IGamePiece {
+  IGamePiece piece1;
+  IGamePiece piece2;
+  
+  MergeTile(IGamePiece piece1, IGamePiece piece2) {
+    this.piece1 = piece1;
+    this.piece2 = piece2;
+  }
+  
+  public int getValue() {
+    return this.piece1.getValue() + this.piece2.getValue(); 
+  }
+  
+  public MergeTile merge(IGamePiece piece) {
+    return new MergeTile(this, piece);
+  }
+  
+  public boolean isValid() {
+    return piece1.getValue() == piece2.getValue() && piece1.isValid() && piece2.isValid();
+  }
+}
+
+
+class ExamplesGamePieces {
+  
+  IGamePiece b2 = new BaseTile(2);
+  IGamePiece b3 = new BaseTile(3);
+  IGamePiece b4 = new BaseTile(4);
+  IGamePiece b5 = new BaseTile(5);
+  
+  IGamePiece m2 = new MergeTile(b2, b2);
+  IGamePiece m2b = new MergeTile(b2, b3);
+  IGamePiece m3 = new MergeTile(b3, b3);
+  IGamePiece m3b = new MergeTile(b3, b2);
+  IGamePiece m4 = new MergeTile(b4, b4);
+  IGamePiece m4b = new MergeTile(b4, b3);
+  
+  boolean testGetValue(Tester t) {
+    return t.checkExpect(m2b.getValue(), 5);
+  }
+}
+

@@ -1,0 +1,20 @@
+class Automobile {
+  String model;
+  int price;  // in dollars
+  double mileage;  // in miles per gallon
+  boolean used;
+  
+  Automobile(String model, int price, double mileage, boolean used) {
+    this.model = model;
+    this.price = price;
+    this.mileage = mileage;
+    this.used = used;
+  }
+}
+
+class ExamplesAutomobiles {
+  ExamplesAutomobiles() {}
+  
+  Automobile city = new Automobile("Honda City", 25000, 5000, true);
+  Automobile corolla = new Automobile("Toyota Corolla", 17000, 15000, true);
+}

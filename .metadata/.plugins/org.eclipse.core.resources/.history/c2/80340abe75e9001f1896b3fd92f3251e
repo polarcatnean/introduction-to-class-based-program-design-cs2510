@@ -1,0 +1,47 @@
+package constructor;
+import tester.Tester;
+
+interface IDate {
+  
+}
+
+class Date implements IDate {
+  int year;
+  int month;
+  int day;
+  
+  Date(int year, int month, int day) {
+    this.year = (new Utils()).checkRange(year, 1500, 2100, "Invalid year: " + Integer.toString(year));
+    this.month = (new Utils()).checkRange(month, 1, 12, "Invalid month: " + Integer.toString(month));
+    this.day = (new Utils()).checkRange(day, 1, 31, "Invalid day: " + Integer.toString(day));
+  }
+}
+
+class Utils {   // for helper methods that don't use any of the data from their class
+  Utils() {}
+  
+  int checkRange(int value, int low, int high, String message) {
+    if (value >= low && value <= high) {
+      return value;
+    }
+    else {
+      throw new IllegalArgumentException(message);
+    }
+  }
+}
+
+class ExamplesDates {
+  
+  // Good dates
+  Date d20100228 = new Date(2010, 2, 28); // Feb 28, 2010
+  Date d20091012 = new Date(2009, 10, 12); // Oct 12, 2009
+
+  boolean testCheckConstructorException(Tester t) {
+    return t.checkConstructorException(new IllegalArgumentException("Invalid year: -30"), "constructor.Date", -30, 33, 23);
+  }
+  
+  // Bad date
+  //Date dn303323 = new Date(-30, 33, 23); // ???
+  
+  
+}

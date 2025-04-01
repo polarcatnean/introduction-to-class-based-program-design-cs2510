@@ -1,0 +1,61 @@
+package note;
+
+import tester.Tester;
+
+class Book {
+  String title;
+  String author;
+  int price;
+  
+  Book(String title, String author, int price) {
+    this.title = title;
+    this.author = author;
+    this.price = price;
+  }
+}
+
+interface ILoBook {  // ListOfBook
+  // count the number of books in the list
+  int count();
+}
+
+class MtLoBook implements ILoBook {  // empty LoB
+  MtLoBook() {}
+  
+  public int count() {
+    return 0;
+  }
+}
+
+class ConsLoBook implements ILoBook {   // cons + LoB
+  Book first;
+  ILoBook rest;
+  
+  ConsLoBook(Book first, ILoBook rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+  
+  // methods
+  public int count() {
+    return 1 + rest.count();
+  }
+}
+
+class ILoBookExample {
+  ILoBookExample() {}
+  
+  Book hp1 = new Book("HP1", "JKR", 20);
+  Book hp2 = new Book("HP2", "JKR", 30);
+  Book hp3 = new Book("HP3", "JKR", 40);
+  
+  ILoBook hpList3 = new ConsLoBook(hp1, 
+                                   new ConsLoBook(hp2, 
+                                                  new ConsLoBook(hp3, 
+                                                                 new MtLoBook())));
+  // Test for count
+  boolean testILoBookCount(Tester t) {
+    return t.checkExpect(hpList3.count(), 3);
+  }
+  
+}

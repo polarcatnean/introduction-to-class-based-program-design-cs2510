@@ -1,0 +1,91 @@
+package lab2;
+import tester.Tester;
+
+// to represent a pet owner
+class Person {
+  String name;
+  IPet pet;
+  int age;
+
+  Person(String name, IPet pet, int age) {
+    this.name = name;
+    this.pet = pet;
+    this.age = age;
+  }
+    
+  // is this Person older than the given Person?
+  boolean isOlder(Person other) {
+    return this.age > other.age;
+  }
+    
+ // does the name of this person's pet match the given name?
+  boolean sameNamePet(String name) {
+    return this.pet.sameName(name);
+  }
+
+}
+// to represent a pet
+interface IPet {
+  // does this pet's name match the given name
+  boolean sameName(String name);
+}
+ 
+// to represent a pet cat
+class Cat implements IPet {
+  String name;
+  String kind;
+  boolean longhaired;
+
+  Cat(String name, String kind, boolean longhaired) {
+    this.name = name;
+    this.kind = kind;
+    this.longhaired = longhaired;
+  }
+
+  public boolean sameName(String name) {
+    return this.name.equals(name);
+  }
+}
+ 
+// to represent a pet dog
+class Dog implements IPet {
+  String name;
+  String kind;
+  boolean male;
+
+  Dog(String name, String kind, boolean male) {
+    this.name = name;
+    this.kind = kind;
+    this.male = male;
+  }
+
+  public boolean sameName(String name) {
+    return this.name.equals(name);
+  }
+}
+
+
+
+class ExamplePets {
+  
+  IPet waffles = new Cat("Waffles", "Stray cat", true);
+  IPet noodle = new Cat("Noodles", "Free cat", false);
+  
+  IPet wouf = new Dog("Wouf", "Stray dog", true);
+  IPet arf = new Dog("Arf", "Common dog", false);
+  
+  Person anna = new Person("Anna", this.wouf, 28);
+  Person bean = new Person("Bean", this.arf, 38);
+  Person cara = new Person("Cara", this.waffles, 30);
+  Person diana = new Person("Diana", this.noodle, 44);
+  
+  boolean testIsOlder(Tester t) {
+    return t.checkExpect(anna.isOlder(bean), false)
+        && t.checkExpect(bean.isOlder(cara), true);
+  }
+  
+  boolean testSameNamePet(Tester t) {
+    return t.checkExpect(anna.sameNamePet("Wouf"), true)
+        && t.checkExpect(diana.sameNamePet("Noods"), false);
+  }
+}

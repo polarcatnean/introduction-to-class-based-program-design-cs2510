@@ -1,0 +1,48 @@
+import tester.*;
+
+interface ILoInt {
+  // contain a number that is even
+  boolean containsEven();
+  
+  // contain a number that is positive and odd
+  
+  // contain a number between 5 and 10, inclusive
+}
+
+class MtLoInt implements ILoInt {
+  MtLoInt() {}
+  
+  public boolean containsEven() {
+    return false;
+  }
+  
+}
+
+class ConsLoInt implements ILoInt {
+  int first;
+  ILoInt rest;
+  
+  ConsLoInt(int first, ILoInt rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+
+  public boolean containsEven() {
+    return this.first % 2 == 0 || this.rest.containsEven();
+  }
+}
+
+
+class ExampleLoInt {
+  
+  ILoInt empty = new MtLoInt();
+  ILoInt list1 = new ConsLoInt(6, new ConsLoInt(5, empty));
+  ILoInt list2 = new ConsLoInt(4, new ConsLoInt(3, empty));
+  ILoInt listOdd = new ConsLoInt(1, new ConsLoInt(3, empty));
+  
+  boolean testContainsEven(Tester t) {
+    return t.checkExpect(empty.containsEven(), false)
+        && t.checkExpect(listOdd.containsEven(), false)
+        && t.checkExpect(list1.containsEven(), true);
+  }
+}

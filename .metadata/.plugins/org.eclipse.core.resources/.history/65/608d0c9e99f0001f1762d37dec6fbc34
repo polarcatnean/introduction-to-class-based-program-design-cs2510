@@ -1,0 +1,74 @@
+import tester.*; 
+import java.awt.Color;
+import javalib.worldimages.*;
+
+interface ITree {
+  // renders this ITree to a picture
+  WorldImage draw();  
+}
+
+class Leaf implements ITree {
+  int size; // represents the radius of the leaf
+  Color color; // the color to draw it
+
+  Leaf(int size, Color color) {
+    this.size = size;
+    this.color = color;
+  }
+  
+  public WorldImage draw() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+}
+
+class Stem implements ITree {
+  int length; // How long this stick is
+  double theta; // The angle (in degrees) of this stem, relative to the +x axis
+  ITree tree; // The rest of the tree
+
+  Stem(int length, double theta, ITree tree){
+    this.length = length;
+    this.theta = theta;
+    this.tree = tree;
+  }
+  
+  public WorldImage draw() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+}
+
+class Branch implements ITree {
+  // How long the left and right branches are
+  int leftLength;
+  int rightLength;
+  // The angle (in degrees) of the two branches, relative to the +x axis,
+  double leftTheta;
+  double rightTheta;
+  // The remaining parts of the tree
+  ITree left;
+  ITree right;
+
+  Branch(int leftLength, int rightLength, double leftTheta, double rightTheta, ITree left, ITree right) {
+    this.leftLength = leftLength;
+    this.rightLength = rightLength;
+    this.leftTheta = leftTheta;
+    this.rightTheta = rightTheta;
+    this.left = left;
+    this.right = right;
+  }
+  
+  public WorldImage draw() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+}
+
+class ExamplesTrees {
+  
+  boolean testImages(Tester t) {
+    return t.checkExpect(new RectangleImage(30, 20, OutlineMode.SOLID, Color.GRAY),
+                         new RectangleImage(30, 20, OutlineMode.SOLID, Color.GRAY));
+  } 
+}

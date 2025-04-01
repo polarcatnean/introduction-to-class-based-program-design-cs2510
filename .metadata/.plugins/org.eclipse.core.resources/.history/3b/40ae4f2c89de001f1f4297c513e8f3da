@@ -1,0 +1,199 @@
+package practice;
+import tester.Tester;
+
+class Date {
+  int day;
+  int month;
+  int year;
+
+  Date(int day, int month, int year) {
+    this.day = day;
+    this.month = month;
+    this.year = year;
+  }
+
+  /*
+   * ??? lll() { ...this.day... ...this.month... ...this.year... }
+   */
+  
+  // is this date in the given month and year
+  boolean sameMonthAndYear(int month, int year) {
+    return this.month == month && this.year == year;
+  }
+}
+
+interface ILog {
+  /*
+   * ??? nnn();
+   */
+
+  // compute the total number of miles recorded in this log
+  double miles();
+  
+  // extract those entries in this log for the given month and year
+  ILog oneMonth(int month, int year);
+  
+  // get the total distance run in a given month in this log
+  double distanceInMonth(int month, int year);
+  
+  // get the distance of this log's longest run
+  double longestRun();
+}
+
+class MtLog implements ILog {
+  MtLog() {}
+
+  /*
+   * ??? nnn() { ... }
+   */
+  
+  public double miles() {
+    return 0.0;
+  }
+  
+  public ILog oneMonth(int month, int year) {
+    return new MtLog();
+  }
+  
+  public double distanceInMonth(int month, int year) {
+    return 0.0;
+  }
+  
+  public double longestRun() {
+    return 0.0;
+  }
+}
+
+class ConsLog implements ILog {
+  Entry first;
+  ILog rest;
+
+  ConsLog(Entry first, ILog rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+
+  /*
+   * TEMPLATE 
+   * FIELDS: 
+   * ... this.first ... -- Entry 
+   * ... this.rest ... -- ILog
+   * METHODS FOR FIELDS: 
+   * ??? nnn() { 
+   * ... this.first.mmm() ...   -- method for Entry
+   * ... this.rest.nnn() ...    -- method for ILog (listof Entry)
+   * }
+   */
+  
+  public double miles() {
+    return this.first.distance + this.rest.miles();
+  }
+  
+  public ILog oneMonth(int month, int year) {
+    if (this.first.sameMonthandYear(month, year)) {
+      return new ConsLog(this.first, this.rest.oneMonth(month, year));
+    }
+    else {
+      return this.rest.oneMonth(month, year);
+    }
+  }
+  
+  public double distanceInMonth(int month, int year) {
+    if (this.first.sameMonthandYear(month, year)) {
+      return this.first.distance + this.rest.distanceInMonth(month, year);
+    }
+    else {
+      return this.rest.distanceInMonth(month, year);
+    }
+  }
+  
+  public double longestRun() {
+    if (this.first.distance > this.rest.longestRun()) {
+      return this.first.distance;
+    }
+    else {
+      return this.rest.longestRun();
+    }
+  }
+}
+
+class Entry {
+  Date d;
+  double distance; // miles
+  int duration; // minutes
+  String comment;
+
+  Entry(Date d, double distance, int duration, String comment) {
+    this.d = d;
+    this.distance = distance;
+    this.duration = duration;
+    this.comment = comment;
+  }
+
+  /*
+   * TEMPLATE 
+   * METHODS: 
+   * ??? mmm() { 
+   * ... this.d.lll()... 
+   * ... this.distance ... 
+   * ... this.duration ... ... this.comment... }
+   * 
+   */
+  
+  // return true if this entry was made in the given month and year
+  boolean sameMonthandYear(int month, int year) {
+    return this.d.sameMonthAndYear(month, year);
+  }
+}
+
+class CompositeExamples {
+  CompositeExamples() { }
+  
+  Date d1 = new Date(5, 5, 2003);
+  Date d2 = new Date(6, 6, 2003);
+  Date d3 = new Date(23, 6, 2003);
+  
+  Entry e1 = new Entry(d1, 5.0, 25, "Good");
+  Entry e2 = new Entry(d2, 3.0, 24, "Tired");
+  Entry e3 = new Entry(d3, 26.0, 156, "Great");
+  
+  ILog l1 = new MtLog();
+  ILog l2 = new ConsLog(e1, l1);
+  ILog l3 = new ConsLog(e2, l2);
+  ILog l4 = new ConsLog(e3, l3);
+  ILog l5 = new ConsLog(e1, new ConsLog(e3, new ConsLog (e2, l1)));
+  
+  boolean testMiles(Tester t) {
+    return t.checkInexact(l1.miles(), 0.0, 0.1)    // empty log
+        && t.checkInexact(l2.miles(), 5.0, 0.1)
+        && t.checkInexact(l3.miles(), 8.0, 0.1)
+        && t.checkInexact(l4.miles(), 34.0, 0.1);
+  }
+  
+  boolean testOneMonth(Tester t) {
+    return t.checkExpect(l1.oneMonth(5, 2024), l1)
+        && t.checkExpect(l3.oneMonth(6, 2003), new ConsLog(e2,l1))
+        && t.checkExpect(l4.oneMonth(6, 2003), new ConsLog(e3, new ConsLog(e2, l1)));
+  }
+  
+  boolean testSameMonthAndYear(Tester t) {
+    return t.checkExpect(d1.sameMonthAndYear(5, 2003), true)
+        && t.checkExpect(d2.sameMonthAndYear(6, 2004), false)
+        && t.checkExpect(d2.sameMonthAndYear(7, 2003), false)
+        && t.checkExpect(e1.sameMonthandYear(5, 2003), true)
+        && t.checkExpect(e3.sameMonthandYear(6, 2004), false);
+  }
+  
+  boolean testDistanceInMonth(Tester t) {
+    return t.checkInexact(l1.distanceInMonth(1, 2000), 0.0, 0.01)
+        && t.checkInexact(l2.distanceInMonth(5, 2003), 5.0, 0.01)
+        && t.checkInexact(l4.distanceInMonth(6, 2003), 29.0, 0.01);
+  }
+  
+  boolean testLongestRun(Tester t) {
+    return t.checkInexact(l1.longestRun(), 0.0, 0.01)
+        && t.checkInexact(l2.longestRun(), 5.0, 0.01)
+        && t.checkInexact(l4.longestRun(), 34.0, 0.01)
+        && t.checkInexact(l5.longestRun(), 34.0, 0.01);
+  }
+}

@@ -1,0 +1,365 @@
+package practice;
+import tester.Tester;
+
+class Date {
+  int day;
+  int month;
+  int year;
+
+  Date(int day, int month, int year) {
+    this.day = day;
+    this.month = month;
+    this.year = year;
+  }
+
+  /*
+   * ??? lll() { ...this.day... ...this.month... ...this.year... }
+   */
+  
+  // is this date in the given month and year
+  boolean sameMonthAndYear(int month, int year) {
+    return this.month == month && this.year == year;
+  }
+  
+  // is this date between two given dates (both inclusive)
+  boolean isBetween(Date d1, Date d2) {
+    return !this.isBefore(d1) && !this.isAfter(d2);
+  }
+
+  // determine if this date is before the given date
+  boolean isBefore(Date d) {
+    if (this.year < d.year) {
+      return true;
+    } 
+    else if (this.year == d.year && this.month < d.month) {
+      return true;
+    } 
+    else if (this.year == d.year && this.month == d.month && this.day < d.day) {
+      return true;
+    }
+    return false;
+  }
+  
+  // determine if this date is after the given date
+  boolean isAfter(Date d) {
+    if (this.year > d.year) {
+      return true;
+    } 
+    else if (this.year == d.year && this.month > d.month) {
+      return true;
+    }
+    else if (this.year == d.year && this.month == d.month && this.day > d.day) {
+      return true;
+    }
+    return false;
+  }
+
+}
+
+interface ILog {
+  /*
+   * ??? nnn();
+   */
+
+  // compute the total number of miles recorded in this log
+  double miles();
+  
+  // extract those entries in this log for the given month and year
+  ILog oneMonth(int month, int year);
+  
+  // get the total distance run in a given month in this log
+  double distanceInMonth(int month, int year);
+  
+  // get the distance of this log's longest run
+  double longestRun();
+  
+  // get the distance of this log's longest run between two given dates (both inclusive)
+  double longestRunBetween(Date start, Date end);
+  
+  // return true if all distances in this log are shorter than the number of miles given
+  boolean allShorterThan(double miles);
+  
+  // create a sorted version of this log, with entries sorted by distance (desc)
+  ILog sortByDist();
+  
+  // insert the given entry into this (sorted) log (desc)
+  ILog insertDist(Entry e);
+}
+
+class MtLog implements ILog {
+  MtLog() {}
+
+  /*
+   * ??? nnn() { ... }
+   */
+  
+  public double miles() {
+    return 0.0;
+  }
+  
+  public ILog oneMonth(int month, int year) {
+    return new MtLog();
+  }
+  
+  public double distanceInMonth(int month, int year) {
+    return 0.0;
+  }
+  
+  public double longestRun() {
+    return 0.0;
+  }
+  
+  public boolean allShorterThan(double miles) {
+    return true;
+  }
+  
+  public double longestRunBetween(Date start, Date end) {
+    return 0.0;
+  }
+
+  public ILog sortByDist() {
+    return this;
+  }
+
+  public ILog insertDist(Entry e) {
+    return new ConsLog(e, this);
+  }
+}
+
+class ConsLog implements ILog {
+  Entry first;
+  ILog rest;
+
+  ConsLog(Entry first, ILog rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+
+  /*
+   * TEMPLATE 
+   * FIELDS: 
+   * ... this.first ... -- Entry 
+   * ... this.rest ... -- ILog
+   * METHODS FOR FIELDS: 
+   * ??? nnn() { 
+   * ... this.first.mmm() ...   -- method for Entry
+   * ... this.rest.nnn() ...    -- method for ILog (listof Entry)
+   * }
+   */
+  
+  public double miles() {
+    return this.first.distance + this.rest.miles();
+  }
+  
+  public ILog oneMonth(int month, int year) {
+    if (this.first.sameMonthandYear(month, year)) {
+      return new ConsLog(this.first, this.rest.oneMonth(month, year));
+    }
+    else {
+      return this.rest.oneMonth(month, year);
+    }
+  }
+  
+  public double distanceInMonth(int month, int year) {
+    if (this.first.sameMonthandYear(month, year)) {
+      return this.first.distance + this.rest.distanceInMonth(month, year);
+    }
+    else {
+      return this.rest.distanceInMonth(month, year);
+    }
+  }
+  
+  public double longestRun() {
+    if (this.first.distance > this.rest.longestRun()) {
+      return this.first.distance;
+    }
+    else {
+      return this.rest.longestRun();
+    }
+  }
+  
+  public boolean allShorterThan(double miles) {
+    return this.first.distance < miles && this.rest.allShorterThan(miles);
+  }
+
+  public double longestRunBetween(Date start, Date end) {
+    if (this.first.d.isBetween(start, end)
+        && this.first.distance > this.rest.longestRunBetween(start, end)) {
+      return this.first.distance;
+    }
+    else {
+      return this.rest.longestRunBetween(start, end);
+    }
+  }
+
+  public ILog sortByDist() {
+    // ...this.first.mmm()...
+    // ...this.rest.sortByDist()... -- produce the rest of the list that is sorted
+    //                              ** we only need to insert this.first into the sorted rest in correct position
+    return this.rest.sortByDist().insertDist(this.first);
+  }
+
+  public ILog insertDist(Entry e) {
+    if (e.distance > this.first.distance) {
+      return new ConsLog(e, this);
+    }
+    else {
+      return new ConsLog(this.first, this.rest.insertDist(e));
+    }
+  }
+  
+
+}
+
+class Entry {
+  Date d;
+  double distance; // miles
+  int duration; // minutes
+  String comment;
+
+  Entry(Date d, double distance, int duration, String comment) {
+    this.d = d;
+    this.distance = distance;
+    this.duration = duration;
+    this.comment = comment;
+  }
+
+  /*
+   * TEMPLATE 
+   * METHODS: 
+   * ??? mmm() { 
+   * ... this.d.lll()... 
+   * ... this.distance ... 
+   * ... this.duration ... ... this.comment... }
+   * 
+   */
+  
+  // return true if this entry was made in the given month and year
+  boolean sameMonthandYear(int month, int year) {
+    return this.d.sameMonthAndYear(month, year);
+  }
+}
+
+class CompositeExamples {
+  CompositeExamples() { }
+  
+  Date d1 = new Date(5, 5, 2003);
+  Date d2 = new Date(6, 6, 2003);
+  Date d3 = new Date(23, 6, 2003);
+  Date d4 = new Date(24, 6, 2003);
+  Date start = new Date(1, 1 ,2022);
+  Date end = new Date(31, 12, 2022);
+  
+  Entry e1 = new Entry(d1, 5.0, 25, "Good");
+  Entry e2 = new Entry(d2, 3.0, 24, "Tired");
+  Entry e3 = new Entry(d3, 26.0, 156, "Great");
+  Entry e4 = new Entry(d4, 26.5, 160, "Okay");
+  Entry entry1 = new Entry(new Date(15, 6, 2022), 5.0, 30, "Morning run");
+  Entry entry2 = new Entry(new Date(20, 8, 2023), 10.0, 60, "Out-of-range run");
+  Entry entry3 = new Entry(new Date(5, 12, 2022), 3.0, 20, "Short jog");
+  
+  ILog l1 = new MtLog();
+  ILog l2 = new ConsLog(e1, l1);
+  ILog l3 = new ConsLog(e2, l2);
+  ILog l4 = new ConsLog(e3, l3);
+  ILog l5 = new ConsLog(e1, new ConsLog(e3, new ConsLog(e4, new ConsLog(e2, l1))));
+  ILog log = new ConsLog(entry1, l1);
+  ILog l6 = new ConsLog(new Entry(new Date(1, 1, 2003), 5.1, 26, "good"),
+             new ConsLog(new Entry(new Date(1, 2, 2003), 4.9, 25, "okay"), 
+               new MtLog()));
+  
+  boolean testMiles(Tester t) {
+    return t.checkInexact(l1.miles(), 0.0, 0.1)  // Empty log
+        && t.checkInexact(l2.miles(), 5.0, 0.1)
+        && t.checkInexact(l3.miles(), 8.0, 0.1)
+        && t.checkInexact(l4.miles(), 34.0, 0.1);
+  }
+  
+  boolean testOneMonth(Tester t) {
+    return t.checkExpect(l1.oneMonth(5, 2024), l1)
+        && t.checkExpect(l3.oneMonth(6, 2003), new ConsLog(e2,l1))
+        && t.checkExpect(l4.oneMonth(6, 2003), new ConsLog(e3, new ConsLog(e2, l1)));
+  }
+  
+  boolean testSameMonthAndYear(Tester t) {
+    return t.checkExpect(d1.sameMonthAndYear(5, 2003), true)
+        && t.checkExpect(d2.sameMonthAndYear(6, 2004), false)
+        && t.checkExpect(d2.sameMonthAndYear(7, 2003), false)
+        && t.checkExpect(e1.sameMonthandYear(5, 2003), true)
+        && t.checkExpect(e3.sameMonthandYear(6, 2004), false);
+  }
+  
+  boolean testDistanceInMonth(Tester t) {
+    return t.checkInexact(l1.distanceInMonth(1, 2000), 0.0, 0.01)
+        && t.checkInexact(l2.distanceInMonth(5, 2003), 5.0, 0.01)
+        && t.checkInexact(l4.distanceInMonth(6, 2003), 29.0, 0.01);
+  }
+  
+  boolean testLongestRun(Tester t) {
+    return t.checkInexact(l1.longestRun(), 0.0, 0.01)
+        && t.checkInexact(l2.longestRun(), 5.0, 0.01)
+        && t.checkInexact(l4.longestRun(), 26.0, 0.01)
+        && t.checkInexact(l5.longestRun(), 26.5, 0.01);
+  }
+  
+  boolean testAllShorterThan(Tester t) {
+    return t.checkExpect(l1.allShorterThan(2.0), true)
+        && t.checkExpect(l3.allShorterThan(4.0), false)
+        && t.checkExpect(l5.allShorterThan(26.6), true)
+        && t.checkExpect(l5.allShorterThan(26.0), false);
+  }
+  
+  boolean testLongestRunBetween(Tester t) {
+    return t.checkInexact(l1.longestRunBetween(d1, d2), 0.0, 0.01)   // Empty log
+        && t.checkInexact(l2.longestRunBetween(d1, d2), 5.0, 0.01)   // Edge case: entry on the boundary dates
+        && t.checkInexact(l5.longestRunBetween(d1, d4), 26.5, 0.01)  // Multiple entries within the date range, one longest
+        && t.checkInexact(l5.longestRunBetween(d1, d3), 26.0, 0.01)  // Mixed entries: some inside, some outside the date range
+        && t.checkInexact(l2.longestRunBetween(start, end), 0.0, 0.01);  // No entries btw the date range
+  }
+  
+  boolean testIsBetween(Tester t) {
+    return t.checkExpect(d1.isBetween(d2, d3), false)
+        && t.checkExpect(d2.isBetween(d1, d3), true)
+        && t.checkExpect(d1.isBetween(d1, d3), true)
+        && t.checkExpect(d4.isBetween(d1, d3), false)
+        && t.checkExpect(d4.isBetween(d1, d4), true);
+  }
+  
+  boolean testIsBefore(Tester t) {
+    return t.checkExpect(new Date(10, 5, 2023).isBefore(new Date(1, 1, 2024)), true)
+        && t.checkExpect(new Date(1, 1, 2024).isBefore(new Date(1, 1, 2024)), false)
+        && t.checkExpect(new Date(15, 6, 2024).isBefore(new Date(30, 5, 2024)), false)
+        && t.checkExpect(new Date(31, 12, 2023).isBefore(new Date(1, 1, 2024)), true);
+  }
+  
+  boolean testIsAfter(Tester t) {
+    return t.checkExpect(new Date(10, 5, 2025).isAfter(new Date(31, 12, 2024)), true)
+        && t.checkExpect(new Date(15, 6, 2024).isAfter(new Date(30, 5, 2024)), true)
+        && t.checkExpect(new Date(15, 6, 2024).isAfter(new Date(10, 6, 2024)), true)
+        && t.checkExpect(new Date(1, 1, 2024).isAfter(new Date(1, 1, 2024)), false)
+        && t.checkExpect(new Date(10, 6, 2024).isAfter(new Date(15, 6, 2024)), false)
+        && t.checkExpect(new Date(31, 12, 2023).isAfter(new Date(1, 1, 2024)), false)
+        && t.checkExpect(new Date(1, 5, 2024).isAfter(new Date(1, 6, 2024)), false);
+  }
+  
+  boolean testSortByDist(Tester t) {
+    return t.checkExpect(l1.sortByDist(), l1)   // empty log
+        && t.checkExpect(l2.sortByDist(), l2)   // one element
+        && t.checkExpect(l4.sortByDist(), new ConsLog(e3, new ConsLog(e1, new ConsLog(e2, l1))));
+  }
+  
+  boolean testInsertDist(Tester t) {
+    return t.checkExpect(l6.insertDist(new Entry(new Date(1,3,2003), 5.0, 27, "great")),  // insert middle
+                         new ConsLog(new Entry(new Date(1,1,2003), 5.1, 26, "good"),
+                             new ConsLog(new Entry(new Date(1,3,2003), 5.0, 27, "great"),
+                                new ConsLog(new Entry(new Date(1,2,2003), 4.9, 25, "okay"), new MtLog()))))
+        && t.checkExpect(l6.insertDist(new Entry(new Date(1,4,2003), 5.2, 24, "fine")),   // insert front
+                         new ConsLog(new Entry(new Date(1,4,2003), 5.2, 24, "fine"),
+                             new ConsLog(new Entry(new Date(1,1,2003), 5.1, 26, "good"),
+                                 new ConsLog(new Entry(new Date(1,2,2003), 4.9, 25, "okay"), new MtLog()))))
+        && t.checkExpect(l6.insertDist(new Entry(new Date(1,5,2003), 4.8, 23, "bad")),    // insert last
+                         new ConsLog(new Entry(new Date(1,1,2003), 5.1, 26, "good"),
+                             new ConsLog(new Entry(new Date(1,2,2003), 4.9, 25, "okay"),
+                                 new ConsLog(new Entry(new Date(1,5,2003), 4.8, 23, "bad"), new MtLog()))));
+  }
+}

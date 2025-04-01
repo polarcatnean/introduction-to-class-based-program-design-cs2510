@@ -1,0 +1,103 @@
+package note;
+import tester.*;
+
+class Author {
+  String name;
+  int yob;
+  
+  Author(String name, int yob) {
+    this.name = name;
+    this.yob = yob;
+  }
+  
+  // check if this is the same author as the given one
+  boolean sameAuthor(Author that) {
+    return this.name.equals(that.name) && this.yob == (that.yob); 
+  }
+}
+
+class Book {
+  String title;
+  Author author;
+  int price;
+  
+  Book(String title, Author author, int price) {
+    this.title = title;
+    this.author = author;
+    this.price = price;
+    }
+  
+  
+  /* TEMPLATE
+   * 
+   * Fields:
+   * ... this.title ... -- String
+   * ... this.author ... -- Author
+   * ... this.price ... -- int
+   * 
+   * Methods:
+   * ... this.salePrice(int) ... -- int
+   * ... this.sameAuthor(Book)... -- boolean
+   * ... this.reducePrice() ... -- Book
+   * 
+   * Methods for fields:
+   * ... this.author.sameAuthor(Author) ... -- boolean
+   */
+  
+  /* METHOD DEFINITIONS */
+  // Compute the sale price of this Book given, using the given
+  // discount rate as a percentage
+  int salePrice(int discount) {
+    return price - (price * discount) / 100;
+  }
+  
+  // check if this book is written by the same author as the given book
+  boolean sameAuthor(Book b) {
+    return this.author.sameAuthor(b.author);
+  }
+  
+  // produce the same book with the price reduced by 20%
+  Book reducePrice() {
+    return new Book(this.title, this.author, this.salePrice(20));
+  }
+}
+  
+
+// examples and tests for the classes that represent
+// books and authors
+class ExamplesBooks {
+  ExamplesBooks() {}
+
+// examples of authors
+  Author pat = new Author("Pat Conroy", 1948);
+  Author jkr = new Author("J.K.R.", 1965);
+  Author dan = new Author("Dan Brown", 1962);
+  
+// examples of books
+  Book beaches = new Book("Beaches", this.pat, 60);
+  Book hp1 = new Book("HP1", this.jkr, 20);
+  Book prince = new Book("Prince of Tides", this.pat, 15);
+  Book code = new Book("Da Vinci Code", this.dan, 20);
+
+ // test the method salePrice for the class Book
+  boolean testSalePrice(Tester t) {
+    return t.checkExpect(this.beaches.salePrice(30), 42) 
+        && t.checkExpect(this.hp1.salePrice(20), 16);
+  }
+  
+  // test the method sameAuthor
+  boolean testSameAuthor(Tester t) {
+    return t.checkExpect(this.pat.sameAuthor(new Author("Pat Conroy", 1948)),
+                         true) 
+        && t.checkExpect(this.pat.sameAuthor(this.dan), false);
+  }
+  
+  // test the method reducePrice
+  boolean testReducePrice(Tester t) {
+    return t.checkExpect(this.beaches.reducePrice(),
+                         new Book("Beaches", this.pat, 48))
+        && t.checkExpect(this.hp1.reducePrice(), 
+                         new Book("HP1", this.jkr, 16));
+  }
+ }
+

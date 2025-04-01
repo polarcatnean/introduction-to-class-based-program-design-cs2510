@@ -1,0 +1,106 @@
+package lab5;
+
+import tester.*;                // The tester library
+import javalib.worldimages.*;   // images, like RectangleImage or OverlayImages
+import javalib.funworld.*;      // the abstract World class and the big-bang library
+import java.awt.Color;          // general colors (as triples of red,green,blue values)
+                                // and predefined colors (Color.RED, Color.GRAY, etc.)
+
+/*
+ *  A player is going to click a point on the screen and a circle will appear. 
+ *  Then, it will move off the edge of the screen. 
+ *  The game will end once some amount of circles have left the screen.
+ */
+
+
+
+class MyPosn extends Posn {
+  // standard constructor
+  MyPosn(int x, int y) {
+    super(x, y);
+  }
+
+  // constructor to convert from a Posn to a MyPosn
+  MyPosn(Posn p) {
+    this(p.x, p.y);
+  }
+  
+  MyPosn add(MyPosn other) {
+    return new MyPosn(this.x + other.x, this.y + other.y);
+  }
+  
+  boolean isOffScreen(int width, int height) {
+    return this.x < 0 && this.x > width
+        && this.y < 0 && this.y > height;
+  }
+
+  public MyPosn update(MyPosn velocity) {
+    return new MyPosn(this.x + velocity.x,
+                      this.y + velocity.y);
+  }
+}
+
+class Circle {
+  MyPosn position; // in pixels
+  MyPosn velocity; // in pixels/tick
+  
+  Circle(MyPosn position, MyPosn velocity) {
+    this.position = position;
+    this.velocity = velocity;
+  }
+  
+  Circle move() {
+    return new Circle(this.position.update(this.velocity), this.velocity);
+  }
+}
+
+interface ILoCircle {
+  // move all circles in this list
+  ILoCircle moveAll();
+}
+
+class MtLoCircle implements ILoCircle {
+
+  public ILoCircle moveAll() {
+    return this;
+  }
+  
+}
+
+class ConsLoCircle implements ILoCircle {
+  Circle first;
+  ILoCircle rest;
+
+  ConsLoCircle(Circle first, ILoCircle rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+
+  public ILoCircle moveAll() {
+    return new ConsLoCircle(this.first.move(), this.rest.moveAll());
+  }
+}
+
+
+class ExampleGame {
+  
+  MyPosn posn0 = new MyPosn(0, 0);
+  MyPosn posn1 = new MyPosn(1, 1);
+  
+  MyPosn velo1 = new MyPosn(1, 1);
+  MyPosn velo2 = new MyPosn(1, 0);
+  MyPosn velo3 = new MyPosn(0, 1);
+  
+  
+  Circle circle1 = new Circle(posn0, velo1);
+  
+  boolean testMove(Tester t) {
+    return t.checkExpect(circle1.move(), new Circle(posn1, velo1));
+  }
+  
+  boolean testImages(Tester t) {
+    return t.checkExpect(new RectangleImage(30, 20, OutlineMode.SOLID, Color.GRAY),
+                         new RectangleImage(30, 20, OutlineMode.SOLID, Color.GRAY));
+  } 
+
+}

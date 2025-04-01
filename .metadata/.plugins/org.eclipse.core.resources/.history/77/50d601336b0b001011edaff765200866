@@ -1,0 +1,144 @@
+package lab6;
+
+import tester.Tester;
+
+// a json value
+interface JSON {
+  <T> T accept(JSONVisitor<T> visitor);}
+ 
+// no value
+class JSONBlank implements JSON {
+  public <T> T accept(JSONVisitor<T> visitor) {
+    return visitor.visitBlank(this);
+  }
+}
+ 
+// a number
+class JSONNumber implements JSON {
+  int number;
+ 
+  JSONNumber(int number) {
+    this.number = number;
+  }
+
+  public <T> T accept(JSONVisitor<T> visitor) {
+    return visitor.visitNumber(this);
+  }
+}
+ 
+// a boolean
+class JSONBool implements JSON {
+  boolean bool;
+ 
+  JSONBool(boolean bool) {
+    this.bool = bool;
+  }
+
+  public <T> T accept(JSONVisitor<T> visitor) {
+    return visitor.visitBoolean(this);
+  }
+}
+ 
+// a string
+class JSONString implements JSON {
+  String str;
+ 
+  JSONString(String str) {
+    this.str = str;
+  }
+
+  public <T> T accept(JSONVisitor<T> visitor) {
+    return visitor.visitString(this);
+  }
+}
+
+// a list of JSON values
+class JSONList implements JSON {
+  IList<JSON> values;
+
+  JSONList(IList<JSON> values) {
+    this.values = values;
+  }
+
+  public <T> T accept(JSONVisitor<T> visitor) {
+    return visitor.visitList(this);
+  }
+}
+
+
+interface JSONVisitor<T> {
+  T visitBlank(JSONBlank b);
+  T visitNumber(JSONNumber n);
+  T visitBoolean(JSONBool b);
+  T visitString(JSONString s);
+  T visitList(JSONList jsonList);
+}
+
+class JSONToNumber implements JSONVisitor<Integer>, IFunc<JSON, Integer> {
+  public Integer apply(JSON json) {
+    return json.accept(this);
+  }
+  
+  public Integer visitBlank(JSONBlank b) {
+    return 0;
+  }
+
+  public Integer visitNumber(JSONNumber n) {
+    return n.number;
+  }
+
+  public Integer visitBoolean(JSONBool b) {
+    return b.bool ? 1 : 0;
+  }
+
+  public Integer visitString(JSONString s) {
+    return s.str.length();
+  }
+
+  public Integer visitList(JSONList list) {
+    // TODO Auto-generated method stub
+    return new Utils().sumAll(list.values.map(new JSONToNumber()));
+  }
+}
+
+class ExamplesJSON {
+  
+  JSON jb = new JSONBlank();
+  JSON jn1 = new JSONNumber(7);
+  JSON jn2 = new JSONNumber(2);
+  JSON jb1 = new JSONBool(true);
+  JSON jb2 = new JSONBool(false);
+  JSON js1 = new JSONString("cat");
+  JSON js2 = new JSONString("I'm hungry.");
+  
+  IList<JSON> list1 = new ConsList<JSON>(jb, 
+                       new ConsList<JSON>(jn1, 
+                        new ConsList<JSON>(jb1,
+                          new ConsList<JSON>(js1, new MtList<JSON>()))));
+  
+  IList<Integer> list2 = new ConsList<Integer>(0, 
+                          new ConsList<Integer>(7, 
+                           new ConsList<Integer>(1,
+                             new ConsList<Integer>(3, new MtList<Integer>()))));
+  
+  JSON jl1 = new JSONList(list1);
+  IList<JSON> list3 = new ConsList<JSON>(jl1, 
+                        new ConsList<JSON>(jn1, 
+                         new ConsList<JSON>(jb1,
+                           new ConsList<JSON>(js1, new MtList<JSON>()))));
+  IList<Integer> list4 = new ConsList<Integer>(11, 
+                          new ConsList<Integer>(7, 
+                           new ConsList<Integer>(1,
+                             new ConsList<Integer>(3, new MtList<Integer>()))));
+  
+  boolean testJSONToNumber(Tester t) {
+    return t.checkExpect(list1.map(new JSONToNumber()), list2)
+        && t.checkExpect(null, null);
+  }
+  
+  boolean testFindSolutionOrElse(Tester t) {
+    return t.checkExpect(list1.findSolutionOrElse(new JSONToNumber(), new MoreThan(10), -1), -1)
+        && t.checkExpect(list3.findSolutionOrElse(new JSONToNumber(), new MoreThan(10), -1), 11)
+        && t.checkExpect(list1.findSolutionOrElse(new JSONToNumber(), new MoreThan(5), -1), 7);
+  }
+}
