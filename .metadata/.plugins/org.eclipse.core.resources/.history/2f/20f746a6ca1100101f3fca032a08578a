@@ -1,0 +1,35 @@
+package lab7.Buddies;
+
+// represents a list of Person's buddies
+class ConsLoBuddy implements ILoBuddy {
+  Person first;
+  ILoBuddy rest;
+
+  ConsLoBuddy(Person first, ILoBuddy rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+
+  public boolean contains(Person p) {
+    return this.first.samePerson(p) || this.rest.contains(p);
+  }
+
+  // count common buddies in this list and the given other list
+  public int countCommonBuddies(ILoBuddy other) {
+    if (other.contains(this.first)) {
+      return 1 + this.rest.countCommonBuddies(other);
+    }
+    return this.rest.countCommonBuddies(other);
+  }
+
+  public boolean canReach(Person p) {
+    // TODO Auto-generated method stub
+    return this.first.hasExtendedBuddy(p) || this.rest.canReach(p); // this creates infinite cycles  
+  }
+
+  // produce a list of everyone's direct buddies (excludes duplicates)
+  public ILoBuddy getAllBuddies() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+}

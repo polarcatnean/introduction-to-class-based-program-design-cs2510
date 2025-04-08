@@ -1,0 +1,17 @@
+package lab7.Buddies;
+
+// represents a list of Person's buddies
+class ConsLoBuddy implements ILoBuddy {
+  Person first;
+  ILoBuddy rest;
+
+  ConsLoBuddy(Person first, ILoBuddy rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+
+  public boolean contains(Person that) {
+    return this.first.samePerson(that) || this.rest.contains(that);
+  }
+
+}

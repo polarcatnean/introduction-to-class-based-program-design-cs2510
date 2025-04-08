@@ -1,0 +1,10 @@
+package lab8.Bank;
+
+
+// Represents a List of Accounts
+public interface ILoA {
+  
+  // EFFECT: Remove the given account from this list
+  void remove(int acctNo);
+
+}

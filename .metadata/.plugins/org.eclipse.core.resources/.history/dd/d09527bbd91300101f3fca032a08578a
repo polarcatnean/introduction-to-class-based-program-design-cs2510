@@ -1,0 +1,14 @@
+package lab8.Bank;
+
+
+// Represents the empty List of Accounts
+public class MtLoA implements ILoA{  
+  MtLoA() {}
+
+  @Override
+  public void remove(int acctNo) {
+    // TODO Auto-generated method stub
+
+  }
+}
+

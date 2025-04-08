@@ -1,0 +1,12 @@
+package lab8.Bank;
+
+
+// Represents the empty List of Accounts
+public class MtLoA implements ILoA{  
+  MtLoA() {}
+
+  public void remove(int acctNo) {
+    throw new RuntimeException("Account not found.");
+  }
+}
+

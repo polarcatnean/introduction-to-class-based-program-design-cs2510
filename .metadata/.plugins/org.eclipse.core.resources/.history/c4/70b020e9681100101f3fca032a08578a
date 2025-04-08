@@ -1,0 +1,82 @@
+package lecture17mutation;
+
+import tester.Tester;
+
+// Represents authors of books
+class Author {
+  String first;
+  String last;
+  int yob;
+  Book book;
+  
+  Author(String fst, String lst, int yob, Book bk) {
+    this.first = fst;
+    this.last = lst;
+    this.yob = yob;
+    this.book = bk;
+  }
+  
+  //EFFECT: modifies this Author's book field to refer to the given Book
+  void updateBook(Book b) {
+    if (this.book != null) {
+      throw new RuntimeException("trying to add second book to an author");
+    }
+    else {
+      this.book = b;
+    }
+  }
+  
+  // Computes whether the given author has the same name and year of birth
+  // as this author (i.e., we're ignoring their books)
+  boolean sameAuthor(Author that) {
+   return this.first.equals(that.first)
+       && this.last.equals(that.first)
+       && this.yob == that.yob;
+  }
+}
+ 
+// Represent books
+class Book {
+  String title;
+  int price;
+  int quantity;
+  Author author;
+  
+  Book(String title, int price, int quantity, Author ath) {
+    this.title = title;
+    this.price = price;
+    this.quantity = quantity;
+    this.author = ath;
+    // NEW! Fix up the author for us, using *this* newly-constructed Book
+    // this.author.updateBook(this);
+  }
+}
+
+class ExamplesMutation {
+  Author jk = new Author("JK", "Rowling", 1965, null);
+  
+  Book hp1 = new Book("HP1", 100, 1, jk);
+  Book hp2 = new Book("HP2", 100, 1, jk);
+  
+  // "TEST FIXTURE"
+  // EFFECT: Sets up the initial conditions for our tests, by re-initializing variables
+  // Setting up a fixed reference point against which to test methods with side effects is called creating a TEST FIXURE
+  void initTestConditions() {
+    
+  }
+  
+  boolean testBook1(Tester t) {
+    jk.updateBook(hp1);
+    return t.checkExpect(hp1.author, jk)
+        && t.checkExpect(jk.book, hp1)
+        && t.checkExpect(jk.book.author, jk);
+  }
+  
+  boolean testBook2(Tester t) {
+    jk.updateBook(hp2);
+    return t.checkExpect(hp2.author, jk)
+        && t.checkExpect(jk.book, hp2)
+        && t.checkExpect(jk.book.author, jk);
+  }
+ 
+}

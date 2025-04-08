@@ -1,0 +1,88 @@
+package lecture17mutation;
+
+import tester.Tester;
+
+class Course {
+  String deptName;
+  int number;
+  Instructor instructor;
+  IList<Student> enrollment;
+  
+  Course(String deptName, int number, Instructor instructor, IList<Student> enrollment) {
+    this.deptName = deptName;
+    this.number = number;
+    this.instructor = instructor;
+    this.enrollment = enrollment;
+    this.instructor.assignCourse(this);
+  }
+  
+  Course(String deptName, int number, Instructor instructor) {
+    this(deptName, number, instructor, new MtList<Student>());
+    //this.instructor.assignCourse(this);
+  }
+}
+
+class Student {
+  String firstName;
+  String lastName;
+  IList<Course> courses;
+  
+  Student(String firstName, String lastName, IList<Course> courses) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.courses = courses;
+  }
+  
+  Student(String firstName, String lastName) {
+    this(firstName, lastName, new MtList<Course>());
+  }
+}
+
+class Instructor {
+  String firstName;
+  String lastName;
+  IList<Course> assignedCourses;
+  
+  Instructor(String firstName, String lastName, IList<Course> assignedCourses) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.assignedCourses = assignedCourses;
+  }
+  
+  Instructor(String firstName, String lastName) {
+    this(firstName, lastName, new MtList<Course>());
+  }
+  
+  boolean sameInstructor(Instructor other) {
+    return this.firstName.equals(other.firstName)
+        && this.lastName.equals(other.lastName);
+  }
+  
+  void assignCourse(Course c) {
+    if (this.sameInstructor(c.instructor)) {
+      throw new RuntimeException("This instructor doesn't teach this course");
+    }
+    this.assignedCourses = new ConsList<Course>(c, assignedCourses);
+  }
+}
+
+class ExampleReg {
+  
+  Instructor gregor, vidoje;
+  Course htc1, htc2, htdc;
+  
+  void initTestConditions() {
+    gregor = new Instructor("Gregor", "Kiczales");
+    vidoje = new Instructor("Vidoje", "Mihajlovikj");
+    
+    htc1 = new Course("CS", 1, gregor);
+    htc2 = new Course("CS", 2, gregor);
+    htdc = new Course("CS", 3, vidoje);
+  }
+  
+  void testAssignCourse(Tester t) {
+    initTestConditions();
+    t.checkExpect(vidoje.assignedCourses, new ConsList<Course>(htdc, new MtList<>()));
+  }
+  
+}

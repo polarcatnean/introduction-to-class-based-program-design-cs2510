@@ -1,0 +1,65 @@
+package lab7.Buddies;
+
+// represents a Person with a user name and a list of buddies
+class Person {
+  String username;
+  ILoBuddy buddies;
+
+  Person(String username) {
+    this.username = username;
+    this.buddies = new MTLoBuddy();
+  }
+
+  //EFFECT: change this person's buddy list so that it includes the given person
+  void addBuddy(Person buddy) {
+    this.buddies = new ConsLoBuddy(buddy, buddies);
+  }
+  
+  public boolean samePerson(Person that) {
+    return this.username.equals(that.username);
+  }
+
+  // returns true if this Person has that as a direct buddy
+  boolean hasDirectBuddy(Person that) {
+    return this.buddies.contains(that);
+  }
+
+  // returns the number of people who will show up at the party given by this person
+  int partyCount() {
+    return this.getExtendedBuddies(new MTLoBuddy(), new MTLoBuddy()).count() - 1;  // minus this person
+  }
+
+  public ILoBuddy getExtendedBuddies(ILoBuddy todo, ILoBuddy visited) {
+    // direct + indirect buddies
+    if (visited.contains(this)) {
+      return todo.getExtendedBuddies(visited);
+    }
+    return this.buddies.append(todo).getExtendedBuddies(new ConsLoBuddy(this,visited));  // add buddies in front of todo (DFS)
+  }
+
+  // returns the number of people that are direct buddies of both this and that person
+  int countCommonBuddies(Person that) {
+    return this.buddies.countCommonBuddies(that.buddies);
+  }
+
+  // will the given person be invited to a party organized by this person?
+  boolean hasExtendedBuddy(Person that) {
+    return this.reachable(that, new MTLoBuddy(), new MTLoBuddy());
+  }
+
+  // is that person reachable via buddies in todo
+  public boolean reachable(Person that, ILoBuddy todo, ILoBuddy visited) {
+    // todo is ILoBuddy; a worklist accumulator
+    // visited is ILoBuddy; context preserving accumulator, people already visited
+    if (this.samePerson(that)) {
+      return true;   // that person can be reached
+    }
+    if (visited.contains(this)) {
+      return todo.reachable(that, visited);
+    }
+    ILoBuddy updatedTodo = todo.append(this.buddies); // add their buddies to todo list (BFS)
+    ILoBuddy updatedvisit = new ConsLoBuddy(this, visited);  // add this person to visited 
+    return updatedTodo.reachable(that, updatedvisit);
+  }
+
+}

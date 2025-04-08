@@ -1,0 +1,31 @@
+package lab7.Buddies;
+
+// represents an empty list of Person's buddies
+class MTLoBuddy implements ILoBuddy {
+
+  public boolean contains(Person p) {
+    return false;
+  }
+
+  public int countCommonBuddies(ILoBuddy other) {
+    return 0;
+  }
+
+  public boolean hasDirectBuddy(Person p) {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  public ILoBuddy addIfNotExist(Person other) {
+    return new ConsLoBuddy(other, this);
+  }
+
+  public ILoBuddy addAllIfNotExist(ILoBuddy other) {
+    return other;
+  }
+
+  public ILoBuddy addBuddiesOfAllToList(ILoBuddy list) {
+    return list;
+  }
+
+}

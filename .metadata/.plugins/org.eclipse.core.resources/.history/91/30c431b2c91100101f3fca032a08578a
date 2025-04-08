@@ -1,0 +1,15 @@
+package lab7.Buddies;
+
+// represents a list of Person's buddies
+interface ILoBuddy {
+  // is the given person in this list
+  boolean contains(Person p);
+
+  int countCommonBuddies(ILoBuddy other);
+
+  // produce a list of everyone's direct buddies (excludes duplicates)
+  ILoBuddy getAllBuddies();
+  ILoBuddy getAllBuddiesHelper(ILoBuddy rsf);
+
+
+}

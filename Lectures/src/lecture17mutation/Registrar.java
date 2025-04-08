@@ -1,0 +1,112 @@
+package lecture17mutation;
+
+import tester.Tester;
+
+class Course {
+  String deptName;
+  int number;
+  Instructor instructor;
+  IList<Student> enrollment;
+  
+  Course(String deptName, int number, Instructor instructor, IList<Student> enrollment) {
+    this.deptName = deptName;
+    this.number = number;
+    this.instructor = instructor;
+    this.enrollment = enrollment;
+    this.instructor.assignCourse(this);
+  }
+  
+  Course(String deptName, int number, Instructor instructor) {
+    this(deptName, number, instructor, new MtList<Student>());
+  }
+}
+
+class Student {
+  String firstName;
+  String lastName;
+  IList<Course> courses;
+  
+  Student(String firstName, String lastName, IList<Course> courses) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.courses = courses;
+  }
+  
+  Student(String firstName, String lastName) {
+    this(firstName, lastName, new MtList<Course>());
+  }
+  
+  //EFFECT: adding a new course to this student's courses 
+  //and adding student in the course's enrollment
+  void enroll(Course c) {
+    this.courses = new ConsList<Course>(c, courses);
+    c.enrollment = new ConsList<Student>(this, c.enrollment);
+  }
+}
+
+class Instructor {
+  String firstName;
+  String lastName;
+  IList<Course> assignedCourses;
+  
+  Instructor(String firstName, String lastName, IList<Course> assignedCourses) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.assignedCourses = assignedCourses;
+  }
+  
+  Instructor(String firstName, String lastName) {
+    this(firstName, lastName, new MtList<Course>());
+  }
+  
+  boolean sameInstructor(Instructor other) {
+    return this.firstName.equals(other.firstName)
+        && this.lastName.equals(other.lastName);
+  }
+  
+  //EFFECT: assign a new course to this instructor's assignedCourses
+  void assignCourse(Course c) {
+    if (!this.sameInstructor(c.instructor)) {
+      throw new RuntimeException("This instructor doesn't teach this course");
+    }
+    this.assignedCourses = new ConsList<Course>(c, assignedCourses);
+  }
+}
+
+class ExampleReg {
+  
+  Instructor gregor, vidoje;
+  Course htc1, htc2, htdc;
+  Student studentA = new Student("A", "Ant");
+  Student studentB = new Student("B", "Boy");
+  
+  void initTestConditions() {
+    gregor = new Instructor("Gregor", "Kiczales");
+    vidoje = new Instructor("Vidoje", "Mihajlovikj");
+    
+    htc1 = new Course("CS", 1, gregor);
+    htc2 = new Course("CS", 2, gregor);
+    htdc = new Course("CS", 3, vidoje);
+  }
+  
+  void testAssignCourse(Tester t) {
+    initTestConditions();
+    t.checkExpect(vidoje.assignedCourses, new ConsList<Course>(htdc, new MtList<>()));
+    t.checkExpect(gregor.assignedCourses, new ConsList<Course>(htc2, 
+        new ConsList<Course>(htc1, new MtList<>())));
+  }
+  
+  void testEnroll(Tester t) {
+    studentA.enroll(htc1);
+    studentA.enroll(htc2);
+    studentB.enroll(htc1);
+    
+    t.checkExpect(studentA.courses, new ConsList<Course>(htc2, new ConsList<Course>(htc1, new MtList<>())));
+    t.checkExpect(studentB.courses, new ConsList<Course>(htc1, new MtList<>()));
+    
+    t.checkExpect(htc2.enrollment, new ConsList<Student>(studentA, new MtList<Student>()));
+    t.checkExpect(htc1.enrollment, new ConsList<Student>(studentB, 
+        new ConsList<Student>(studentA, new MtList<Student>())));
+  }
+  
+}

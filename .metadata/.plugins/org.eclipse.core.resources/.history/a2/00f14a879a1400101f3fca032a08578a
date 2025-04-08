@@ -1,0 +1,42 @@
+package lab8.Bank;
+
+
+// Represents a non-empty List of Accounts...
+public class ConsLoA implements ILoA {
+  Account first;
+  ILoA rest;
+
+  public ConsLoA(Account first, ILoA rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+
+  /* Template
+   *  Fields:
+   *    ... this.first ...         --- Account
+   *    ... this.rest ...          --- ILoA
+   *
+   *  Methods:
+   *
+   *  Methods for Fields:
+   *
+   */
+  
+  @Override
+  public void add(Account acct) {
+    // TODO Auto-generated method stub
+    
+  }
+
+  public void remove(int acctNo) {
+    // TODO Auto-generated method stub
+    if (this.first.accountNum == acctNo) {
+
+    }
+    this.rest.remove(acctNo);
+
+  }
+
+ 
+    
+}

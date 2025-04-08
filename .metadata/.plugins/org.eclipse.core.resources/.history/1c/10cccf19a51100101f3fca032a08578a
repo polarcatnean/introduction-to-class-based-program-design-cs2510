@@ -1,0 +1,8 @@
+package lab7.Buddies;
+
+// represents an empty list of Person's buddies
+class MTLoBuddy implements ILoBuddy {
+    MTLoBuddy() {}
+
+
+}

@@ -1,0 +1,13 @@
+package lab7.Buddies;
+
+// represents a list of Person's buddies
+interface ILoBuddy {
+  // is the given person in this list
+  boolean contains(Person p);
+
+  int countCommonBuddies(ILoBuddy other);
+
+  // the given person can be reach through this list of buddy
+  boolean canReach(Person that);
+
+}

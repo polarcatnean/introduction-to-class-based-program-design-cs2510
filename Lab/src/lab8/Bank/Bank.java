@@ -1,0 +1,34 @@
+package lab8.Bank;
+
+// Represents a Bank with list of accounts
+public class Bank {
+  String name;
+  ILoA accounts;
+
+  public Bank(String name) {
+    this.name = name;
+
+    // Each bank starts with no accounts
+    this.accounts = new MtLoA();
+  }
+
+  // EFFECT: Add a new account to the front of this Bank's account list
+  void add(Account acct) {
+    this.accounts = new ConsLoA(acct, this.accounts);
+  }
+   
+  // EFFECT: Remove the given account from this Bank
+  void removeAccount(int acctNo) {
+    this.accounts = this.accounts.remove(acctNo);
+  }
+  
+  // EFFECT: add the given amount to the account with the given account number
+  void deposit(int amount, int acctNo) {
+    this.accounts.deposit(amount, acctNo);
+  }
+  
+  void withdraw(int amount, int acctNo) {
+    this.accounts.withdraw(amount, acctNo);
+  }
+
+}

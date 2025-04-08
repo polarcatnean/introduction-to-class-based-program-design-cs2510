@@ -1,0 +1,89 @@
+package lab7.Buddies;
+
+import tester.*;
+
+
+// runs tests for the buddies problem
+public class ExamplesBuddies {
+
+  Person ann = new Person("ann");
+  Person bob = new Person("bob");
+  Person cole = new Person("cole");
+  Person dan = new Person("dan");
+  Person ed = new Person("ed");
+  Person fay = new Person("fay");
+  Person gabi = new Person("gabi");
+  Person hank = new Person("hank");
+  Person jan = new Person("jan");
+  Person kim = new Person("kim");
+  Person len = new Person("len");
+  
+  void initConditions() {
+    ann = new Person("ann");
+    bob = new Person("bob");
+    cole = new Person("cole");
+    dan = new Person("dan");
+    ed = new Person("ed");
+    fay = new Person("fay");
+    gabi = new Person("gabi");
+    hank = new Person("hank");  // no buddies
+    jan = new Person("jan");
+    kim = new Person("kim");
+    len = new Person("len");
+    
+    ann.addBuddy(bob); ann.addBuddy(cole);
+    bob.addBuddy(ann); bob.addBuddy(ed); bob.addBuddy(hank);
+    cole.addBuddy(dan);
+    dan.addBuddy(cole);
+    ed.addBuddy(fay);
+    fay.addBuddy(ed); fay.addBuddy(gabi);
+    gabi.addBuddy(ed); gabi.addBuddy(fay);
+    jan.addBuddy(kim); jan.addBuddy(len);
+    kim.addBuddy(jan); kim.addBuddy(len);
+    len.addBuddy(jan); len.addBuddy(kim);
+  }
+  
+  void testPartyCount(Tester t) {
+    initConditions();
+    t.checkExpect(hank.partyCount(), 0);
+    t.checkExpect(ed.partyCount(), 2);  // fay, gabi
+    t.checkExpect(jan.partyCount(), 2);
+    t.checkExpect(ann.partyCount(), 7); // bob, cole, ed, hank, dan, fay, gabi
+    t.checkExpect(bob.partyCount(), 7);
+  }
+  
+  void testHasExtendedBuddy(Tester t) {
+    initConditions();
+    t.checkExpect(ann.hasExtendedBuddy(ed), true);
+    t.checkExpect(ann.hasExtendedBuddy(dan), true);
+    t.checkExpect(ann.hasExtendedBuddy(fay), true);
+    t.checkExpect(ann.hasExtendedBuddy(gabi), true);
+    t.checkExpect(hank.hasExtendedBuddy(fay), false);
+    t.checkExpect(ann.hasExtendedBuddy(hank), true);
+    t.checkExpect(ann.hasExtendedBuddy(len), false);
+  }
+  
+  void testAppend(Tester t) {
+    initConditions();
+    t.checkExpect(new MTLoBuddy().append(ann.buddies), ann.buddies);  // cole, bob
+    t.checkExpect(ann.buddies.append(new MTLoBuddy()), new ConsLoBuddy(bob, new ConsLoBuddy(cole, new MTLoBuddy()))); // reversed ann.buddies
+    t.checkExpect(ann.buddies.append(bob.buddies), 
+        new ConsLoBuddy(bob, new ConsLoBuddy(cole, bob.buddies)));
+  }
+  
+  void testCountCommonBuddies(Tester t) {
+    initConditions();
+    t.checkExpect(hank.countCommonBuddies(ann), 0);
+    t.checkExpect(ann.countCommonBuddies(ann), 2);
+    t.checkExpect(ann.countCommonBuddies(bob), 0);
+    t.checkExpect(ann.countCommonBuddies(dan), 1);
+    t.checkExpect(jan.countCommonBuddies(kim), 1);
+  }
+  
+  void testHasDirectBuddy(Tester t) {
+    initConditions();
+    t.checkExpect(hank.hasDirectBuddy(ann), false);
+    t.checkExpect(fay.hasDirectBuddy(ed), true);
+    t.checkExpect(jan.hasDirectBuddy(ann), false);
+  }
+}

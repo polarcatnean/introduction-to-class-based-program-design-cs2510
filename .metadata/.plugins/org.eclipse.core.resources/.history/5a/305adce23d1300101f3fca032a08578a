@@ -1,0 +1,27 @@
+package lab8.Bank;
+
+// Represents a bank account
+public abstract class Account {
+
+  int accountNum; // Must be unique
+  int balance; // Must remain above zero (others Accts have more restrictions)
+  String name; // Name on the account
+
+  public Account(int accountNum, int balance, String name) {
+    this.accountNum = accountNum;
+    this.balance = balance;
+    this.name = name;
+  }
+
+ // EFFECT: Withdraw the given amount
+ // Return the new balance
+  public int withdraw(int amount) {
+    if (amount > this.balance) {
+      throw new RuntimeException("Cannot withdraw more than the current balance.");
+    }
+    this.balance = this.balance - amount;
+    return this.balance;
+  }
+}
+
+

@@ -1,0 +1,86 @@
+package lecture17mutation;
+
+import tester.Tester;
+
+// Represents authors of books
+class Author {
+  String first;
+  String last;
+  int yob;
+  Book book;
+  
+  Author(String fst, String lst, int yob, Book bk) {
+    this.first = fst;
+    this.last = lst;
+    this.yob = yob;
+    this.book = bk;
+  }
+  
+  //EFFECT: modifies this Author's book field to refer to the given Book
+  void updateBook(Book b) {
+    if (this.book != null) {
+      throw new RuntimeException("trying to add second book to an author");
+    }
+    else {
+      this.book = b;
+    }
+  }
+  
+  // Computes whether the given author has the same name and year of birth
+  // as this author (i.e., we're ignoring their books)
+  boolean sameAuthor(Author that) {
+   return this.first.equals(that.first)
+       && this.last.equals(that.first)
+       && this.yob == that.yob;
+  }
+}
+ 
+// Represent books
+class Book {
+  String title;
+  int price;
+  int quantity;
+  Author author;
+  
+  Book(String title, int price, int quantity, Author ath) {
+    this.title = title;
+    this.price = price;
+    this.quantity = quantity;
+    this.author = ath;
+  }
+}
+
+class ExamplesMutation {
+  
+  Author knuth;
+  Book taocp1, taocp2;
+  
+  // EFFECT: Sets up the initial conditions for our tests, by re-initializing
+  // knuth, taocp1 and taocp2
+  // Setting up a fixed reference point against which to test methods with side effects is called creating a TEST FIXURE
+  void initTestConditions() {
+    this.knuth = new Author("Donald", "Knuth", 1938, null);
+    this.taocp1 = new Book("The Art of Computer Programming (volume 1)", 100, 2, this.knuth);
+    this.taocp2 = new Book("The Art of Computer Programming (volume 2)", 120, 3, this.knuth);
+  }
+ 
+  boolean testTaocp1(Tester t) {
+    // 1. Set up the initial conditions 
+    this.initTestConditions();
+    // 2. Modify them
+    this.knuth.updateBook(this.taocp1);
+    // 3. Check that the expected changes have occurred
+    return t.checkExpect(this.knuth.book, this.taocp1) &&
+           t.checkExpect(this.knuth.book.author, this.knuth);
+  }
+  
+  boolean testTaocp2(Tester t) {
+    // 1. Set up the initial conditions
+    this.initTestConditions();
+    // 2. Modify them
+    this.knuth.updateBook(this.taocp2);
+    // 3. Check that the expected changes have occurred
+    return t.checkExpect(this.knuth.book, this.taocp2) &&
+           t.checkExpect(this.knuth.book.author, this.knuth);
+  }
+}

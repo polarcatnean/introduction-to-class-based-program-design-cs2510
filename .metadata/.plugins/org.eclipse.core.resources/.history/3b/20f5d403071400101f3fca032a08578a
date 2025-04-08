@@ -1,0 +1,41 @@
+package lecture20mutableDS;
+
+
+class Person {
+  String name;
+  int phone;
+  Person(String name, int phone) {
+    this.name = name;
+    this.phone = phone;
+  }
+  // Returns true when the given person has the same name and phone number as this person
+  boolean samePerson(Person that) {
+    return this.name.equals(that.name) && this.phone == that.phone;                                          
+  }
+  
+  public boolean sameName(String name) {
+    return this.name.equals(name);
+  }
+  
+  public void changePhone(int newNum) {
+    this.phone = newNum;
+  }
+}
+
+interface ILoPerson {
+ 
+}
+
+class MtLoPerson implements ILoPerson {
+
+}
+
+class ConsLoPerson implements ILoPerson {
+  Person first;
+  ILoPerson rest;
+  
+  ConsLoPerson(Person first, ILoPerson rest) {
+    this.first = first;  // set the pointer to "first"
+    this.rest = rest;
+  }
+}

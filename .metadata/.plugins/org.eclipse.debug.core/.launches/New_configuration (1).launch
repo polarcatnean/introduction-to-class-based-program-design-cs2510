@@ -13,6 +13,6 @@
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
     <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="tester.Main"/>
     <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="Lab"/>
-    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="lab6.ExamplesJSON"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="lab8.Bank.Examples"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="Lab"/>
 </launchConfiguration>

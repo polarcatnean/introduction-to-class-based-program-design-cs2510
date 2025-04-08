@@ -1,0 +1,504 @@
+package assignment6;
+import java.util.Comparator;
+import tester.Tester;
+
+class Book {
+  String title;
+  String author;
+  int price;
+  
+  Book(String title, String author, int price) {
+    this.title = title;
+    this.author = author;
+    this.price = price;
+  }
+}
+
+class BooksByTitle implements Comparator<Book> {
+  public int compare(Book b1, Book b2) {
+    return b1.title.compareTo(b2.title);
+  }
+}
+
+class BooksByAuthor implements Comparator<Book> {
+  public int compare(Book b1, Book b2) {
+    return b1.author.compareTo(b2.author);
+  }
+}
+
+class BooksByPrice implements Comparator<Book> {
+  public int compare(Book b1, Book b2) {
+    return b1.price - b2.price;
+  }
+}
+
+class IntAsc implements Comparator<Integer> {
+  public int compare(Integer i1, Integer i2) {
+    return i1 - i2;
+  }
+  
+}
+
+abstract class ABST<T> {
+  Comparator<T> order;
+  
+  ABST(Comparator<T> order) {
+    this.order = order;
+  }
+  
+  // produces a new binary search tree with the given item inserted in the correct place.
+  // If the value is a duplicate according to the tree order, insert it into the right-side subtree.
+  public abstract ABST<T> insert(T item);
+  
+  // eg, if BooksByTitle is used, return true if there is a book with the same title as the item
+  public abstract boolean present(T item);  
+  
+  // produce the leftmost item contained in this tree
+  public abstract ABST<T> getLeftMost();
+  protected boolean isLeaf() { return false; }
+  
+  // produce the tree containing all but the leftmost item of this tree.
+  public abstract ABST<T> getRight();
+  protected abstract ABST<T> getRightHelper(ABST<T> leftNodeToAdd, ABST<T> rsf);
+  protected abstract ABST<T> addLeftMostNode(ABST<T> leftNodeToAdd);
+  protected abstract ABST<T> removeLeftNode();
+  
+  // determines whether this binary search tree is the same as the given one
+  // = matching structure and matching data
+  public abstract boolean sameTree(ABST<T> other);
+  protected boolean sameLeaf(Leaf<T> leaf) { return false; }
+  protected boolean sameNode(Node<T> node) { return false; }
+  
+  public abstract boolean sameData(ABST<T> other);
+  
+  // produces a list of items in the tree in the sorted order
+  public abstract IList<T> buildList();
+  public abstract IList<T> buildListHelper(ABST<T> leftMost, ABST<T> remainingTree, IList<T> rsf);
+
+  protected abstract IList<T> addTo(IList<T> rsf);
+}
+
+// a tree with no data
+class Leaf<T> extends ABST<T> {
+
+  Leaf(Comparator<T> order) {
+    super(order);
+  }
+
+  // insert into a tree with no data
+  public ABST<T> insert(T item) {
+    return new Node<T>(this.order, item, this, this);
+  }
+
+  public boolean present(T item) {
+    return false;
+  }
+
+  public ABST<T> getLeftMost() {
+    throw new RuntimeException("No leftmost item of an empty tree");
+  }
+
+  protected boolean isLeaf() {
+    return true;
+  }
+
+  public ABST<T> getRight() {
+    throw new RuntimeException("No right of an empty tree");
+  }
+
+  protected ABST<T> getRightHelper(ABST<T> leftNodeToAdd, ABST<T> rsf) {
+    return rsf;
+  }
+  
+  protected ABST<T> addLeftMostNode(ABST<T> leftNodeToAdd) {
+    return leftNodeToAdd;
+  }
+
+  protected ABST<T> removeLeftNode() {
+    return this;
+  }
+
+  public boolean sameTree(ABST<T> other) {
+    return other.sameLeaf(this);
+  }
+
+  // all leaves are the same
+  @Override
+  protected boolean sameLeaf(Leaf<T> leaf) {
+    return true;
+  }
+
+  public boolean sameData(ABST<T> other) {
+    return true;  // if other is leaf, it is the same
+  }
+
+  public IList<T> buildList() {
+    return new MtList<T>();
+  }
+  
+  public IList<T> buildListHelper(ABST<T> leftMost, ABST<T> remainingTree, IList<T> rsf) {
+    //TODO
+    return new MtList<T>();
+  }
+
+  protected IList<T> addTo(IList<T> rsf) {
+    return rsf;
+  }
+
+}
+
+class Node<T> extends ABST<T> {
+  T data;
+  ABST<T> left;  // ALL data items in the left subtree comes BEFORE this data item
+  ABST<T> right; // ALL data items in the right subtree comes AFTER this data item
+  
+  Node(Comparator<T> order, T data, ABST<T> left, ABST<T> right) {
+    super(order);
+    this.data = data;
+    this.left = left;
+    this.right = right;
+  }
+
+  public ABST<T> insert(T item) {
+    if (this.order.compare(item, this.data) < 0) {
+      return new Node<T>(this.order, this.data, this.left.insert(item), this.right);
+    }
+    return new Node<T>(this.order, this.data, this.left, this.right.insert(item));
+  }
+
+  public boolean present(T item) {
+    if (this.order.compare(item, this.data) == 0) {
+      return true;
+    }
+    else if (this.order.compare(item, this.data) < 0) {
+      return this.left.present(item);
+    }
+    return this.right.present(item);
+  }
+  
+  public ABST<T> getLeftMost() {
+    if (this.left.isLeaf()) {
+      return this;
+    }
+    return this.left.getLeftMost();
+  }
+
+  public ABST<T> getRight() {
+    // traverse the left side of the tree 
+    return this.left.getRightHelper(this.left.removeLeftNode(), // context-preserving accumulator 
+                                    this.removeLeftNode());     // rsf = all tree except the left node on the same level
+  }
+
+  protected ABST<T> getRightHelper(ABST<T> leftNode, ABST<T> rightTree) {
+    if (this.left.isLeaf()) {
+      return rightTree;
+    }
+    return this.left.getRightHelper(this.left.removeLeftNode(), 
+                                    rightTree.addLeftMostNode(leftNode));
+  }
+
+  protected ABST<T> addLeftMostNode(ABST<T> node) {
+    return new Node<T>(this.order, this.data, this.left.addLeftMostNode(node), this.right);
+  }
+
+  protected ABST<T> removeLeftNode() {
+    return new Node<T>(this.order, this.data, new Leaf<T>(this.order), this.right);
+  }
+
+  public boolean sameTree(ABST<T> other) {
+    // for double-dispatch
+    return other.sameNode(this);
+  }
+
+  protected boolean sameNode(Node<T> node) {
+    return (this.order.compare(this.data, node.data) == 0)
+        && this.left.sameTree(node.left) && this.right.sameTree(node.right);
+  }
+
+  public boolean sameData(ABST<T> other) {
+    // TODO other tree contains all data in this tree
+    return other.present(this.data) && this.left.sameData(other) && this.right.sameData(other);
+  }
+
+  @Override
+  public IList<T> buildList() {
+    // TODO start putting the leftmost data first, then right, then reverse at the end
+    return this.buildListHelper(this.getLeftMost(), this.getRight(), new MtList<T>());
+  }
+
+  public IList<T> buildListHelper(ABST<T> leftMost, ABST<T> remainingTree, IList<T> rsf) {
+    if (leftMost.isLeaf()) {
+      return null;
+    }
+    return remainingTree.buildListHelper(remainingTree.getLeftMost(), 
+                                         remainingTree.getRight(),
+                                         leftMost.addTo(rsf));
+  }
+
+  protected IList<T> addTo(IList<T> rsf) {
+    return new ConsList<T>(this.data, rsf);
+  }
+
+}
+
+
+class ExamplesBSTBooks {
+  
+  Book b1 = new Book("A", "A", 5);
+  Book b2 = new Book("B", "B", 4);
+  Book b3 = new Book("C", "C", 3);
+  Book b4 = new Book("D", "D", 2);
+  Book b5 = new Book("E", "E", 1);
+  
+  Comparator<Book> byTitle = new BooksByTitle();
+  ABST<Book> leafTitle = new Leaf<Book>(byTitle);
+  ABST<Book> node1 = new Node<Book>(byTitle, b1, leafTitle, leafTitle);
+  ABST<Book> node2 = new Node<Book>(byTitle, b2, leafTitle, leafTitle);
+  ABST<Book> node3 = new Node<Book>(byTitle, b3, leafTitle, leafTitle);
+  ABST<Book> node4 = new Node<Book>(byTitle, b4, leafTitle, leafTitle);
+  ABST<Book> node5 = new Node<Book>(byTitle, b5, leafTitle, leafTitle);
+
+  ABST<Book> node2a = new Node<Book>(byTitle, b2, node1, leafTitle);  
+  ABST<Book> node2a1 = new Node<Book>(byTitle, b2, leafTitle, leafTitle);
+  ABST<Book> bstA = new Node<Book>(byTitle, b3, node2a, node4);
+  
+  ABST<Book> node1b = new Node<Book>(byTitle, b1, leafTitle, leafTitle);
+  ABST<Book> node4b = new Node<Book>(byTitle, b4, leafTitle, leafTitle);
+  ABST<Book> node2b = new Node<Book>(byTitle, b2, node1b, leafTitle);
+  ABST<Book> bstB = new Node<Book>(byTitle, b3, node2b, node4b);
+  
+  ABST<Book> node4c = new Node<Book>(byTitle, b4, node3, leafTitle);
+  ABST<Book> bstC = new Node<Book>(byTitle, b2, node1, node4c);
+  ABST<Book> bstC1 = new Node<Book>(byTitle, b2, node1, node4);
+  
+  ABST<Book> node4d = new Node<Book>(byTitle, b4, leafTitle, node5);
+  ABST<Book> bstD = new Node<Book>(byTitle, b3, node1, node4c);
+  
+  
+  Comparator<Integer> asc = new IntAsc();
+  ABST<Integer> tree1 = new Node<>(asc, 5, new Leaf<>(asc), new Leaf<>(asc));  //single node tree
+  ABST<Integer> tree2 = new Node<>(asc, 3, new Node<>(asc, 1, new Leaf<>(asc), new Leaf<>(asc)), 
+                                           new Node<>(asc, 4, new Leaf<>(asc), new Leaf<>(asc)));   // small balanced tree
+  ABST<Integer> tree3 = new Node<>(asc, 6, 
+      new Node<>(asc, 2, new Node<>(asc, 1, new Leaf<>(asc), new Leaf<>(asc)), new Node<>(asc, 3, new Leaf<>(asc), new Leaf<>(asc))), 
+      new Node<>(asc, 8, new Node<>(asc, 7, new Leaf<>(asc), new Leaf<>(asc)), new Node<>(asc, 9, new Leaf<>(asc), new Leaf<>(asc)))
+  ); //  Larger Balanced Tree
+  ABST<Integer> tree4 = new Node<>(asc, 5, 
+      new Node<>(asc, 4, 
+          new Node<>(asc, 3, 
+              new Node<>(asc, 2, 
+                  new Node<>(asc, 1, new Leaf<>(asc), new Leaf<>(asc)), 
+                  new Leaf<>(asc)
+              ), 
+              new Leaf<>(asc)
+          ), 
+          new Leaf<>(asc)
+      ), 
+      new Leaf<>(asc)
+  ); // Left-Skewed Tree
+  ABST<Integer> tree4r = new Node<>(asc, 5, 
+      new Node<>(asc, 4, 
+          new Node<>(asc, 3, 
+              new Node<>(asc, 2, new Leaf<>(asc), new Leaf<>(asc)), 
+              new Leaf<>(asc)
+          ), new Leaf<>(asc)
+      ), new Leaf<>(asc)
+  );
+  ABST<Integer> tree5 = new Node<>(asc, 1, 
+      new Leaf<>(asc), 
+      new Node<>(asc, 2, 
+          new Leaf<>(asc), 
+          new Node<>(asc, 3, 
+              new Leaf<>(asc), 
+              new Node<>(asc, 4, 
+                  new Leaf<>(asc), 
+                  new Node<>(asc, 5, new Leaf<>(asc), new Leaf<>(asc))
+              )
+          )
+      )
+  );  // Right-Skewed Tree
+  ABST<Integer> tree6 = new Node<>(asc, 10, 
+      new Node<>(asc, 5, 
+          new Node<>(asc, 2, new Leaf<>(asc), new Leaf<>(asc)), 
+          new Node<>(asc, 8, new Node<>(asc, 6, new Leaf<>(asc), new Leaf<>(asc)), new Leaf<>(asc))
+      ), 
+      new Node<>(asc, 15, 
+          new Leaf<>(asc), 
+          new Node<>(asc, 20, new Leaf<>(asc), new Leaf<>(asc))
+      )
+  );  // Mixed Tree
+  ABST<Integer> tree6r = new Node<>(asc, 10, 
+      new Node<>(asc, 5, 
+          new Leaf<>(asc), 
+          new Node<>(asc, 8, new Node<>(asc, 6, new Leaf<>(asc), new Leaf<>(asc)), new Leaf<>(asc))
+      ), 
+      new Node<>(asc, 15, 
+          new Leaf<>(asc), 
+          new Node<>(asc, 20, new Leaf<>(asc), new Leaf<>(asc))
+      )
+  );
+  ABST<Integer> tree6i = new Node<>(asc, 10, 
+      new Node<>(asc, 5, 
+          new Leaf<>(asc), 
+          new Node<>(asc, 8, new Node<>(asc, 6, new Leaf<>(asc), new Leaf<>(asc)), 
+                             new Node<>(asc, 9, new Leaf<>(asc), new Leaf<>(asc)))
+      ), 
+      new Node<>(asc, 15, 
+          new Leaf<>(asc), 
+          new Node<>(asc, 20, new Leaf<>(asc), new Leaf<>(asc))
+      )
+  );
+  
+  IList<Book> empty = new MtList<>();
+  IList<Book> listA = new ConsList<>(b1, new ConsList<>(b2, new ConsList<>(b3, new ConsList<>(b4, empty))));
+  IList<Book> listAr = new ConsList<>(b2, new ConsList<>(b3, new ConsList<>(b4, empty)));
+  IList<Book> listB = new ConsList<>(b1, new ConsList<>(b2, new ConsList<>(b3, new ConsList<>(b4, empty))));
+  IList<Book> listC = new ConsList<>(b1, new ConsList<>(b2, new ConsList<>(b3, new ConsList<>(b4, empty))));
+  IList<Book> listD = new ConsList<>(b1, new ConsList<>(b3, new ConsList<>(b4, new ConsList<>(b5, empty))));
+  
+  IList<Integer> list1 = new ConsList<>(5, new MtList<>());
+  IList<Integer> list2 = new ConsList<>(1, new ConsList<>(3, new ConsList<>(4, new MtList<>())));
+  IList<Integer> list3 = new ConsList<>(1, new ConsList<>(2, new ConsList<>(3, new ConsList<>(6, 
+      new ConsList<>(7, new ConsList<>(8, new ConsList<>(9, new MtList<>())))))));
+  IList<Integer> list4 = new ConsList<>(1, new ConsList<>(2, new ConsList<>(3, new ConsList<>(4, 
+      new ConsList<>(5, new MtList<>())))));
+  IList<Integer> list6 = new ConsList<>(2, new ConsList<>(5, new ConsList<>(6, new ConsList<>(8, 
+      new ConsList<>(10, new ConsList<>(15, new ConsList<>(20, new MtList<>())))))));
+  
+  
+  boolean testInsert(Tester t) {
+    return t.checkExpect(new Node<Book>(byTitle, b3, node2a1, node4).insert(b1), bstA)
+        && t.checkExpect(new Node<Book>(byTitle, b3, node2a, leafTitle).insert(b4), bstA)
+        && t.checkExpect(bstC1.insert(b3), bstC)
+        && t.checkExpect(bstC.insert(b5), new Node<Book>(byTitle, b2, node1, new Node<Book>(byTitle, b4, node3, node5)))
+        && t.checkExpect(bstD.insert(b2), new Node<Book>(byTitle, b3, new Node<Book>(byTitle, b1, leafTitle, node2), node4c))
+        && t.checkExpect(tree6r.insert(2), tree6)
+        && t.checkExpect(tree6r.insert(9), tree6i);
+  }
+  
+  boolean testPresent(Tester t) {
+    return t.checkExpect(new Leaf<Book>(byTitle).present(b1), false)
+        && t.checkExpect(node1.present(b1), true)
+        && t.checkExpect(node1.present(b2), false)
+        && t.checkExpect(bstA.present(b1), true)
+        && t.checkExpect(bstD.present(b4), true)
+        && t.checkExpect(bstC.present(b5), false);
+  }
+  
+  boolean testLeftMost(Tester t) {
+    return t.checkException(new RuntimeException("No leftmost item of an empty tree"), 
+        leafTitle, "getLeftMost")
+        && t.checkExpect(node1.getLeftMost(), node1)
+        && t.checkExpect(bstA.getLeftMost(), node1)
+        && t.checkExpect(bstD.getLeftMost(), node1)
+        && t.checkExpect(tree6.getLeftMost(), new Node<>(asc, 2, new Leaf<>(asc), new Leaf<>(asc)));
+  }
+  
+  boolean testGetRight(Tester t) {
+    return t.checkException(new RuntimeException("No right of an empty tree"), 
+        leafTitle, "getRight")
+        && t.checkExpect(bstA.getRight(), new Node<Book>(byTitle, b3, new Node<Book>(byTitle, b2, leafTitle, leafTitle), node4))
+        && t.checkExpect(bstC.getRight(), new Node<Book>(byTitle, b2, leafTitle, node4c))
+        && t.checkExpect(tree4.getRight(), tree4r)
+        && t.checkExpect(tree5.getRight(), tree5)
+        && t.checkExpect(tree6.getRight(), tree6r);
+  }
+  
+  boolean testAddLeftMostNode(Tester t) {
+    return t.checkExpect(new Node<Book>(byTitle, b2, leafTitle, node4c).addLeftMostNode(node1), bstC)
+        && t.checkExpect(bstC.removeLeftNode().addLeftMostNode(node1), bstC)
+        && t.checkExpect(bstA.removeLeftNode().addLeftMostNode(node1), new Node<Book>(byTitle, b3, node1, node4));
+  }
+  
+  boolean testRemoveLeftNode(Tester t) {
+    return t.checkExpect(bstC.removeLeftNode(), new Node<Book>(byTitle, b2, leafTitle, node4c))
+        && t.checkExpect(bstA.removeLeftNode(), new Node<Book>(byTitle, b3, leafTitle, node4))
+        && t.checkExpect(bstD.removeLeftNode(), new Node<Book>(byTitle, b3, leafTitle, node4c));
+
+  }
+  
+  boolean testSameTree(Tester t) {
+    return t.checkExpect(bstA.sameTree(bstB), true)
+        && t.checkExpect(bstB.sameTree(bstA), true)
+        && t.checkExpect(bstA.sameTree(bstD), false)
+        && t.checkExpect(bstC.sameTree(bstA), false)
+        && t.checkExpect(tree6.sameTree(tree6r), false);
+  }
+  
+  boolean testSameData(Tester t) {
+    return t.checkExpect(bstA.sameData(bstB), true)
+        && t.checkExpect(bstA.sameData(bstC), true)
+        && t.checkExpect(bstA.sameData(bstD), false);
+  }
+}
+
+
+//Represents functions of signature A -> R, 
+interface IFunc<A, R> {
+  R apply(A input);
+}
+
+interface IFunc2<A1, A2, R> {
+  R apply(A1 arg1, A2 arg2);
+}
+
+interface IPred<T> {
+  boolean apply(T arg);
+}
+
+//generic list
+interface IList<T> {
+  <U> IList<U> map(IFunc<T, U> f);
+  <U> U foldr(IFunc2<T, U, U> f, U base);
+  IList<T> reverse();
+  IList<T> reverseHelper(T element, IList<T> rsf);
+}
+
+//empty generic list
+class MtList<T> implements IList<T> {
+  public <U> IList<U> map(IFunc<T, U> f) {
+    return new MtList<U>();
+  }
+
+  public <U> U foldr(IFunc2<T, U, U> f, U base) {
+    return base;
+  }
+
+  public IList<T> reverse() {
+    return this;
+  }
+
+  public IList<T> reverseHelper(T element, IList<T> rsf) {
+    return new ConsList<T>(element, rsf);
+  }
+
+}
+
+//non-empty generic list
+class ConsList<T> implements IList<T> {
+  T first;
+  IList<T> rest;
+
+  ConsList(T first, IList<T> rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+
+  public <U> IList<U> map(IFunc<T, U> f) {
+    return new ConsList<U>(f.apply(this.first), this.rest.map(f));
+  }
+
+  public <U> U foldr(IFunc2<T, U, U> f, U base) {
+    return f.apply(this.first, this.rest.foldr(f, base));
+  }
+
+  public IList<T> reverse() {
+    // TODO this.first, this.rest.reverse()
+    return this.rest.reverseHelper(this.first, new MtList<T>());
+  }
+
+  public IList<T> reverseHelper(T element, IList<T> rsf) {
+    return this.rest.reverseHelper(this.first, new ConsList<T>(element, rsf));
+  }
+
+}

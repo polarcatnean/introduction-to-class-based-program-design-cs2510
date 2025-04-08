@@ -1,0 +1,335 @@
+package lecture20mutableDS;
+import tester.Tester;
+
+class Person {
+  String name;
+  int phone;
+  Person(String name, int phone) {
+    this.name = name;
+    this.phone = phone;
+  }
+  // Returns true when the given person has the same name and phone number as this person
+  boolean samePerson(Person that) {
+    return this.name.equals(that.name) && this.phone == that.phone;                                          
+  }
+  
+  public boolean sameName(String name) {
+    return this.name.equals(name);
+  }
+  
+  public void changePhone(int newNum) {
+    this.phone = newNum;
+  }
+}
+
+// A Wrapper Class
+interface IMutableLoPerson {
+  void add(String name, int phoneNum);
+  void remove(String name);
+  boolean contains(String name);
+  
+  void addToFront(String name, int phone);
+}
+
+class MutableLoPerson implements IMutableLoPerson {
+  ILoPerson sentinel;
+  
+  MutableLoPerson() {
+    sentinel = new Sentinel(new MtLoPerson());  // set default sentinel to point to an empty list
+  }
+
+  public void add(String name, int phoneNum) {
+    this.sentinel = this.sentinel.insert(name, phoneNum);  // insert produces a new list, so we assign it back
+  }
+  
+  public void remove(String name) {
+    this.sentinel.removePerson(name); // removePerson is a void method which already mutates the list
+  }
+
+  public boolean contains(String name) {
+    return this.sentinel.contains(name);
+  }
+
+  public void addToFront(String name, int phone) {
+    this.sentinel.addToFront(name, phone);
+    
+  }
+
+}
+
+interface ILoPerson {
+  //returns true if this list contains a person with the given name
+  boolean contains(String name);
+
+  // returns phone number of the person with the given name, or -1 if person not found
+  int findPhoneNum(String name);
+
+  // EFFECT: change the phone number for the person in this list with the given name
+  void changePhone(String name, int newNum); 
+  
+  // EFFECT: remove the person with given name from the list
+  void removePerson(String name);
+  void removePersonHelper(String name, AListPerson prev);
+  
+  // produce a new list with a new person inserted at the end 
+  ILoPerson insert(String name, int number);
+  
+  void addToFront(String name, int phone);
+  void addToFrontHelper(String name, int phone, AListPerson sentinel);
+}
+
+
+abstract class AListPerson implements ILoPerson {
+  ILoPerson rest;
+  AListPerson(ILoPerson rest) { this.rest = rest; }
+  
+  public abstract boolean contains(String name);
+  public abstract int findPhoneNum(String name);
+  public abstract void changePhone(String name, int newNum);
+  public abstract void removePerson(String name);
+  public abstract void removePersonHelper(String name, AListPerson prev);
+  
+  public abstract void addToFront(String name, int phone);
+  public abstract void addToFrontHelper(String name, int phone, AListPerson sentinel);
+  
+}
+
+class Sentinel extends AListPerson {
+  Sentinel(ILoPerson rest) {
+    super(rest);
+  }
+  
+  public boolean contains(String name) {
+    return this.rest.contains(name);
+  }
+
+  public int findPhoneNum(String name) {
+    return this.rest.findPhoneNum(name);
+  }
+
+  public void changePhone(String name, int newNum) {
+    this.rest.changePhone(name, newNum);
+  }
+  
+  public void removePerson(String name) {
+    this.rest.removePersonHelper(name, this);
+  }
+
+  public void removePersonHelper(String name, AListPerson prev) {
+    throw new RuntimeException("Can't try to remove on a Sentinel!");
+  }
+
+  public ILoPerson insert(String name, int number) {
+    return new Sentinel(this.rest.insert(name, number));
+  }
+
+  public void addToFront(String name, int phone) {
+    this.rest.addToFrontHelper(name, phone, this);
+    
+  }
+
+  public void addToFrontHelper(String name, int phone, AListPerson sentinel) {
+    sentinel.rest = new ConsLoPerson(new Person(name, phone), this);
+  }
+
+}
+
+class MtLoPerson implements ILoPerson {
+  public boolean contains(String name) {
+    return false;
+  }
+
+  public int findPhoneNum(String name) {
+    return -1;
+  }
+
+  public void changePhone(String name, int newNum) {
+    return; 
+  }
+
+  public void removePerson(String name) {
+    return;
+  }
+
+  public void removePersonHelper(String name, AListPerson prev) {
+    return;
+  }
+
+  public ILoPerson insert(String name, int number) {
+    return new ConsLoPerson(new Person(name, number), this);
+  }
+
+  
+  public void addToFront(String name, int phone) {
+    return;
+  }
+
+  public void addToFrontHelper(String name, int phone, AListPerson prev) {
+    prev.rest = new ConsLoPerson(new Person(name, phone), this);
+    
+  }
+
+}
+
+class ConsLoPerson extends AListPerson {
+  Person first;
+  
+  ConsLoPerson(Person first, ILoPerson rest) {
+    super(rest);
+    this.first = first;  
+  }
+  
+  public boolean contains(String name) {
+    return this.first.sameName(name) || this.rest.contains(name);
+  }
+
+  public int findPhoneNum(String name) {
+    if (this.first.sameName(name)) {
+      return this.first.phone;
+    }
+    return this.rest.findPhoneNum(name);
+  }
+
+  public void changePhone(String name, int newNum) {
+    if (this.first.sameName(name)) {
+      this.first.changePhone(newNum);
+    } else {
+      this.rest.changePhone(name, newNum);
+    }
+  }
+  
+  public void removePerson(String name) {
+    this.rest.removePersonHelper(name, this);
+  }
+
+  public void removePersonHelper(String name, AListPerson prev) {
+    if (this.first.sameName(name)) {
+      prev.rest = this.rest;  // change the pointer to skip this person
+    }
+    else { 
+      this.rest.removePersonHelper(name, prev);
+    }
+  }
+
+  public ILoPerson insert(String name, int number) {
+    return new ConsLoPerson(this.first, this.rest.insert(name, number));
+  }
+
+  public void addToFront(String name, int phone) {
+    return;
+  }
+
+  public void addToFrontHelper(String name, int phone, AListPerson sentinel) {
+    sentinel.rest = new ConsLoPerson(new Person(name, phone), this); 
+  }
+
+}
+
+class ExamplePhoneLists {
+  Person anne, bob, clyde, dana, eric, frank, gail, henry, irene, jenny;
+  ILoPerson list1, list2;
+  
+  // TEST FIXURE
+  void initData() {
+    anne = new Person("Anne", 1234);
+    clyde = new Person("Clyde", 2345);
+    henry = new Person("Henry", 3456);
+    
+    this.list1 = new Sentinel(
+                       new ConsLoPerson(this.anne, 
+                       new ConsLoPerson(this.clyde, 
+                       new ConsLoPerson(this.henry, new MtLoPerson()))));
+    this.list2 = new Sentinel(
+                       new ConsLoPerson(this.anne, 
+                       new ConsLoPerson(this.clyde, 
+                       new ConsLoPerson(this.henry, new MtLoPerson()))));
+  }
+
+  // Tests removing the first person in a list
+  void testRemoveFirstPerson(Tester t) {
+    this.initData();
+    // Check initial conditions
+    t.checkExpect(list1.contains("Anne"), true);
+    t.checkExpect(list2.contains("Anne"), true);
+    // Modify list1
+    list1.removePerson("Anne");
+    // Check that list1 has been modified...
+    t.checkExpect(list1.contains("Anne"), false);
+    // ...but that list2 has not
+    t.checkExpect(list2.contains("Anne"), true);
+  }
+  
+  //Tests removing a middle person in a list
+  void testRemoveMiddlePerson(Tester t) {
+   this.initData();
+   // Check initial conditions
+   t.checkExpect(list1.contains("Clyde"), true);
+   t.checkExpect(list2.contains("Clyde"), true);
+   // Modify list1
+   list1.removePerson("Clyde");
+   // Check that list1 has been modified...
+   t.checkExpect(list1.contains("Clyde"), false);
+   // ...but that list2 has not
+   t.checkExpect(list2.contains("Clyde"), true);
+  }
+  
+  //Tests removing the last person in a list
+  void testRemoveLastPerson(Tester t) {
+   this.initData();
+   // Check initial conditions
+   t.checkExpect(list1.contains("Henry"), true);
+   t.checkExpect(list2.contains("Henry"), true);
+   // Modify list1
+   list1.removePerson("Henry");
+   // Check that list1 has been modified...
+   t.checkExpect(list1.contains("Henry"), false);
+   // ...but that list2 has not
+   t.checkExpect(list2.contains("Henry"), true);
+  }
+  
+  void testInsert(Tester t) {
+    this.initData();
+    ILoPerson expected = new ConsLoPerson(this.anne, 
+                          new ConsLoPerson(this.clyde, 
+                          new ConsLoPerson(this.henry, new MtLoPerson())));
+    ILoPerson listInsert = new MtLoPerson();
+    listInsert = listInsert.insert("Anne", 1234);
+    listInsert = listInsert.insert("Clyde", 2345);
+    listInsert = listInsert.insert("Henry", 3456);
+    t.checkExpect(listInsert, expected);
+  }
+  
+  void testIMutablePerson(Tester t) {
+    initData();
+    MutableLoPerson newList = new MutableLoPerson();
+    newList.add("Anne", 1234);
+    newList.add("Clyde", 2345);
+    newList.add("Henry", 3456);
+    t.checkExpect(newList.sentinel, this.list1);
+    
+    newList.remove("Clyde");
+    t.checkExpect(newList.contains("Clyde"), false);
+    newList.add("Clyde", 2345);
+    t.checkExpect(newList.contains("Clyde"), true);
+  }
+  
+  void testAddToFront(Tester t) {
+    initData();
+    MutableLoPerson newList = new MutableLoPerson();
+    newList.addToFront("Anne", 1234);
+    t.checkExpect(newList.sentinel, new Sentinel(new ConsLoPerson(new Person("Anne", 1234), new MtLoPerson())));
+    
+    newList.addToFront("Clyde", 2345);
+    newList.addToFront("Henry", 3456);
+    t.checkExpect(newList.sentinel, new Sentinel(new ConsLoPerson(new Person("Henry", 3456), 
+                                                 new ConsLoPerson(new Person("Clyde", 2345), 
+                                                 new ConsLoPerson(new Person("Anne", 1234), new MtLoPerson())))));
+    
+    ILoPerson list3 = new ConsLoPerson(new Person("Anne", 1234), new MtLoPerson());
+    list3.addToFront("Nean", 7777);
+    t.checkExpect(list3.contains("Nean"), true);
+    t.checkExpect(list3, new ConsLoPerson(new Person("Nean", 7777),
+                          new ConsLoPerson(new Person("Anne", 1234), new MtLoPerson())));
+  }
+  
+}

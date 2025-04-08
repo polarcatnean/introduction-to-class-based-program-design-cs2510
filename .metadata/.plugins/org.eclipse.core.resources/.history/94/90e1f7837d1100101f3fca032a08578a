@@ -1,0 +1,106 @@
+package lecture17mutation;
+
+import tester.Tester;
+
+// Represents authors of books
+class Author {
+  String first;
+  String last;
+  int yob;
+  Book book;
+  
+  Author(String fst, String lst, int yob) {
+    this.first = fst;
+    this.last = lst;
+    this.yob = yob;
+    this.book = null;
+  }
+  
+  //EFFECT: modifies this Author's book field to refer to the given Book
+  void updateBook(Book b) {
+    if (this.book != null) {
+      throw new RuntimeException("Trying to add second book to an author");
+    }
+    else if (!b.author.sameAuthor(this)) {
+      throw new RuntimeException("Book was not written by this author");
+    }
+    else {
+      this.book = b;
+    }
+  }
+  
+  // Computes whether the given author has the same name and year of birth
+  // as this author (i.e., we're ignoring their books)
+  boolean sameAuthor(Author that) {
+   return this.first.equals(that.first)
+       && this.last.equals(that.last)
+       && this.yob == that.yob;
+  }
+}
+ 
+// Represent books
+class Book {
+  String title;
+  int price;
+  int quantity;
+  Author author;
+  
+  Book(String title, int price, int quantity, Author ath) {
+    this.title = title;
+    this.price = price;
+    this.quantity = quantity;
+    this.author = ath;
+    // NEW! Fix up the author for us, using *this* newly-constructed Book
+    this.author.updateBook(this);
+  }
+}
+
+class ExamplesMutation {
+  Author jk, jackLondon;
+  Book hp1, hp2, callOfTheWild;
+  
+  // "TEST FIXTURE"
+  // EFFECT: Sets up the initial conditions for our tests, by re-initializing variables
+  // Setting up a fixed reference point against which to test methods with side effects is called creating a TEST FIXURE
+  void initTestConditions() {
+    jk = new Author("JK", "Rowling", 1965);
+    jackLondon = new Author("Jack", "London", 1875);
+    
+    hp1 = new Book("HP1", 100, 1, jk);
+    callOfTheWild = new Book("Call of The Wild", 100, 1, jackLondon);
+  }
+  
+  void testSameAuthor(Tester t) {
+    initTestConditions();
+    t.checkExpect(hp1.author, jk);
+    // t.checkExpect(hp2.author, jk);
+  }
+  
+  boolean testBook1(Tester t) {
+    initTestConditions();
+    // jk.updateBook(hp1);
+    return t.checkExpect(hp1.author, jk)
+        && t.checkExpect(jk.book, hp1)
+        && t.checkExpect(jk.book.author, jk);
+  }
+  
+  void testAddingSecondBook(Tester t) {
+    initTestConditions();
+    
+    t.checkConstructorException(
+        new RuntimeException("Trying to add second book to an author"),
+        "lecture17mutation.Book", 
+        "HP2", 100, 1, jk);
+  }
+  
+  void testWrongAuthor(Tester t) {
+    jk.book = null;
+    
+    t.checkException(
+        new RuntimeException("Book was not written by this author"),
+        this.jk, 
+        "updateBook", 
+        this.callOfTheWild);
+  }
+ 
+}
