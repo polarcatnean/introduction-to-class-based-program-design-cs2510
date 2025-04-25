@@ -1,0 +1,103 @@
+package lecture21arraylist;
+
+import tester.Tester;
+import java.util.ArrayList;
+
+interface IFunc<R, A> {
+  R apply(A arg);
+}
+
+class CountCharacter implements IFunc<Integer, String> {
+  public Integer apply(String value) {
+    return value.length();
+  }
+}
+
+class Util {
+  Util() {};
+  
+  <T> void swap(ArrayList<T> arrayList, int index1, int index2) {
+    T oldValueAtIndex1 = arrayList.get(index1);
+    T oldValueAtIndex2 = arrayList.get(index2);
+    
+    arrayList.set(index2, oldValueAtIndex1);
+    arrayList.set(index1, oldValueAtIndex2);
+  }
+  
+  <T, U> ArrayList<U> map(ArrayList<T> arrayList, IFunc<U, T> func) {
+    ArrayList<U> result = new ArrayList<U>();
+
+    return this.mapHelper(arrayList, func, result, 0);
+  }
+  
+  <T, U> ArrayList<U> mapHelper(ArrayList<T> arrayList, IFunc<U, T> func, ArrayList<U> result, int currentIndex) {
+    // Base case
+    if (currentIndex >= arrayList.size()) {
+      return result;
+    }
+    result.add(func.apply(arrayList.get(currentIndex)));
+    return this.mapHelper(arrayList, func, result, currentIndex + 1);
+  }
+  
+  <T, U> ArrayList<U> map2(ArrayList<T> arrayList, IFunc<U, T> func) {
+    ArrayList<U> result = new ArrayList<U>();
+    
+    // "for each element of type T in arrayList"
+    for ( T element : arrayList ) {
+      result.add(func.apply(element));
+    }
+    
+    return result;
+  }
+    
+}
+
+
+class ArrayListExamples {
+  
+  void testArrayListMap(Tester t) {
+    ArrayList<String> stringList = new ArrayList<String>(); 
+    Util util = new Util();
+    IFunc<Integer, String> funcObj = new CountCharacter();
+    
+    stringList.add("1st");
+    stringList.add("2nd item");
+    
+    ArrayList<Integer> result = util.map2(stringList, funcObj);
+    t.checkExpect(result.size(), 2);
+    t.checkExpect(result.get(0), 3);
+    t.checkExpect(result.get(1), 8);
+  }
+  
+  void testSwap(Tester t) {
+    ArrayList<String> stringList = new ArrayList<String>(); 
+    stringList.add("1st item");
+    stringList.add("2nd item");
+    t.checkExpect(stringList.get(0), "1st item");
+    t.checkExpect(stringList.get(1), "2nd item");
+    
+    Util util = new Util();
+    util.swap(stringList, 0, 1);
+    t.checkExpect(stringList.get(0), "2nd item");
+    t.checkExpect(stringList.get(1), "1st item");
+  }
+  
+  void testArrayListAddGet(Tester t) {
+    ArrayList<String> stringList = new ArrayList<String>();  
+    t.checkExpect(stringList.size(), 0);
+    
+    stringList.add("1st item");
+    t.checkExpect(stringList.size(), 1);
+    stringList.add("2nd item");
+    t.checkExpect(stringList.size(), 2);
+    
+    stringList.remove(1);
+    t.checkExpect(stringList.size(), 1);
+    t.checkExpect(stringList.get(0), "1st item");
+    
+    stringList.add(0, "0th item");  // add to front
+    t.checkExpect(stringList.size(), 2); 
+    t.checkExpect(stringList.get(0), "0th item");
+    
+  }
+}

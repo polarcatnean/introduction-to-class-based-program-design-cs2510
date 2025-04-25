@@ -1,0 +1,60 @@
+package lab9;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.function.Predicate;
+import tester.*;
+import javalib.impworld.*;
+import javalib.worldimages.*;
+import java.awt.Color;
+
+
+class Utils {
+  
+  <T> ArrayList<T> filter(ArrayList<T> arr, Predicate<T> pred) {
+    ArrayList<T> filteredArr = new ArrayList<T>();    
+    for (T item : arr) {
+      if (pred.test(item)) {
+        filteredArr.add(item);
+      }
+    }
+    return filteredArr;     
+  }
+  
+  
+  <T> void removeExcept(ArrayList<T> arr, Predicate<T> pred) {
+    // You cannot modify an ArrayList while iterating over it
+    ArrayList<T> toKeep = new ArrayList<T>();   
+    for (T item : arr) {
+      if (pred.test(item)) {
+        toKeep.add(item);
+      }
+    }
+    // POINT arr = result;  // doesn't work, arr is a local variable
+    // In Java, method parameters are passed by value, 
+    // so reassigning the parameter doesn't change the original reference.
+    arr.clear();
+    arr.addAll(toKeep);
+  }
+}
+
+class UtilsExamples {
+  
+  class IsOdd implements Predicate<Integer> {
+    public boolean test(Integer t) {
+      return t % 2 == 1;
+    } 
+  }
+  
+  void testFilter (Tester t) {
+    ArrayList<Integer> listofnum = new ArrayList<Integer>(Arrays.asList(1, 3, 4, 5, 7, 8));
+    ArrayList<Integer> oddnum = new ArrayList<Integer>(Arrays.asList(1, 3, 5, 7));
+    
+    ArrayList<Integer> method1 = new Utils().filter(listofnum, new IsOdd());
+    t.checkExpect(method1, oddnum);
+    
+    new Utils().removeExcept(listofnum, new IsOdd());
+    t.checkExpect(listofnum, oddnum);
+  }
+}
+

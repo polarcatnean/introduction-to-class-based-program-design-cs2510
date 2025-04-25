@@ -1,0 +1,42 @@
+package assignment7;
+
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
+interface IArith {
+  
+}
+
+class Const implements IArith {
+  double num;
+  
+  Const(double num) {
+    this.num = num;
+  }
+}
+
+class UnaryFormula {
+  Function<Double,Double> func;
+  String name;
+  IArith child;
+  
+  UnaryFormula(Function<Double,Double> func, String name, IArith child) {
+    this.func = func;
+    this.name = name;
+    this.child = child;
+  }
+}
+
+class BinaryFormula {
+  BiFunction <Double, Double, Double> func;
+  String name;
+  IArith left;
+  IArith right;
+  
+  BinaryFormula(BiFunction <Double, Double, Double> func, String name, IArith left, IArith right) {
+    this.func = func;
+    this.name = name;
+    this.left = left;
+    this.right = right;
+  }
+}

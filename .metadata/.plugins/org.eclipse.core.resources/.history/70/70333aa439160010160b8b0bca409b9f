@@ -1,0 +1,52 @@
+package lecture21arraylist;
+
+import tester.Tester;
+import java.util.ArrayList;
+
+class Util {
+  Util() {};
+  
+  <T> void swap(ArrayList<T> arrayList, int index1, int index2) {
+    T oldValueAtIndex1 = arrayList.get(index1);
+    T oldValueAtIndex2 = arrayList.get(index2);
+    
+    arrayList.set(index2, oldValueAtIndex1);
+    arrayList.set(index1, oldValueAtIndex2);
+  }
+}
+
+
+class ArrayListExamples {
+  
+  void testSwap(Tester t) {
+    ArrayList<String> stringList = new ArrayList<String>(); 
+    stringList.add("1st item");
+    stringList.add("2nd item");
+    t.checkExpect(stringList.get(0), "1st item");
+    t.checkExpect(stringList.get(1), "2nd item");
+    
+    Util util = new Util();
+    util.swap(stringList, 0, 1);
+    t.checkExpect(stringList.get(0), "2nd item");
+    t.checkExpect(stringList.get(1), "1st item");
+  }
+  
+  void testArrayListAddGet(Tester t) {
+    ArrayList<String> stringList = new ArrayList<String>();  
+    t.checkExpect(stringList.size(), 0);
+    
+    stringList.add("1st item");
+    t.checkExpect(stringList.size(), 1);
+    stringList.add("2nd item");
+    t.checkExpect(stringList.size(), 2);
+    
+    stringList.remove(1);
+    t.checkExpect(stringList.size(), 1);
+    t.checkExpect(stringList.get(0), "1st item");
+    
+    stringList.add(0, "0th item");  // add to front
+    t.checkExpect(stringList.size(), 2); 
+    t.checkExpect(stringList.get(0), "0th item");
+    
+  }
+}

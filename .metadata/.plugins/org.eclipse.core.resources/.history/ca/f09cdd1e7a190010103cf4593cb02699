@@ -1,0 +1,150 @@
+package assignment8;
+
+import tester.Tester;
+
+class Deque<T> {
+  Sentinel<T> header;
+  
+  Deque() {
+    this.header = new Sentinel<T>();
+  }
+  
+  // convenience constructor
+  Deque(Sentinel<T> header) {
+    this.header = header;
+  }
+  
+  // METHODS:
+  // count the number of nodes in this deque, excluding sentinel
+  int size() {
+    return this.header.count();
+  }
+  
+  // consumes a value of type T and inserts it at the front of the list
+  void addAtHead(T value) {
+    this.header.addAtHead(value);
+  }
+}
+
+abstract class ANode<T> {
+  ANode<T> prev;
+  ANode<T> next;
+  
+  ANode(ANode<T> prev, ANode<T> next) {
+    this.prev = prev;
+    this.next = next;
+  }
+  
+  ANode() {
+    this.prev = null;
+    this.next = null;
+  }
+  
+  // METHODS:
+  public abstract int count();
+  protected abstract int countHelper();
+}
+
+class Sentinel<T> extends ANode<T> {
+  Sentinel() { 
+    this.prev = this;   // the last node
+    this.next = this;   // the first node
+  }
+
+  public int count() {
+    return this.next.countHelper();
+  }
+
+  protected int countHelper() {
+    return 0;
+  }
+  
+  public void addAtHead(T value) {
+    // TODO Auto-generated method stub
+    new Node<T>(value, this, this.next);
+  }
+
+}
+
+class Node<T> extends ANode<T> {
+  T data;
+  
+  Node(T data) {
+    this.data = data;
+  }
+  
+  // convenience constructor
+  Node(T data, ANode<T> prev, ANode<T> next) {
+    super(prev, next);
+    this.data = data;
+    
+    if (prev == null || next == null) {
+      throw new IllegalArgumentException("Can't pass null as prev or next");
+    }
+ 
+    // EFFECT: update the given nodes to refer back to this node.  
+    prev.next = this;
+    next.prev = this;
+  }
+
+
+  public int count() {
+    return this.countHelper();  
+  }
+
+  protected int countHelper() {
+    return 1 + this.next.countHelper();
+  }
+  
+  
+}
+
+
+class ExamplesDeque {
+  
+  Deque<Integer> deque1;
+  Deque<String> deque2, deque3;
+  ANode<String> abc, bcd, cde, def; // Deque 2
+  ANode<String> bbb, ddd, ccc, eee, aaa; // Deque 3
+  
+  void init() {
+    deque1 = new Deque<Integer>(); // empty list
+    deque2 = new Deque<String>();  // abc, bcd, cde, def
+    deque3 = new Deque<String>();  // BBB, DDD, CCC, AAA
+    
+    // Deque 2
+    abc = new Node<String>("abc", this.deque2.header, this.deque2.header);
+    bcd = new Node<String>("bcd", this.abc, this.deque2.header);
+    cde = new Node<String>("cde", this.bcd, this.deque2.header);
+    def = new Node<String>("def", this.cde, this.deque2.header);
+    // Deque 3
+    bbb = new Node<String>("BBB", this.deque3.header, this.deque3.header);
+    ddd = new Node<String>("DDD", this.bbb, this.deque3.header);
+    ccc = new Node<String>("CCC", this.ddd, this.deque3.header);
+    eee = new Node<String>("EEE", this.ccc, this.deque3.header);
+    aaa = new Node<String>("AAA", this.eee, this.deque3.header);
+  }
+  
+  void testDequeConstructor(Tester t) {
+    init();
+    t.checkExpect(deque2.header.prev, def);
+    t.checkExpect(deque2.header.next, abc);
+    t.checkExpect(deque3.header.prev, aaa);
+    t.checkExpect(deque3.header.next, bbb);
+  }
+  
+  void testSize(Tester t) {
+    init();
+    t.checkExpect(deque1.size(), 0);
+    t.checkExpect(deque2.size(), 4);
+    t.checkExpect(deque3.size(), 5);
+  }
+  
+  void testAddAtHead(Tester t) {
+    init();
+    deque1.addAtHead(1);
+    t.checkExpect(deque1.header.next, null);
+    
+  }
+}
+

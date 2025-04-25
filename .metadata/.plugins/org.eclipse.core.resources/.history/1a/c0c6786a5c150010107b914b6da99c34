@@ -1,0 +1,100 @@
+package assignment7;
+
+import tester.Tester;
+
+interface IList<T> {
+  
+}
+
+class MtList<T> implements IList<T> {
+  
+}
+
+class ConsList<T> implements IList<T> {
+  T first;
+  IList<T> rest;
+  
+  ConsList(T first, IList<T> rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+}
+
+
+class Course {
+  String name;
+  Instructor prof;
+  IList<Student> students;
+  
+  Course(String name, Instructor prof, IList<Student> students) {
+    this.name = name;
+    this.prof = prof;
+    this.students = students;
+    
+    this.assignTo(prof);
+  }
+  
+  Course(String name, Instructor prof) {
+    this(name, prof, new MtList<Student>());
+  }
+  
+  // Effect: add course to the instuctor's list of course
+  void assignTo(Instructor prof) {
+    prof.courses = new ConsList<Course>(this, prof.courses);
+  }
+}
+
+class Instructor {
+  String name;
+  IList<Course> courses;
+  
+  Instructor(String name) {
+    this.name = name;
+    this.courses = new MtList<Course>();
+  }
+}
+
+class Student {
+  String name;
+  int id;
+  IList<Course> courses;
+  
+  Student(String name, int id) {
+    this.name = name;
+    this.id = id;
+    this.courses = new MtList<Course>();
+  }
+  
+  // Effect: add the course to this student's courses, 
+  // and add this student in the course's student list
+  void enroll(Course c) {
+    
+  }
+}
+
+
+class ExamplesRegistrar {
+  Student studentA, studentB, studentC;
+  Instructor i1, i2, i3;
+  Course c1, c2, c3;
+  
+  void initConds() {
+    studentA = new Student("Ape", 1);
+    studentB = new Student("Bee", 2);
+    studentC = new Student("Cat", 3);
+    
+    i1 = new Instructor("Gregor");
+    i2 = new Instructor("David");
+    i3 = new Instructor("Peter");
+    
+    c1 = new Course("Recursion", i1);
+    c2 = new Course("Magic", i2);
+    c3 = new Course("Cooking", i3);
+  }
+  
+  void testAssignTo(Tester t) {
+    initConds();
+    t.checkExpect(i1.courses, new ConsList<Course>(c1, new MtList<Course>()));
+  }
+}
+

@@ -1,0 +1,65 @@
+package lecture25iterators;
+
+import java.util.Iterator;
+
+
+interface IBinaryTree<T> {
+  boolean isNode();
+  BTNode<T> asNode();
+}
+
+class BTLeaf<T> implements IBinaryTree<T> {
+  public boolean isNode() { return false; } 
+  
+  public BTNode<T> asNode() {
+    throw new UnsupportedOperationException("Not a BTNode!");
+  }
+}
+
+class BTNode<T> implements IBinaryTree<T> {
+  T data;
+  IBinaryTree<T> left;
+  IBinaryTree<T> right;
+  
+  BTNode(T data, IBinaryTree<T> left, IBinaryTree<T> right) {
+    this.data = data;
+    this.left = left;
+    this.right = right;
+  }
+  
+  public boolean isNode() { return true; } 
+  public BTNode<T> asNode() { return this; }
+}
+
+
+// using Deque as a queue, where items are added at the end and removed from the front.
+class BreadthFirstIterator<T> implements Iterator<T> {
+  Deque<IBinaryTree<T>> worklist;
+  
+  BreadthFirstIterator(IBinaryTree<T> source) {
+    this.worklist = new Deque<IBinaryTree<T>>();
+  }
+
+  //EFFECT: only adds the given binary-tree if it's not a leaf
+   void addIfNotLeaf(IBinaryTree<T> bt) {
+     if (bt.isNode()) {
+       this.worklist.addAtTail(bt);
+     }
+   }
+
+  public boolean hasNext() {
+    return this.worklist.size() > 0;  // worklist is not empty
+  }
+
+  public T next() {
+    // get the first item on the worklist
+    BTNode<T> firstItem = this.worklist.removeFromHead().asNode();
+    
+    // add children to worklist
+    this.addIfNotLeaf(firstItem.left);
+    this.addIfNotLeaf(firstItem.right);
+    return firstItem.data;
+  }
+  
+}
+

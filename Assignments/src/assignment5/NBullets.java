@@ -527,7 +527,6 @@ class GameState extends World {
       System.out.println("Current tick: " + this.currentTick + " SpawnShip: " + spawn);
       System.out.println("Bullet: " + this.bulletList.info());
     }
-    // need to optimise, not sensitive
     return new GameState(currentTick + 1, 
                          updatedShipList,
                          updatedBulletList, 

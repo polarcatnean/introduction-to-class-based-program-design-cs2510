@@ -1,0 +1,27 @@
+package lecture25iterators;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+
+class ArrayListIterator<T> implements Iterator<T> {
+  ArrayList<T> items;  // the list of items that this iterator iterates over
+  int nextIdx;  // the index of the next item to be returned
+  
+  // Construct an iterator for a given ArrayList
+  ArrayListIterator(ArrayList<T> items) {
+    this.items = items;
+    this.nextIdx = 0;
+  }
+ 
+  public boolean hasNext() {
+    return false;
+  }
+ 
+  public T next() {
+    return null;
+  }
+ 
+  public void remove() {
+    throw new UnsupportedOperationException("Don't do this!");
+  }
+}

@@ -1,0 +1,21 @@
+package lecture21arraylist;
+
+import tester.Tester;
+import java.util.ArrayList;
+
+
+class ArrayListExamples {
+  
+  void testArrayListAddGet(Tester t) {
+    ArrayList<String> stringList = new ArrayList<String>();  
+    t.checkExpect(stringList.size(), 0);
+    
+    stringList.add("1st item");
+    t.checkExpect(stringList.size(), 1);
+    stringList.add("2nd item");
+    t.checkExpect(stringList.size(), 2);
+    
+    stringList.remove(1);
+    t.checkExpect(stringList.size(), 1);
+  }
+}

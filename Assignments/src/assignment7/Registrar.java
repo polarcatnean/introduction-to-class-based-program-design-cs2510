@@ -1,0 +1,300 @@
+package assignment7;
+
+import java.util.function.Predicate;
+
+import tester.Tester;
+
+
+class SameCourse implements Predicate<Course> {
+  Course course;
+  SameCourse(Course course) { this.course = course; }
+  
+  public boolean test(Course other) {
+    return this.course.sameCourse(other);
+  }
+
+}
+
+class SameStudent implements Predicate<Student> {
+  Student student;
+  SameStudent(Student student) { this.student = student; }
+  
+  public boolean test(Student other) {
+    return this.student.sameStudent(other);
+  }
+}
+
+interface IList<T> {
+  boolean anySatisfies(Predicate<T> pred);
+  boolean contains(T item);
+  boolean intersects(IList<T> other);
+  int countIntersected(IList<T> other);
+}
+
+class MtList<T> implements IList<T> {
+
+  public boolean anySatisfies(Predicate<T> pred) {
+    return false;
+  }
+  
+  public boolean hasOverlap(IList<T> other, Predicate<T> pred) {
+    return false;
+  }
+
+  public boolean contains(T item) {
+    return false;
+  }
+
+  public boolean intersects(IList<T> other) {
+    return false;
+  }
+
+  public int countIntersected(IList<T> other) {
+    return 0;
+  }
+}
+
+class ConsList<T> implements IList<T> {
+  T first;
+  IList<T> rest;
+  
+  ConsList(T first, IList<T> rest) {
+    this.first = first;
+    this.rest = rest;
+  }
+
+  public boolean anySatisfies(Predicate<T> pred) {
+    return pred.test(this.first) || this.rest.anySatisfies(pred);
+  }
+
+  public boolean contains(T item) {
+    return this.first.equals(item) || this.rest.contains(item);
+  }
+
+  public boolean intersects(IList<T> other) {
+    return other.contains(this.first) || this.rest.intersects(other);
+  }
+
+  public int countIntersected(IList<T> other) {
+    if (other.contains(this.first)) {
+      return 1 + this.rest.countIntersected(other); 
+    }
+    return this.rest.countIntersected(other); 
+  }
+  
+
+}
+
+
+class Course {
+  String name;
+  Instructor prof;
+  IList<Student> students;
+  
+  Course(String name, Instructor prof, IList<Student> students) {
+    this.name = name;
+    this.prof = prof;
+    this.students = students;
+    
+    this.assignTo(prof);
+  }
+  
+  Course(String name, Instructor prof) {
+    this(name, prof, new MtList<Student>());
+  }
+  
+  // Effect: add course to the instuctor's list of course
+  void assignTo(Instructor prof) {
+    prof.courses = new ConsList<Course>(this, prof.courses);
+  }
+  
+  public boolean sameCourse(Course other) {
+    return this.name.equals(other.name)  && this.prof.sameProf(other.prof);
+  }
+}
+
+class Instructor {
+  String name;
+  IList<Course> courses;
+  
+  Instructor(String name) {
+    this.name = name;
+    this.courses = new MtList<Course>();
+  }
+
+  public boolean sameProf(Instructor other) {
+    return this.name.equals(other.name);
+  }
+  
+  // return true if the given student is in more than one of this instructor's courses
+  boolean dejavu(Student s) {
+    return s.courses.countIntersected(this.courses) > 1;
+  }
+}
+
+class Student {
+  String name;
+  int id;
+  IList<Course> courses;
+  
+  Student(String name, int id) {
+    this.name = name;
+    this.id = id;
+    this.courses = new MtList<Course>();
+  }
+  
+  boolean sameStudent(Student other) {
+    return this.name.equals(other.name) && this.id == other.id;
+  }
+  
+  // Effect: add the course to this student's courses, 
+  // and add this student in the course's student list
+  void enroll(Course c) {
+    this.courses = new ConsList<Course>(c, this.courses);
+    c.students = new ConsList<Student>(this, c.students);
+  }
+  
+  // return true if the given student is in any of the same classes as this student
+  boolean classmates(Student s) {
+    return this.courses.intersects(s.courses);
+  }
+  
+}
+
+//interface IRegVisitor<T> {
+//  T apply(IReg r);
+//  
+//  T visitCourse(Course c);
+//  T visitInstructor(Instructor i);
+//  T visitStudent(Student s);
+//}
+//
+//class Same implements IRegVisitor<Boolean> {
+//
+//  public Boolean apply(IReg r) {
+//    return r.accept(this);
+//  }
+//
+//  public Boolean visitCourse(Course c) {
+//    // TODO Auto-generated method stub
+//    return null;
+//  }
+//
+//  public Boolean visitInstructor(Instructor i) {
+//    // TODO Auto-generated method stub
+//    return null;
+//  }
+//
+//  public Boolean visitStudent(Student s) {
+//    // TODO Auto-generated method stub
+//    return null;
+//  }
+//}
+
+class ExamplesRegistrar {
+  Student studentA, studentB, studentC, studentD, studentE;
+  Instructor i1, i2, i3;
+  Course c1, c2, c3, c4;
+  
+  void initConds() {
+    studentA = new Student("Ape", 1);
+    studentB = new Student("Bee", 2);
+    studentC = new Student("Cat", 3);
+    studentD = new Student("Dog", 4);
+    studentE = new Student("Elephant", 5);
+    
+    i1 = new Instructor("Gregor");
+    i2 = new Instructor("David");
+    i3 = new Instructor("Peter");
+    
+    c1 = new Course("Recursion", i1);
+    c2 = new Course("Magic", i2);
+    c3 = new Course("Cooking", i3);
+    c4 = new Course("Astrology", i1);
+  }
+  
+  void setupEnrollments() {
+    studentA.enroll(c1); // Gregor
+    studentA.enroll(c2); // David
+
+    studentB.enroll(c1); // Gregor
+    studentB.enroll(c4); // Gregor
+
+    studentC.enroll(c2); // David
+    studentC.enroll(c3); // Peter
+
+    studentD.enroll(c3); // Peter
+    studentD.enroll(c4); // Gregor
+
+    studentE.enroll(c1); // Gregor
+  }
+  
+  void testDejavu(Tester t) {
+    initConds();
+    setupEnrollments();
+    Course c5 = new Course("Teleportation", i2);  // New course by David
+    Course c6 = new Course("Math", i1);
+    // studentC is added to both c1 and c4 (both by i1)
+    studentC.enroll(c1); studentC.enroll(c4);
+    // And studentD is added to both c2 and a new c5 also by i2
+    studentD.enroll(c5); studentD.enroll(c2);
+    
+   // studentE takes three courses by Gregor
+    studentE.enroll(c1); studentE.enroll(c4); studentE.enroll(c6);
+    
+    t.checkExpect(i1.dejavu(studentB), true);   // true (Gregor, 2 courses)
+    t.checkExpect(i1.dejavu(studentD), false);  // false (only one course with Gregor)
+    t.checkExpect(i1.dejavu(studentA), false);  // false (only one with Gregor)
+    t.checkExpect(i2.dejavu(studentA), false);  // false (only one with David)
+    t.checkExpect(i2.dejavu(studentB), false);  // B not in any of David’s courses
+    t.checkExpect(i2.dejavu(studentC), false);  // false
+    t.checkExpect(i3.dejavu(studentC), false);  // false C not in Peter’s courses
+    t.checkExpect(i1.dejavu(studentE), true);   // true (c1, c4, c6 by Gregor)
+    t.checkExpect(i1.dejavu(studentC), true);   // true (c1, c4 by Gregor)
+    t.checkExpect(i2.dejavu(studentD), true);   // true (c2, c5 by David)
+  }
+  
+  void testFind(Tester t) {
+    initConds();
+    setupEnrollments();
+    
+    t.checkExpect(c4.students.anySatisfies(new SameStudent(studentB)), true);
+  }
+  
+  void testClassmates(Tester t) {
+    initConds();
+    setupEnrollments();
+    t.checkExpect(studentA.classmates(studentB), true);
+    t.checkExpect(studentA.classmates(studentE), true);
+    t.checkExpect(studentB.classmates(studentE), true);
+    
+    // studentA and studentC both in c2
+    t.checkExpect(studentA.classmates(studentC), true);
+
+    // studentC and studentD both in c3
+    t.checkExpect(studentC.classmates(studentD), true);
+
+    // studentA and studentD share no class
+    t.checkExpect(studentA.classmates(studentD), false);
+
+    // studentB and studentC share no class
+    t.checkExpect(studentB.classmates(studentC), false);
+  }
+  
+  void testAssignTo(Tester t) {
+    initConds();
+    t.checkExpect(i1.courses, new ConsList<Course>(c4, new ConsList<Course>(c1, new MtList<Course>())));
+    
+    Course newCourse = new Course("Test", i1);
+    t.checkExpect(i1.courses, new ConsList<Course>(newCourse, 
+        new ConsList<Course>(c4, new ConsList<Course>(c1, new MtList<Course>()))));
+  }
+  
+  void testEnroll(Tester t) {
+    initConds();
+    studentA.enroll(c1);
+    t.checkExpect(studentA.courses, new ConsList<Course>(c1, new MtList<Course>()));
+    t.checkExpect(c1.students, new ConsList<Student>(studentA, new MtList<Student>()));
+  }
+}
+

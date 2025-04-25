@@ -1,0 +1,121 @@
+package assignment8;
+
+import java.util.*;
+
+import tester.Tester;
+
+/**
+ * A class that defines a new permutation code, as well as methods for encoding
+ * and decoding of the messages that use this code.
+ */
+class PermutationCode {
+  // The original list of characters to be encoded
+  ArrayList<Character> alphabet = new ArrayList<Character>(
+      Arrays.asList('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+          'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'));
+
+  ArrayList<Character> code = new ArrayList<Character>(26);
+
+  // A random number generator
+  Random rand = new Random();
+
+  // Create a new instance of the encoder/decoder with a new permutation code
+  PermutationCode() {
+    this.code = this.initEncoder();
+  }
+
+  // Convenience constructor
+  // Create a new instance of the encoder/decoder with the given code
+  PermutationCode(ArrayList<Character> code) {
+    this.code = code;
+  }
+
+  // Initialize the encoding permutation of the characters
+  // produces a random permutation of the 26 letters of the alphabet and returns it as an ArrayList of Characters.
+  // TODO test
+  ArrayList<Character> initEncoder() {
+    ArrayList<Character> alphabetToAdd = new ArrayList<Character>(
+        Arrays.asList('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+            'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'));
+    
+    ArrayList<Character> key = new ArrayList<Character>(26);
+    
+    while (alphabetToAdd.size() > 0) {
+      Character charToAdd = alphabetToAdd.remove(this.rand.nextInt(alphabetToAdd.size()));
+      key.add(charToAdd);
+    }    
+    return key; 
+  }
+
+
+  // produce an encoded String from the given String
+  String encode(String source) {
+    return this.substitution(source, this.alphabet, this.code);
+  }
+
+  // produce a decoded String from the given String
+  String decode(String text) {
+    return this.substitution(text, this.code, this.alphabet);
+  }
+  
+  String substitution(String text, ArrayList<Character> alphabet, ArrayList<Character> key) {
+    String message = "";
+    
+    for (int i = 0; i < text.length(); i++) {
+      char currentChar = text.charAt(i);
+      int indexChar = alphabet.indexOf(currentChar);
+      char decodedChar = key.get(indexChar);
+      message += decodedChar;
+    }
+    return message;
+  }
+}
+
+
+class PermutationExamples {
+  
+  PermutationCode p1 = new PermutationCode();
+
+  void testInitEncoder(Tester t) {
+    // t.checkExpect(p1.code, null);
+    System.out.println("key: " + p1.code);
+    t.checkExpect(p1.code.size(), 26);  
+  }
+  
+  void testEncode(Tester t) {
+    PermutationCode p2 = new PermutationCode(new ArrayList<Character>(Arrays.asList('b', 'e', 'a', 'c', 'd')));
+    p2.alphabet = new ArrayList<Character>(Arrays.asList('a', 'b', 'c', 'd', 'e'));
+
+    t.checkExpect(p2.encode("badace"), "ebcbad");
+    t.checkExpect(p2.decode("ebcbad"), "badace");
+    t.checkExpect(p2.encode("cabbed"), "abeedc");
+    t.checkExpect(p2.decode("abeedc"), "cabbed");
+  }
+  
+  void testOthers(Tester t) {
+    PermutationCode c0 = new PermutationCode(new ArrayList<Character>(Arrays.asList(
+        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+        'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
+        't', 'u', 'v', 'w', 'x', 'y', 'z')));
+    PermutationCode c1 = new PermutationCode(new ArrayList<Character>(Arrays.asList(
+        'z', 'y', 'x', 'w', 'v', 'u', 't', 's', 'r', 'q',
+        'p', 'o', 'n', 'm', 'l', 'k', 'j', 'i', 'h', 'g',
+        'f', 'e', 'd', 'c', 'b', 'a')));
+    PermutationCode c2 = new PermutationCode(new ArrayList<Character>(Arrays.asList(
+        'e', 'd', 'c', 'b', 'a', 'f', 'g', 'h', 'i', 'j',
+        'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+        'u', 'v', 'w', 'x', 'y', 'z')));
+    PermutationCode c3 = new PermutationCode();
+    
+    t.checkExpect(c2.encode(""), "");
+    t.checkExpect(c0.encode("hello"), "hello");
+    t.checkExpect(c1.encode("zyxwv"), "abcde");
+    t.checkExpect(c2.encode("abe"), "eda");
+    
+    t.checkExpect(c3.encode(""), "");
+    t.checkExpect(c3.decode(""), "");
+    t.checkExpect(c3.decode(c3.encode("hello")), "hello");
+    t.checkExpect(c3.decode(c3.encode("abcdefghijklmnopqrstuvwxyz")),
+        "abcdefghijklmnopqrstuvwxyz");
+  }
+}

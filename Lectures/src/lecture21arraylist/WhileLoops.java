@@ -1,0 +1,62 @@
+package lecture21arraylist;
+
+import java.util.ArrayList;
+
+import tester.Tester;
+
+class UtilsWhileLoop {
+  
+  int findMinValueIdx(ArrayList<String> arr, int index) {
+    int minIdx = index;
+    
+    while (index < arr.size()) {
+      if (arr.get(index).compareTo(arr.get(minIdx)) < 0) {
+        minIdx = index;
+      }
+      index++;
+    }
+    return minIdx;
+  }
+  
+  /* Collatz conjecture
+   * 𝑓(𝑛) =  𝑛/2 when 𝑛 is even
+   *        3𝑛+1 when 𝑛 is odd
+  */
+  
+  boolean getsToOne(int n) {
+    ArrayList<Integer> seen = new ArrayList<Integer>();
+    
+    while (n > 1) {
+      if (seen.contains(n)) {
+        return false;
+      }
+      else if (n % 2 == 0) {
+        n = n / 2;
+        seen.add(n);
+      }
+      else {
+        n = (3 * n) + 1;
+        seen.add(n);
+      }
+    }
+    return true;
+  }
+}
+
+
+
+
+class ExamplesWhileLoops {
+  void testMinValue(Tester t) {
+    ArrayList<String> stringList = new ArrayList<String>();
+    stringList.add("kiwi"); stringList.add("cherry"); stringList.add("apple"); 
+    stringList.add("date"); stringList.add("banana"); stringList.add("fig"); 
+    stringList.add("watermelon"); stringList.add("grape"); stringList.add("honeydew");
+    
+    System.out.println(stringList);
+    t.checkExpect(new Util().findMinValueIdx(stringList, 0), 2);
+    t.checkExpect(new Util().findMinValueIdx(stringList, 3), 4);
+    t.checkExpect(new Util().findMinValueIdx(stringList, 6), 7);
+  }
+}
+

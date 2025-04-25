@@ -1,0 +1,287 @@
+package lecture21arraylist;
+
+import tester.Tester;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.function.Predicate;
+
+interface IFunc<R, A> {
+  R apply(A arg);
+}
+
+class CountCharacter implements IFunc<Integer, String> {
+  public Integer apply(String value) {
+    return value.length();
+  }
+}
+
+interface IFunc2<A1, A2, R> {
+  R apply(A1 arg1, A2 arg2);
+}
+
+class Sum implements IFunc2<Integer, Integer, Integer> {
+  public Integer apply(Integer arg1, Integer arg2) {
+    return arg1 + arg2;
+  }
+}
+
+class Util {
+  Util() {};
+  
+  <T, R> R foldl(ArrayList<T> arrayList, R base, IFunc2<T, R, R> func) {
+    return this.foldlHelper(arrayList, base, func,  0);
+  }
+  
+  <T, R> R foldlHelper(ArrayList<T> arrayList, R resultAcc, IFunc2<T, R, R> func, int currentIndex) {
+    if (currentIndex >= arrayList.size()) {
+      return resultAcc;
+    }
+    resultAcc = func.apply(arrayList.get(currentIndex), resultAcc);
+    return this.foldlHelper(arrayList, resultAcc, func,  currentIndex + 1);
+  }
+  
+  <T, U, R> R foldlForEach(ArrayList<T> arrayList, R base, IFunc2<T, R, R> func) {
+    R result = base;
+    for (T element : arrayList) {
+      result = func.apply(element, result); 
+    }   
+    return result;
+  }
+  
+  <T, R> R foldr(ArrayList<T> arrayList, R base, IFunc2<T, R, R> func) {
+    return this.foldrHelper(arrayList, base, func, 0);
+  }
+  
+  <T, R> R foldrHelper(ArrayList<T> arrayList, R resultAcc, IFunc2<T, R, R> func, int currentIndex) {
+    if (currentIndex >= arrayList.size()) {
+      return resultAcc;
+    }
+    return func.apply(arrayList.get(currentIndex), 
+                      this.foldrHelper(arrayList, resultAcc, func, currentIndex + 1)); 
+  }
+  
+  <T, R> R foldrForEach(ArrayList<T> arrayList, R base, IFunc2<T, R, R> func) {
+    R result = base;
+    int lastIndex = arrayList.size() - 1;
+    
+    // how to foldr??? can't seem to
+    for (T element : arrayList) {
+      result = func.apply(element, result); 
+    }   
+    return result;
+  }
+  
+  
+  <T> void swap(ArrayList<T> arrayList, int index1, int index2) {
+    T oldValueAtIndex1 = arrayList.get(index1);
+    T oldValueAtIndex2 = arrayList.get(index2); 
+    
+    arrayList.set(index2, oldValueAtIndex1);
+    arrayList.set(index1, oldValueAtIndex2);
+  }
+  
+  <T, U> ArrayList<U> map(ArrayList<T> arrayList, IFunc<U, T> func) {
+    // Set up base result (for empty array)
+    ArrayList<U> result = new ArrayList<U>();
+
+    return this.mapHelper(arrayList, func, result, 0);
+  }
+  
+  private <T, U> ArrayList<U> mapHelper(ArrayList<T> arrayList, IFunc<U, T> func, ArrayList<U> result, int currentIndex) {
+    // Base case
+    if (currentIndex >= arrayList.size()) {
+      return result;
+    }
+    result.add(func.apply(arrayList.get(currentIndex)));
+    return this.mapHelper(arrayList, func, result, currentIndex + 1);
+  }
+  
+  <T, U> ArrayList<U> map2(ArrayList<T> arrayList, IFunc<U, T> func) {
+    ArrayList<U> result = new ArrayList<U>();
+    
+    // "for each element of type T in arrayList"
+    for ( T element : arrayList ) {
+      result.add(func.apply(element));
+    }  
+    return result;
+  }
+    
+  // Returns the index of the first item passing the predicate,
+  // or -1 if no such item was found
+  <T> int find(ArrayList<T> arr, Predicate<T> whichOne) {
+    return this.findHelp(arr, whichOne, 0);
+  }
+  
+  private <T> int findHelp(ArrayList<T> arr, Predicate<T> whichOne, int index) {
+    if (index >= arr.size()) { // at the end, not found
+      return -1;
+    }
+    else if (whichOne.test(arr.get(index))) {
+      return index;
+    }
+    else {
+      return findHelp(arr, whichOne, index + 1);
+    }
+  }
+  
+  // Returns the index of the target string in the given ArrayList, or -1 if the string is not found
+  // Assumes that the given ArrayList is sorted 
+  // Assumes that [lowIdx, highIdx)
+  int binarySearch(ArrayList<String> strings, String target) {
+    return this.binarySearchHelp(strings, target, 0, strings.size());
+  }
+  
+  // start by checking the middle index, if found, return that index
+  // if not found, see which half you should check
+  // then check the middle index of left/right half
+  private int binarySearchHelp(ArrayList<String> strings, String target, int lowIndex, int highIndex) {
+    int midIndex = (lowIndex + highIndex) / 2;  // round up or down??
+    
+    if (lowIndex >= highIndex) {  // not found
+      return -1;
+    }
+    else if (strings.get(midIndex).equals(target)) {
+      return midIndex;
+    }
+    else if (strings.get(midIndex).compareTo(target) > 0) {  // target comes before midIndex
+      return this.binarySearchHelp(strings, target, lowIndex, midIndex); // check [𝑙𝑜𝑤𝐼𝑑𝑥,𝑚𝑖𝑑𝐼𝑑𝑥)
+    }
+    else {
+      return this.binarySearchHelp(strings, target, midIndex + 1, highIndex);  // check [𝑚𝑖𝑑𝐼𝑑𝑥+1,ℎ𝑖𝑔ℎ𝐼𝑑𝑥)
+    }
+  }
+  
+  // GENERIC BINARY SEARCH
+  <T> int generic_binarySearch(ArrayList<T> arr, T target, Comparator<T> comp) {
+    return this.generic_binarySearchHelp(arr, target, comp, 0, arr.size());
+  }
+  
+  private <T> int generic_binarySearchHelp(ArrayList<T> arr, T target, Comparator<T> comp, 
+                                   int lowIdx, int highIdx) {
+    int midIdx = (lowIdx + highIdx) / 2;
+    int compareResult = comp.compare(target, arr.get(midIdx));
+    if (lowIdx >= highIdx) {  
+      return -1;
+    }
+    else if (compareResult == 0) {
+      return midIdx;
+    }
+    else if (compareResult < 0) {  
+      return this.generic_binarySearchHelp(arr, target, comp, lowIdx, midIdx); // check [𝑙𝑜𝑤𝐼𝑑𝑥,𝑚𝑖𝑑𝐼𝑑𝑥)
+    }
+    else {
+      return this.generic_binarySearchHelp(arr, target, comp, midIdx + 1, highIdx);  // check [𝑚𝑖𝑑𝐼𝑑𝑥+1,ℎ𝑖𝑔ℎ𝐼𝑑𝑥)
+    }
+  }
+  
+  // EFFECT: Sorts the given list of strings alphabetically
+  void sort(ArrayList<String> arr) {
+    for (int i = 0; i < arr.size(); i = i + 1) {
+      // look for minimum value item in the <rest list> and swap with item at minIdx
+      this.swap(arr, i, i);
+    }
+  }
+  
+  
+  ArrayList<String> sortRecursive(ArrayList<String> arr) {
+    return this.sortRecHelp(arr, 0);
+  }
+
+  private ArrayList<String> sortRecHelp(ArrayList<String> arr, int index) {
+    if (index >= arr.size()) {
+      return arr;
+    }
+    this.swap(arr, index, this.findMinValueFrom(arr, index));
+
+    return this.sortRecHelp(arr, index + 1);
+  }
+
+  // return the index of the mininum value, starting from the given index
+  int findMinValueFrom(ArrayList<String> arr, int index) {
+    return this.findMinHelp(arr, index + 1, index);
+  }
+
+  private int findMinHelp(ArrayList<String> arr, int i, int idxMinVal) {
+    if (i == arr.size()) {
+      return idxMinVal;
+    }
+    if (arr.get(i).compareTo(arr.get(idxMinVal)) < 0) {
+      return this.findMinHelp(arr, i + 1, i);
+    }
+    return this.findMinHelp(arr, i + 1, idxMinVal);
+  }
+}
+
+class SortListExamples {
+  
+  void testMinValue(Tester t) {
+    ArrayList<String> stringList = new ArrayList<String>();
+    stringList.add("kiwi"); stringList.add("cherry"); stringList.add("apple"); 
+    stringList.add("date"); stringList.add("banana"); stringList.add("fig"); 
+    stringList.add("watermelon"); stringList.add("grape"); stringList.add("honeydew");
+    
+    System.out.println(stringList);
+  }
+  
+  
+}
+
+
+class ArrayListExamples {
+  
+  void testFoldr(Tester t) {
+    ArrayList<Integer> numList = new ArrayList<Integer>();
+    numList.add(1); numList.add(10); numList.add(100);
+    
+    // recursive
+    t.checkExpect(new Util().foldr(numList, 0, new Sum()), 111);
+    // for each
+    t.checkExpect(new Util().foldrForEach(numList, 0, new Sum()), 111);
+  }
+  
+  void testArrayListMap(Tester t) {
+    ArrayList<String> stringList = new ArrayList<String>(); 
+    Util util = new Util();
+    IFunc<Integer, String> funcObj = new CountCharacter();
+    
+    stringList.add("1st");
+    stringList.add("2nd item");
+    
+    ArrayList<Integer> result = util.map2(stringList, funcObj);
+    t.checkExpect(result.size(), 2);
+    t.checkExpect(result.get(0), 3);
+    t.checkExpect(result.get(1), 8);
+  }
+  
+  void testSwap(Tester t) {
+    ArrayList<String> stringList = new ArrayList<String>(); 
+    stringList.add("1st item");
+    stringList.add("2nd item");
+    t.checkExpect(stringList.get(0), "1st item");
+    t.checkExpect(stringList.get(1), "2nd item");
+    
+    Util util = new Util();
+    util.swap(stringList, 0, 1);
+    t.checkExpect(stringList.get(0), "2nd item");
+    t.checkExpect(stringList.get(1), "1st item");
+  }
+  
+  void testArrayListAddGet(Tester t) {
+    ArrayList<String> stringList = new ArrayList<String>();  
+    t.checkExpect(stringList.size(), 0);
+    
+    stringList.add("1st item");
+    t.checkExpect(stringList.size(), 1);
+    stringList.add("2nd item");
+    t.checkExpect(stringList.size(), 2);
+    
+    stringList.remove(1);
+    t.checkExpect(stringList.size(), 1);
+    t.checkExpect(stringList.get(0), "1st item");
+    
+    stringList.add(0, "0th item");  // add to front
+    t.checkExpect(stringList.size(), 2); 
+    t.checkExpect(stringList.get(0), "0th item");
+    
+  }
+}

@@ -1,0 +1,175 @@
+package assignment7;
+
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
+import tester.Tester;
+
+class Neg implements Function<Double,Double> {
+  public Double apply(Double n) {
+    return - n;
+  }
+}
+
+class Sqr implements Function<Double,Double> {
+  public Double apply(Double n) {
+    return n * n;
+  }
+}
+
+class Plus implements BiFunction<Double, Double, Double> {
+  public Double apply(Double t, Double u) {
+    return t + u;
+  }  
+}
+
+class Minus implements BiFunction<Double, Double, Double> {
+  public Double apply(Double t, Double u) {
+    return t - u;
+  }  
+}
+
+class Mul implements BiFunction<Double, Double, Double> {
+  public Double apply(Double t, Double u) {
+    return t * u;
+  }  
+}
+
+class Div implements BiFunction<Double, Double, Double> {
+  public Double apply(Double t, Double u) {
+    return t / u;
+  }  
+}
+
+interface IArith {
+  <R> R accept(IArithVisitor<R> visitor);
+}
+
+class Const implements IArith {
+  double num;
+  
+  Const(double num) {
+    this.num = num;
+  }
+
+  public <R> R accept(IArithVisitor<R> visitor) {
+    return visitor.visitConst(this);
+  }
+}
+
+class UnaryFormula implements IArith {
+  Function<Double,Double> func;
+  String name;
+  IArith child;
+  
+  UnaryFormula(Function<Double,Double> func, String name, IArith child) {
+    this.func = func;
+    this.name = name;
+    this.child = child;
+  }
+
+  public <R> R accept(IArithVisitor<R> visitor) {
+    return visitor.visitUnaryFormula(this);
+  }
+  
+}
+
+class BinaryFormula implements IArith {
+  BiFunction<Double, Double, Double> func;
+  String name;
+  IArith left;
+  IArith right;
+  
+  BinaryFormula(BiFunction<Double, Double, Double> func, String name, IArith left, IArith right) {
+    this.func = func;
+    this.name = name;
+    this.left = left;
+    this.right = right;
+  }
+
+  public <R> R accept(IArithVisitor<R> visitor) {
+    return visitor.visitBinaryFormula(this);
+  }
+}
+
+
+
+interface IArithVisitor<R> {
+  R apply(IArith a);
+  R visitConst(Const c);
+  R visitUnaryFormula(UnaryFormula u);
+  R visitBinaryFormula(BinaryFormula b); 
+}
+
+class EvalVisitor implements IArithVisitor<Double> {
+  public Double apply(IArith a) {
+    return a.accept(this);
+  }
+  
+  public Double visitConst(Const c) {
+    return c.num;
+  }
+
+  public Double visitUnaryFormula(UnaryFormula u) {
+    return u.func.apply(new EvalVisitor().apply(u.child));
+  }
+
+  public Double visitBinaryFormula(BinaryFormula b) {
+    return b.func.apply(new EvalVisitor().apply(b.left), new EvalVisitor().apply(b.right));
+  }
+}
+
+class PrintVisitor implements IArithVisitor<String> {
+  public String apply(IArith a) {
+    return a.accept(this);
+  }
+
+  public String visitConst(Const c) {
+    return Double.toString(c.num);
+  }
+
+  public String visitUnaryFormula(UnaryFormula u) {
+    // TODO Auto-generated method stub
+    return "(" + u.name + " " + new PrintVisitor().apply(u.child) + ")";
+  }
+
+  public String visitBinaryFormula(BinaryFormula b) {
+    return "(" + b.name + " "  
+              + new PrintVisitor().apply(b.left) + " "
+              + new PrintVisitor().apply(b.right)
+              + ")";
+  }
+  
+}
+
+
+class ExamplesArith {
+  
+  IArith const1 = new Const(1.0);
+  IArith const2 = new Const(2.0);
+  IArith const3 = new Const(1.5);
+  
+  IArith unary1 = new UnaryFormula(new Neg(), "neg", const1);
+  IArith unary2 = new UnaryFormula(new Sqr(), "sqr", const2);
+  IArith unary3 = new UnaryFormula(new Neg(), "neg", const3);
+  
+  IArith binary1 = new BinaryFormula(new Plus(), "plus", const1, const2);
+  IArith binary2 = new BinaryFormula(new Div(), "div", const1, const2);
+  IArith binary3 = new BinaryFormula(new Div(), "div", binary1, unary3);
+  
+  
+  void testPrintVisitor(Tester t) {
+    t.checkExpect(const3.accept(new PrintVisitor()), "1.5");
+    t.checkExpect(unary3.accept(new PrintVisitor()), "(neg 1.5)");
+    t.checkExpect(binary1.accept(new PrintVisitor()), "(plus 1.0 2.0)");
+    t.checkExpect(binary3.accept(new PrintVisitor()), "(div (plus 1.0 2.0) (neg 1.5))");
+  }
+  
+  void testEvalVisitor(Tester t) {
+    t.checkInexact(new EvalVisitor().apply(const1), 1.0, 0.01);
+    t.checkInexact(new EvalVisitor().apply(unary1), -1.0, 0.01);
+    t.checkInexact(new EvalVisitor().apply(unary2), 4.0, 0.01);
+    t.checkInexact(new EvalVisitor().apply(binary1), 3.0, 0.01);
+    t.checkInexact(new EvalVisitor().apply(binary2), 0.5, 0.01);
+  }
+}

@@ -1,0 +1,159 @@
+package lecture25iterators;
+
+import java.util.Iterator;
+
+// Using Deque as a QUEUE, where items are added at the end and removed from the front.
+class BreadthFirstIterator<T> implements Iterator<T> {
+  Deque<IBinaryTree<T>> worklist;
+  
+  BreadthFirstIterator(IBinaryTree<T> source) {
+   this.worklist = new Deque<IBinaryTree<T>>();
+   this.addIfNotLeaf(source);
+  }
+  
+  //EFFECT: only adds the given binary-tree if it's not a leaf
+  void addIfNotLeaf(IBinaryTree<T> bt) {
+    if (bt.isNode()) {
+      this.worklist.addAtTail(bt);
+    }
+  }
+  
+  public boolean hasNext() {
+   return this.worklist.size() > 0;  // worklist is not empty
+  }
+  
+  public T next() {
+   // get the first item on the worklist
+   BTNode<T> firstItem = this.worklist.removeFromHead().asNode();
+   
+   // add children to worklist
+   this.addIfNotLeaf(firstItem.left);
+   this.addIfNotLeaf(firstItem.right);
+   return firstItem.data;
+  }
+}
+
+// = Depth-First Traversal 
+// produces the node, then recursively produces the left subtree of the node, then the right subtree
+// Using Deque as a STACK
+class PreOrderIterator<T> implements Iterator<T> {
+  Deque<IBinaryTree<T>> worklist;
+  
+  PreOrderIterator(IBinaryTree<T> source) {
+    this.worklist = new Deque<IBinaryTree<T>>();
+    this.addIfNotLeaf(source);
+   }
+  //EFFECT: only adds the given binary-tree if it's not a leaf AT the FRONT
+  void addIfNotLeaf(IBinaryTree<T> bt) {
+    if (bt.isNode()) {
+      this.worklist.addAtHead(bt);
+    }
+  }
+
+  @Override
+  public boolean hasNext() {
+    return this.worklist.size() > 0;
+  }
+
+  @Override
+  public T next() {
+    // get the first item & remove it from worklist
+    // we know all Node<T>s in Deque worklist are BTNode<T> (not leaf)
+    BTNode<T> item = this.worklist.removeFromHead().asNode();  
+    
+    // add children to the front of worklist
+    this.addIfNotLeaf(item.right);
+    this.addIfNotLeaf(item.left);   // we want LEFT child at FRONT
+
+    return item.data;
+  }
+}
+
+// produces all the children of a node before producing the node itself
+class PostOrderIterator<T> implements Iterator<T> {
+  Deque<IBinaryTree<T>> worklist;
+  
+  PostOrderIterator(IBinaryTree<T> source) {
+    this.worklist = new Deque<IBinaryTree<T>>();
+    this.addIfNotLeaf(source);
+   }
+  //EFFECT: only adds the given binary-tree if it's not a leaf AT the FRONT
+  void addIfNotLeaf(IBinaryTree<T> bt) {
+    if (bt.isNode()) {
+      this.worklist.addAtHead(bt);
+    }
+  }
+
+  @Override
+  public boolean hasNext() {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  @Override
+  public T next() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+  
+}
+
+// produces the left subtree of a node, then the node, then recursively produces the right subtree
+class InOrderIterator<T> implements Iterator<T> {
+  Deque<IBinaryTree<T>> worklist;
+
+  InOrderIterator(IBinaryTree<T> source) {
+    this.worklist = new Deque<IBinaryTree<T>>();
+    this.addIfNotLeaf(source);
+   }
+  //EFFECT: only adds the given binary-tree if it's not a leaf AT the FRONT
+  void addIfNotLeaf(IBinaryTree<T> bt) {
+    if (bt.isNode()) {
+      this.worklist.addAtHead(bt);
+    }
+  }
+  
+  @Override
+  public boolean hasNext() {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  @Override
+  public T next() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+  
+}
+
+interface IBinaryTree<T> {
+  boolean isNode();
+  BTNode<T> asNode();
+}
+
+class BTLeaf<T> implements IBinaryTree<T> {
+  public boolean isNode() { return false; } 
+  
+  public BTNode<T> asNode() {
+    throw new UnsupportedOperationException("Not a BTNode!");
+  }
+}
+
+class BTNode<T> implements IBinaryTree<T> {
+  T data;
+  IBinaryTree<T> left;
+  IBinaryTree<T> right;
+  
+  BTNode(T data, IBinaryTree<T> left, IBinaryTree<T> right) {
+    this.data = data;
+    this.left = left;
+    this.right = right;
+  }
+  
+  public boolean isNode() { return true; } 
+  public BTNode<T> asNode() { return this; }
+}
+
+
+

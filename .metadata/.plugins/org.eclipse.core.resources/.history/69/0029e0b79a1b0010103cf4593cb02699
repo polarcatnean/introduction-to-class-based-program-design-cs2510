@@ -1,0 +1,36 @@
+package lab9;
+
+import java.util.ArrayList;
+import java.util.function.Predicate;
+import tester.*;
+import javalib.impworld.*;
+import javalib.worldimages.*;
+import java.awt.Color;
+
+
+class Utils {
+  
+  <T> ArrayList<T> filter(ArrayList<T> arr, Predicate<T> pred) {
+    ArrayList<T> filteredArr = new ArrayList<T>();    
+    for (T item : arr) {
+      if (pred.test(item)) {
+        filteredArr.add(item);
+      }
+    }
+    return filteredArr;     
+  }
+  
+  
+  <T> void removeExcept(ArrayList<T> arr, Predicate<T> pred) {
+    // You cannot modify an ArrayList while iterating over it
+    ArrayList<T> result = new ArrayList<T>();   
+    for (T item : arr) {
+      if (pred.test(item)) {
+        result.add(item);
+      }
+    }
+    arr = result;
+  }
+
+
+}
