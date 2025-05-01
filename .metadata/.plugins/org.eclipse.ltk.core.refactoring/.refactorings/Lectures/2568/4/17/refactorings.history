@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename type &apos;lecture26hashing.DictEntry&apos; to &apos;HashTable&apos;&#x0D;&#x0A;- Original project: &apos;Lectures&apos;&#x0D;&#x0A;- Original element: &apos;lecture26hashing.DictEntry&apos;&#x0D;&#x0A;- Renamed element: &apos;lecture26hashing.HashTable&apos;&#x0D;&#x0A;- Update references to refactored element&#x0D;&#x0A;- Update textual occurrences in comments and strings" description="Rename type &apos;DictEntry&apos;" flags="589830" id="org.eclipse.jdt.ui.rename.type" input="/src&lt;lecture26hashing{DictEntry.java[DictEntry" matchStrategy="1" name="HashTable" qualified="false" references="true" similarDeclarations="false" stamp="1745542631651" textual="false" version="1.0"/>
+</session>

@@ -1,0 +1,123 @@
+package lab10;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+
+import tester.Tester;
+
+class ListOfLists<T> implements Iterable<T> {
+  ArrayList<ArrayList<T>> listoflists;
+  
+  ListOfLists() {
+    this.listoflists = new ArrayList<ArrayList<T>>();
+  }
+  
+  ListOfLists(ArrayList<ArrayList<T>> listoflists) {
+    this.listoflists = listoflists;
+  }
+  
+  // EFFECT: adds a new empty ArrayList<T> to the end of the list-of-lists.
+  void addNewList() {
+    listoflists.add(new ArrayList<T>());
+  }
+  
+  // EFFECT: adds the provided object to the end of the ArrayList<T> 
+  // at the provided index in the list-of-lists
+  void add(int index, T object) {
+    if (index < 0 || index >= this.size()) {
+      throw new IndexOutOfBoundsException("No list at the specified index");
+    }
+    ArrayList<T> list = listoflists.get(index);
+    list.add(object);
+  }
+  
+  // returns the ArrayList<T> at the provided index in the list-of-lists
+  ArrayList<T> get(int index) {
+    if (index < 0 || index >= this.size()) {
+      throw new IndexOutOfBoundsException("No list at the specified index");
+    }
+    return listoflists.get(index);
+  }
+  
+  // returns the number of lists in this list-of-lists
+  int size() {
+    return listoflists.size();
+  }
+
+  @Override
+  public Iterator<T> iterator() {
+    return new ListOfListsIterator<T>(this);
+  }
+  
+}
+
+class ListOfListsIterator<T> implements Iterator<T> {
+  ListOfLists<T> lists;
+  int nextListIndex; // the index of the next list
+  int nextItemIndex; // the index of the next item in the current list
+  
+  ListOfListsIterator(ListOfLists<T> lists) { 
+    this.lists = lists;
+    this.nextListIndex = 0;
+    this.nextItemIndex = 0;
+  }
+
+  @Override
+  public boolean hasNext() {
+    // TODO Auto-generated method stub
+    return nextListIndex < lists.size() 
+        && nextItemIndex < lists.listoflists.get(nextListIndex).size();
+  }
+
+  @Override
+  public T next() {
+    // TODO Auto-generated method stub
+    
+    return null;
+  }
+  
+}
+
+class ExamplesListOfLists {
+  
+  void testListOfLists(Tester t) {
+    ListOfLists<Integer> lol = new ListOfLists<Integer>();
+    //add 3 lists
+    lol.addNewList();
+    lol.addNewList();
+    lol.addNewList();
+    t.checkExpect(lol.size(), 3);
+    t.checkExpect(lol.get(0), new ArrayList<Integer>());
+ 
+    //add elements 1,2,3 in first list
+    lol.add(0,1);
+    lol.add(0,2);
+    lol.add(0,3);
+    t.checkExpect(lol.listoflists.get(0).get(0), 1);
+    t.checkExpect(lol.listoflists.get(0).get(1), 2);
+    t.checkExpect(lol.listoflists.get(0).get(2), 3);
+    t.checkExpect(lol.size(), 3);
+    t.checkExpect(lol.get(0), new ArrayList<Integer>(Arrays.asList(1, 2, 3)));
+ 
+    //add elements 4,5,6 in second list
+    lol.add(1,4);
+    lol.add(1,5);
+    lol.add(1,6);
+    t.checkExpect(lol.listoflists.get(1).get(0), 4);
+    t.checkExpect(lol.listoflists.get(1).get(1), 5);
+    t.checkExpect(lol.listoflists.get(1).get(2), 6);
+ 
+    //add elements 7,8,9 in third list
+    lol.add(2,7);
+    lol.add(2,8);
+    lol.add(2,9);
+ 
+    //iterator should return elements in order 1,2,3,4,5,6,7,8,9
+    int number = 1;
+    for (Integer num: lol) {
+        t.checkExpect(num, number);
+        number = number + 1;
+    }
+  }
+}

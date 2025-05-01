@@ -1,0 +1,203 @@
+package lab10;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+
+import tester.Tester;
+
+class IteratorUtils {
+  
+  // produce a new Iterator that concatenates the two Iterators
+  // this method should terminate even if iter1 or iter2 is an infinitely large Iterator
+  static <T> Iterator<T> concat(Iterator<T> iter1, Iterator<T> iter2) {
+    return new ConcatIterator<T>(iter1, iter2);
+  }
+  
+  // produce an iterator that cycles through the elements of iterable forever
+  // list [1, 2, 3] -> 1,2,3,1,2,3,1,2,3,1,2,3...
+  static <T> Iterator<T> cycle(Iterable<T> iterable) {
+    return new CycleIterator<T>(iterable);
+  }
+
+}
+
+class ConcatIterator<T> implements Iterator<T> {
+  Iterator<T> iter1;
+  Iterator<T> iter2;
+  
+  ConcatIterator(Iterator<T> iter1, Iterator<T> iter2) {
+    this.iter1 = iter1;
+    this.iter2 = iter2;
+  }
+
+  @Override
+  public boolean hasNext() {
+    return iter1.hasNext() || iter2.hasNext();
+  }
+
+  @Override
+  public T next() {
+    while (iter1.hasNext()) {
+      return iter1.next();
+    }
+    return iter2.next();
+  }
+}
+
+class CycleIterator<T> implements Iterator<T> {
+  Iterable<T> iterable;
+  Iterator<T> iterator;
+  boolean isEmpty;
+  
+  CycleIterator(Iterable<T> iterable) { 
+    this.iterable = iterable;
+    this.iterator = iterable.iterator();
+    this.isEmpty = !this.iterator.hasNext();
+  }
+
+  @Override
+  public boolean hasNext() {
+    // if iterable has no elements -> no next elements
+    return !this.isEmpty;
+  }
+
+  @Override
+  public T next() {
+    if (isEmpty) {
+      throw new NoSuchElementException("Cannot call next() on empty iterable");
+    }
+    else if (!this.iterator.hasNext()) {
+      this.iterator = this.iterable.iterator();
+    }
+    return this.iterator.next();
+  }
+  
+}
+
+class InfiniteIterator implements Iterator<Integer> {
+  private int current = 0;
+
+  @Override
+  public boolean hasNext() {
+    return true; // never ends
+  }
+
+  @Override
+  public Integer next() {
+    return current++;
+  }
+}
+
+class ExplodingIterator implements Iterator<Integer> {
+  @Override
+  public boolean hasNext() {
+    throw new RuntimeException("Should not be called!");
+  }
+
+  @Override
+  public Integer next() {
+    throw new RuntimeException("Should not be called!");
+  }
+}
+
+class ExamplesCycleIterator {
+  // edge case: empty iterator
+  
+  void testBasicCycle(Tester t) {
+    ArrayList<Integer> a = new ArrayList<>(List.of(1, 2, 3));
+    Iterator<Integer> result = IteratorUtils.cycle(a);
+    
+    t.checkExpect(result.hasNext(), true);
+    t.checkExpect(result.next(), 1);
+    t.checkExpect(result.next(), 2);
+    t.checkExpect(result.next(), 3);
+    t.checkExpect(result.next(), 1);
+    t.checkExpect(result.next(), 2);
+    t.checkExpect(result.next(), 3);
+    t.checkExpect(result.next(), 1);
+    t.checkExpect(result.next(), 2);
+    t.checkExpect(result.next(), 3);
+    t.checkExpect(result.hasNext(), true);
+  }
+  
+  void testEmpty(Tester t) {
+    ArrayList<Integer> a = new ArrayList<>();
+    Iterator<Integer> result = IteratorUtils.cycle(a);
+    
+    t.checkExpect(result.hasNext(), false);
+    t.checkException(new NoSuchElementException("Cannot call next() on empty iterable"), result, "next");
+  }
+  
+  void testSingleElement(Tester t) {
+    List<String> list = List.of("A");
+    Iterator<String> result = new CycleIterator<>(list);
+    t.checkExpect(result.hasNext(), true);
+    t.checkExpect(result.next(), "A");
+    t.checkExpect(result.next(), "A");
+    t.checkExpect(result.next(), "A");
+    t.checkExpect(result.hasNext(), true);
+  }
+}
+
+class ExamplesCombinedIterators {
+  // both iterators empty
+  void testBothEmpty(Tester t) {
+    ArrayList<Integer> a = new ArrayList<>();
+    ArrayList<Integer> b = new ArrayList<>();
+    Iterator<Integer> result = IteratorUtils.concat(a.iterator(), b.iterator());
+    
+    t.checkExpect(result.hasNext(), false);
+  }
+  
+  // iter1 empty, iter2 not empty
+  void testFirstEmptySecondHasElems(Tester t) {
+    ArrayList<Integer> a = new ArrayList<>();
+    ArrayList<Integer> b = new ArrayList<>(List.of(1, 2, 3));
+    Iterator<Integer> result = IteratorUtils.concat(a.iterator(), b.iterator());
+    
+    t.checkExpect(result.hasNext(), true);
+    t.checkExpect(result.next(), 1);
+    t.checkExpect(result.next(), 2);
+    t.checkExpect(result.next(), 3);
+    t.checkExpect(result.hasNext(), false);
+  }
+  
+  // iter1 not empty, iter 2 empty
+  void testFirstHasElemSecondEmpty(Tester t) {
+    ArrayList<String> a = new ArrayList<>(List.of("a", "b"));
+    ArrayList<String> b = new ArrayList<>();
+    Iterator<String> result = IteratorUtils.concat(a.iterator(), b.iterator());
+    
+    t.checkExpect(result.hasNext(), true);
+    t.checkExpect(result.next(), "a");
+    t.checkExpect(result.next(), "b");
+    t.checkExpect(result.hasNext(), false);
+  }
+  
+  // Both iterators have elements
+  void testBothHaveElements(Tester t) {
+    ArrayList<Character> a = new ArrayList<>(List.of('x', 'y'));
+    ArrayList<Character> b = new ArrayList<>(List.of('z'));
+    Iterator<Character> result = IteratorUtils.concat(a.iterator(), b.iterator());
+    
+    t.checkExpect(result.hasNext(), true);
+    t.checkExpect(result.next(), 'x');
+    t.checkExpect(result.next(), 'y');
+    t.checkExpect(result.next(), 'z');
+    t.checkExpect(result.hasNext(), false);
+  }
+  
+  // 1st iter infinite
+  void testInfiniteIter1StopsAtLimit(Tester t) {
+    Iterator<Integer> infinite = new InfiniteIterator();
+    Iterator<Integer> shouldNotBeUsed = new ExplodingIterator();
+    Iterator<Integer> result = IteratorUtils.concat(infinite, shouldNotBeUsed);
+
+    for (int i = 0; i < 5; i++) {
+      t.checkExpect(result.hasNext(), true);  // always has next
+      t.checkExpect(result.next(), i);
+    }
+  }
+}

@@ -2,7 +2,7 @@
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
     <booleanAttribute key="org.eclipse.debug.core.ATTR_FORCE_SYSTEM_CONSOLE_ENCODING" value="false"/>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-        <listEntry value="/Lectures"/>
+        <listEntry value="/Lab"/>
     </listAttribute>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
         <listEntry value="4"/>
@@ -13,6 +13,6 @@
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
     <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="tester.Main"/>
     <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="Lab"/>
-    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="lecture25iterators.BinaryTreeExamples"/>
-    <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="Lectures"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="lab10.ExamplesCycleIterator"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="Lab"/>
 </launchConfiguration>

@@ -1,0 +1,22 @@
+package lab10;
+
+class Stack<T> {
+  Deque<T> contents;
+  
+  Stack() {
+    this.contents = new Deque<T>();
+  }
+  
+  Stack(Deque<T> contents) {
+    this.contents = contents;
+  }
+  
+  // METHODS: 
+  // adds an item to the stack
+  void push(T item); 
+  
+  boolean isEmpty();
+  
+  // removes and returns the top of the stack
+  T pop(); 
+} 

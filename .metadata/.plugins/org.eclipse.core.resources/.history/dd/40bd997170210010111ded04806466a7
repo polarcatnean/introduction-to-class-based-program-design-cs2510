@@ -1,0 +1,7 @@
+package lecture26hashing;
+
+// Represents one word in a dictionary, together with its definition
+class HashTable {
+  String word;
+  String meaning;
+}

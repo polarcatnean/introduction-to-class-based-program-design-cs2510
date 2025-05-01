@@ -1,0 +1,228 @@
+package lab9;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.function.Predicate;
+import tester.*;
+
+
+class Utils {
+  
+  <T> ArrayList<T> filter(ArrayList<T> arr, Predicate<T> pred) {
+//    ArrayList<T> filteredArr = new ArrayList<T>();    
+//    for (T item : arr) {
+//      if (pred.test(item)) {
+//        filteredArr.add(item);
+//      }
+//    }
+//    return filteredArr;
+    return this.customFilter(arr, pred, true);
+  }
+  
+  <T> ArrayList<T> filterNot(ArrayList<T> arr, Predicate<T> pred) {
+//    ArrayList<T> filteredArr = new ArrayList<T>();    
+//    for (T item : arr) {
+//      if (!pred.test(item)) {
+//        filteredArr.add(item);
+//      }
+//    }
+//    return filteredArr;
+    return this.customFilter(arr, pred, false);
+  }
+  
+  <T> ArrayList<T> customFilter(ArrayList<T> arr, Predicate<T> pred, boolean keepPassing) {
+    ArrayList<T> filteredArr = new ArrayList<T>();    
+    for (T item : arr) {
+      if (pred.test(item) == keepPassing) {
+        filteredArr.add(item);
+      }
+    }
+    return filteredArr;
+  }
+  
+  // EFFECT: modifies the given list to remove everything that fails the predicate
+  <T> void removeFailing(ArrayList<T> arr, Predicate<T> pred) {
+    // You cannot modify an ArrayList while iterating over it
+    ArrayList<T> toKeep = new ArrayList<T>();   
+    for (T item : arr) {
+      if (pred.test(item)) {
+        toKeep.add(item);
+      }
+    }
+    // POINT! arr = result;  // doesn't work, arr is a local variable
+    // In Java, method parameters are passed by value, 
+    // so reassigning the parameter doesn't change the original reference.
+    arr.clear();
+    arr.addAll(toKeep);
+  }
+  
+  <T> void removePassing(ArrayList<T> arr, Predicate<T> pred) {
+    this.customRemove(arr, pred, false);
+  }
+  
+  <T> void customRemove(ArrayList<T> arr, Predicate<T> pred, boolean keepPassing) {
+    ArrayList<T> toKeep = new ArrayList<T>();
+    for (T item : arr) {
+      if (pred.test(item) == keepPassing) {
+        toKeep.add(item);
+      }
+    }   
+    arr.clear();
+    arr.addAll(toKeep);
+  }
+  
+  // produce a new Arraylist with the first element of the output list comes from arr1, the second from arr2, etc
+  // If one list runs out before the other, the output list should finish with just elements from the longer list.
+  <T> ArrayList<T> interweave(ArrayList<T> arr1, ArrayList<T> arr2) {
+    int combinedSize = arr1.size() + arr2.size();
+    ArrayList<T> result = new ArrayList<T>(combinedSize);
+    
+    for (int i = 0; i < combinedSize; i++) {
+      if (i % 2 == 0 && arr1.size() > 0) {
+        result.add(arr1.remove(0));       
+      }
+      else if (i % 2 == 1 && arr2.size() > 0){
+        result.add(arr2.remove(0));
+      }
+      else {
+        result.addAll(arr1);
+        result.addAll(arr2);
+      }
+    }
+    return result;
+  }
+  
+  <T> ArrayList<T> customInterweave(ArrayList<T> arr1, ArrayList<T> arr2, int getFrom1, int getFrom2) {
+    ArrayList<T> result = new ArrayList<T>();
+    
+    while (arr1.size() > 0 || arr2.size() > 0) {
+      for (int i = 0; i < getFrom1 && arr1.size() > 0; i++) {
+        result.add(arr1.remove(0));
+        System.out.println(result);
+      }
+      for (int i = 0; i < getFrom2 && arr2.size() > 0; i++) {
+        result.add(arr2.remove(0));
+        System.out.println(result);
+      }
+    }
+//    result.addAll(arr1);
+//    result.addAll(arr2);
+    
+    return result;
+  }
+
+
+}
+
+class UtilsExamples {
+  ArrayList<Integer> listofnum, oddnum, evenNum;
+  
+  class IsOdd implements Predicate<Integer> {
+    public boolean test(Integer t) {
+      return t % 2 == 1;
+    } 
+  }
+  
+  void init() {
+    listofnum = new ArrayList<Integer>(Arrays.asList(1, 3, 4, 5, 7, 8));
+    oddnum = new ArrayList<Integer>(Arrays.asList(1, 3, 5, 7));
+    evenNum = new ArrayList<Integer>(Arrays.asList(4, 8));
+  }
+  
+  void testFilter(Tester t) {
+    init();
+    
+    ArrayList<Integer> method1 = new Utils().filter(listofnum, new IsOdd());
+    t.checkExpect(method1, oddnum);
+  }
+  
+  void testFilterNot(Tester t) {
+    init();
+    
+    ArrayList<Integer> method1 = new Utils().filterNot(listofnum, new IsOdd());
+    t.checkExpect(method1, evenNum);
+  }
+  
+  void testCustomFilter(Tester t) {
+    init();
+    
+    ArrayList<Integer> method1 = new Utils().customFilter(listofnum, new IsOdd(), true);
+    ArrayList<Integer> method2 = new Utils().customFilter(listofnum, new IsOdd(), false);
+    t.checkExpect(method1, oddnum);
+    t.checkExpect(method2, evenNum);
+  }
+  
+  void testRemoveExcept(Tester t) {
+    init();
+    
+    new Utils().removeFailing(listofnum, new IsOdd());
+    t.checkExpect(listofnum, oddnum);
+  }
+  
+  void testCustomRemove(Tester t) {
+    init();
+    new Utils().customRemove(listofnum, new IsOdd(), true);
+    t.checkExpect(listofnum, oddnum);
+    
+    init();
+    new Utils().customRemove(listofnum, new IsOdd(), false);
+    t.checkExpect(listofnum, evenNum);
+  }
+  
+  void testInterweave(Tester t) {
+    init();
+    t.checkExpect(new Utils().interweave(oddnum, evenNum), new ArrayList<Integer>(Arrays.asList(1, 4, 3, 8, 5, 7)));
+  }
+  
+  void testCustomInterweave(Tester t) {
+    ArrayList<String> arr1 = new ArrayList<String>(Arrays.asList("A", "B", "C", "D", "E", "F"));
+    ArrayList<String> arr2 = new ArrayList<String>(Arrays.asList("w", "x", "y", "z"));
+    ArrayList<String> expected = new ArrayList<String>(Arrays.asList("A", "B", "C", "w", "x", "D", "E", "F", "y", "z"));   
+    t.checkExpect(new Utils().customInterweave(arr1, arr2, 3, 2), expected);
+    
+    ArrayList<String> arr3 = new ArrayList<String>(Arrays.asList("A", "B", "C", "D", "E"));
+    ArrayList<String> arr4 = new ArrayList<String>(Arrays.asList("w", "x", "y", "z"));
+    ArrayList<String> expected2 = new ArrayList<String>(Arrays.asList("A", "B", "C", "w", "x", "D", "E", "y", "z"));
+    t.checkExpect(new Utils().customInterweave(arr3, arr4, 3, 2), expected2);
+    
+    // Test 2: arr1 longer
+    ArrayList<Integer> nums1 = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5));
+    ArrayList<Integer> nums2 = new ArrayList<>(Arrays.asList(100, 200));
+    ArrayList<Integer> expected3 = new ArrayList<>(Arrays.asList(1, 2, 100, 3, 4, 200, 5));
+    t.checkExpect(new Utils().customInterweave(nums1, nums2, 2, 1), expected3);
+    
+    // Test 3: arr2 longer
+    ArrayList<Character> chars1 = new ArrayList<>(Arrays.asList('a', 'b'));
+    ArrayList<Character> chars2 = new ArrayList<>(Arrays.asList('x', 'y', 'z', 'w', 'u'));
+    ArrayList<Character> expected4 = new ArrayList<>(Arrays.asList('a', 'x', 'y', 'b', 'z', 'w', 'u'));
+    t.checkExpect(new Utils().customInterweave(chars1, chars2, 1, 2), expected4);
+    
+    // Test 4: One list empty
+    ArrayList<String> empty = new ArrayList<>();
+    t.checkExpect(new Utils().customInterweave(arr1, empty, 3, 2), arr1);
+    
+    // Test 5: Both empty
+    t.checkExpect(new Utils().customInterweave(empty, empty, 1, 1), empty);
+    
+    // Test 6: classic interweave
+    init();
+    t.checkExpect(new Utils().customInterweave(oddnum, evenNum, 1, 1), new ArrayList<Integer>(Arrays.asList(1, 4, 3, 8, 5, 7)));
+    
+    // Test 7: arr1 is longer than arr2
+    ArrayList<Integer> arr5 = new ArrayList<>(Arrays.asList(10, 20, 30, 40, 50, 60, 70));
+    ArrayList<Integer> arr6 = new ArrayList<>(Arrays.asList(1, 2, 3));
+    ArrayList<Integer> expected5 = new ArrayList<>(Arrays.asList(10, 20, 1, 30, 40, 2, 50, 60, 3, 70));
+    t.checkExpect(new Utils().customInterweave(arr5, arr6, 2, 1), expected5);
+    
+    ArrayList<String> arr7 = new ArrayList<>(Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H"));
+    ArrayList<String> arr8 = new ArrayList<>(Arrays.asList("x", "y", "z"));
+    ArrayList<String> expected6 = new ArrayList<>(Arrays.asList("A", "B", "C", "x", "y", "D", "E", "F", "z", "G", "H"));
+    t.checkExpect(new Utils().customInterweave(arr7, arr8, 3, 2), expected6);
+    
+    ArrayList<Character> arr9 = new ArrayList<>(Arrays.asList('a', 'b', 'c', 'd', 'e', 'f', 'g'));
+    ArrayList<Character> arr10 = new ArrayList<>(Arrays.asList('X', 'Y'));
+    ArrayList<Character> expected7 = new ArrayList<>(Arrays.asList('a', 'b', 'c', 'd', 'X', 'e', 'f', 'g','Y'));
+    t.checkExpect(new Utils().customInterweave(arr9, arr10, 4, 1), expected7);
+  }
+}
+

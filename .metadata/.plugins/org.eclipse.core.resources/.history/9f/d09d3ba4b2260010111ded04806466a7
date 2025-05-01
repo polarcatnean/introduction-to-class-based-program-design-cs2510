@@ -1,0 +1,113 @@
+package lab10;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import tester.Tester;
+
+class Pair<L, R> {
+  L left;
+  R right;
+ 
+  Pair(L left, R right) {
+   this.left = left;
+   this.right = right; 
+   }
+}
+
+class Utils2 {
+  // return an Iterator of pairs of corresponding elements
+  // If the lists are of different sizes, an exception should be thrown.
+  <X, Y> Iterator<Pair<X,Y>> zipStrict(ArrayList<X> arr1, ArrayList<Y> arr2) {
+    if (arr1.size() != arr2.size()) {
+      throw new IllegalArgumentException("Lists must be of equal size.");
+    }
+    return new PairIterator<X, Y>(arr1, arr2);
+  }
+  
+  // return an Iterator of pairs of corresponding elements
+  // If the lists are of different sizes, only return pairs up to the size of the shorter one.
+  <X, Y> Iterator<Pair<X,Y>> zipLists(ArrayList<X> arr1, ArrayList<Y> arr2) {
+    return new PairIterator<X, Y>(arr1, arr2);
+  }
+
+}
+
+class PairIterator<X, Y> implements Iterator<Pair<X, Y>> {
+  ArrayList<X> arr1;
+  ArrayList<Y> arr2;
+  int index;  // next position in both lists to construct a pair
+  
+  PairIterator(ArrayList<X> arr1, ArrayList<Y> arr2) {
+    this.arr1 = arr1;
+    this.arr2 = arr2;
+    index = 0;
+  }
+
+  @Override
+  public boolean hasNext() {
+    return index < arr1.size() && index < arr2.size();
+  }
+
+  @Override
+  public Pair<X, Y> next() {
+    Pair<X, Y> nextPair = new Pair<X, Y>(arr1.get(index), arr2.get(index));
+    index++;
+    return nextPair;
+  }
+  
+}
+
+class ExamplesPairs {
+  Utils2 u = new Utils2();
+  ArrayList<String> arr1 = new ArrayList<>(List.of("a", "b", "c"));
+  ArrayList<Integer> arr2 = new ArrayList<>(List.of(1, 2, 3));
+  ArrayList<Integer> arr3 = new ArrayList<>(List.of(1, 2, 3, 4));
+  ArrayList<String> arr4 = new ArrayList<>(List.of("a", "b", "c", "d"));
+  
+  void testZipStrict(Tester t) {     
+    Iterator<Pair<String, Integer>> pairIterator1 = u.zipStrict(arr1, arr2);
+    System.out.println("ZipStrict");
+    while (pairIterator1.hasNext()) {
+      Pair<String, Integer> pair = pairIterator1.next();
+      System.out.println(pair.left + " : " + pair.right);
+    }
+    
+    t.checkException(new IllegalArgumentException("Lists must be of equal size."), u, "zipStrict", arr1, arr3);
+    
+    // empty lists
+    ArrayList<String> arrA = new ArrayList<>();
+    ArrayList<Integer> arrB = new ArrayList<>();
+
+    Iterator<Pair<String, Integer>> it1 = new PairIterator<>(arrA, arrB);
+    t.checkExpect(it1.hasNext(), false);
+    
+    // one element
+    ArrayList<String> arr5 = new ArrayList<>(List.of("only"));
+    ArrayList<Integer> arr6 = new ArrayList<>(List.of(42));
+
+    Iterator<Pair<String, Integer>> it2 = new PairIterator<>(arr5, arr6);
+    t.checkExpect(it2.hasNext(), true);
+    Pair<String, Integer> p = it2.next();
+    t.checkExpect(p.left, "only");
+    t.checkExpect(p.right, 42);
+    t.checkExpect(it2.hasNext(), false);
+  }
+  
+  void testZipList(Tester t) {
+    Iterator<Pair<String, Integer>> pairIterator2 = u.zipLists(arr1, arr3);
+    System.out.println("ZipList -- arr1 < arr2");
+    while (pairIterator2.hasNext()) {
+      Pair<String, Integer> pair = pairIterator2.next();
+      System.out.println(pair.left + " : " + pair.right);
+    }
+    
+    Iterator<Pair<String, Integer>> pairIterator3 = u.zipLists(arr4, arr2);
+    System.out.println("ZipList -- arr1 > arr2");
+    while (pairIterator3.hasNext()) {
+      Pair<String, Integer> pair = pairIterator3.next();
+      System.out.println(pair.left + " : " + pair.right);
+    }
+  }
+}

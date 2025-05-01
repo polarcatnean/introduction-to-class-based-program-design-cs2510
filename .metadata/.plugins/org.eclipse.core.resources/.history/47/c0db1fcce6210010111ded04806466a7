@@ -1,0 +1,26 @@
+package lecture26hashing;
+
+// Represents one word in a dictionary, together with its definition
+// Binary search trees of DictEntry, ordered alphabetically by word is more ideal
+class HashTable {
+  String word;
+  String meaning;
+}
+
+// Represents a Wiki entry
+// we need the ability to quickly access an entry by its URL, 
+// to quickly edit an entry, creating and deleting entries, 
+// we have to worry about the cost of maintaining the sort order
+class WikiEntry {
+  String url;
+  String contents;
+}
+
+// GOAL: design a data structure that gives us fast access to items when looked up by a key
+// the ability to add, remove, and modify items, 
+// and preferably does not require that we impose a sort order on the keys at all
+
+/* 
+ * ArrayLists where the value for key 𝑘 can be found at index 𝑠𝑢𝑚𝑚𝑎𝑟𝑖𝑧𝑒(𝑘)
+ * where 𝑠𝑢𝑚𝑚𝑎𝑟𝑖𝑧𝑒 is some function that takes a key and produces a non-negative integer.
+*/

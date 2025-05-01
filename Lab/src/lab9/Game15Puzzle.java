@@ -96,7 +96,7 @@ class FifteenGame extends World {
       // swap hole with col, row+1 (if tile exists)
       if (this.swappable(col0, row0 + 1)) {
         this.swapTiles(row0, col0, row0 + 1, col0);
-        this.hxMoves.add(0, "up");
+        this.hxMoves.add(0, key);
       }
       System.out.println("UP key pressed");
     }
@@ -104,7 +104,7 @@ class FifteenGame extends World {
       // swap hole with col, row-1
       if (this.swappable(col0, row0 - 1)) {
         this.swapTiles(row0, col0, row0 - 1, col0); 
-        this.hxMoves.add(0, "down");
+        this.hxMoves.add(0, key);
       }
       System.out.println("DOWN key pressed");
     }
@@ -112,7 +112,7 @@ class FifteenGame extends World {
       // swap hole with col+1, row
       if (this.swappable(col0 + 1, row0)) {
         this.swapTiles(row0, col0, row0, col0 + 1); 
-        this.hxMoves.add(0, "left");
+        this.hxMoves.add(0, key);
       }
       System.out.println("LEFT key pressed");
     }
@@ -120,7 +120,7 @@ class FifteenGame extends World {
       // swap hole with col-1, row
       if (this.swappable(col0 - 1, row0)) {
         this.swapTiles(row0, col0, row0, col0 - 1);   
-        this.hxMoves.add(0, "right");
+        this.hxMoves.add(0, key);
       }
       System.out.println("RIGHT key pressed");
     }
