@@ -2,7 +2,6 @@ package assignment9;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.Random;
 
 import tester.*;
@@ -52,22 +51,22 @@ class Cell {
   void setAdjacents(ArrayList<Cell> board, int index) {
     int board_size = FloodItWorld.BOARD_SIZE;
     
-    // Left neighbor (if not in the first column)
+    // Left neighbour (if not in the first column)
     if (x > 0) {
       this.left = board.get(index - 1);
     }
     
-    // Right neighbor (if not in the last column)
+    // Right neighbour (if not in the last column)
     if (x < board_size - 1) {
       this.right = board.get(index + 1);
     }
     
-    // Top neighbor (if not in the first row)
+    // Top neighbour (if not in the first row)
     if (y > 0) {
       this.top = board.get(index - board_size);
     }
     
-    // Bottom neighbor (if not in the last row)
+    // Bottom neighbour (if not in the last row)
     if (y < board_size - 1) {
       this.bottom = board.get(index + board_size);
     }
@@ -281,10 +280,8 @@ class FloodItWorld extends World {
       // finished flooding
       if (worklist.isEmpty()) {
         floodingState = false;
-      }
-      
-    }
-    
+      }      
+    }   
   }
   
   public void onKeyEvent(String key) {

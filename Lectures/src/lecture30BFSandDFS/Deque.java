@@ -1,0 +1,296 @@
+package lecture30BFSandDFS;
+
+import java.util.Iterator;
+import java.util.function.Predicate;
+//import tester.Tester;
+
+
+class Deque<T> {
+  Sentinel<T> header;
+  
+  Deque() {
+    this.header = new Sentinel<T>();
+  }
+  
+  // convenience constructor
+  Deque(Sentinel<T> header) {
+    this.header = header;
+  }
+  
+  // METHODS:
+  // count the number of nodes in this deque, excluding sentinel
+  int size() {
+    return this.header.count();
+  }
+  
+  boolean isEmpty() {
+    return this.header.isEmpty();
+  }
+
+  // consumes a value of type T and inserts it at the front of the list
+  void addAtHead(T value) {
+    this.header.addAtHead(value);
+  }
+
+  // consumes a value of type T and inserts it at the tail of the list
+  void addAtTail(T value) {
+    this.header.addAtTail(value);
+  }
+
+  // EFFECT: removes the first node from this Deque
+  // return the item that’s been removed from the list.
+  T removeFromHead() {
+    return this.header.removeFromHead();
+  }
+  
+  // EFFECT: removes the last node from this Deque
+  // return the item that’s been removed from the list.
+  T removeFromTail() {
+    return this.header.removeFromTail();
+  }
+  
+  boolean contains(T data) {
+    return header.contains(data);
+  }
+  
+  // produces the first node in this Deque for which the given predicate returns true
+  ANode<T> find(Predicate<T> pred) {
+    return this.header.find(pred);
+  }
+  
+  // EFFECT: removes the given node from this Deque. 
+  // If the given node is the Sentinel header, the method does nothing.
+  void removeNode(ANode<T> node) {
+    ANode<T> found = this.find(new SameData<T>(node.getData()));  // produce sentinel or node if found
+    if (found.isSentinel()) {
+      return;
+    }
+    else {
+      found.prev.next = found.next;
+      found.next.prev = found.prev;
+    }
+  }
+}
+
+
+abstract class ANode<T> {
+  ANode<T> prev;
+  ANode<T> next;
+  
+  ANode(ANode<T> prev, ANode<T> next) {
+    this.prev = prev;
+    this.next = next;
+  }
+
+  ANode() {
+    this.prev = null;
+    this.next = null;
+  }
+  
+  // METHODS:
+  protected boolean isSentinel() { return false; }
+  public abstract int count();
+  protected abstract int countHelper();
+  protected abstract T getData();
+
+  protected abstract ANode<T> findHelper(Predicate<T> pred);
+
+  protected abstract boolean containsHelper(T data);
+ 
+  
+}
+
+class Sentinel<T> extends ANode<T> {
+  Sentinel() { 
+    this.prev = this;   // the last node
+    this.next = this;   // the first node
+  }
+  
+  public boolean contains(T data) {
+    return next.containsHelper(data);
+  }
+  
+  protected boolean containsHelper(T t) {
+    return false;
+  }
+
+  public ANode<T> find(Predicate<T> pred) {
+    return this.next.findHelper(pred);
+  }
+
+  protected ANode<T> findHelper(Predicate<T> pred) {
+    return this;
+  }
+  
+  protected boolean isSentinel() { return true; }
+  
+  public boolean isEmpty() {
+    return this.next.isSentinel();
+  }
+  
+  public int count() {
+    return this.next.countHelper();
+  }
+
+  protected int countHelper() {
+    return 0;
+  }
+  
+  public void addAtHead(T value) {
+    new Node<T>(value, this, this.next);
+  }
+  
+  public void addAtTail(T value) {
+    new Node<T>(value, this.prev, this);
+  }
+  
+  public T removeFromHead() {
+    if (this.isEmpty()) {
+      throw new RuntimeException("Can't remove from an empty list.");
+    }
+    T removedData = this.next.getData();
+    this.next = this.next.next;
+    
+    if (this.isEmpty()) {
+      this.prev = this;
+    }
+      
+    return removedData;
+  }
+  
+  public T removeFromTail() {
+    if (this.isEmpty()) {
+      throw new RuntimeException("Can't remove from an empty list.");
+    }
+    T removedData = this.prev.getData();
+    this.prev = this.prev.prev;
+    
+    if (this.isEmpty()) {
+      this.next = this;
+    }
+    
+    return removedData;
+  }
+
+  protected T getData() {
+    return null;
+  }
+
+}
+
+class Node<T> extends ANode<T> {
+  T data;
+  
+  Node(T data) {
+    this.data = data;
+  }
+  
+  // convenience constructor
+  Node(T data, ANode<T> prev, ANode<T> next) {
+    super(prev, next);
+    this.data = data;
+    
+    if (prev == null || next == null) {
+      throw new IllegalArgumentException("Can't pass null as prev or next");
+    }
+    // EFFECT: update the given nodes to refer back to this node.  
+    prev.next = this;
+    next.prev = this;
+  }
+
+  protected boolean containsHelper(T data) {
+    return (this.data == data) || next.containsHelper(data);
+  }
+  
+  public int count() {
+    return this.countHelper();  
+  }
+
+  protected int countHelper() {
+    return 1 + this.next.countHelper();
+  }
+
+  protected ANode<T> findHelper(Predicate<T> pred) {
+    if (pred.test(this.data)) {
+      return this;
+    }
+    return this.next.findHelper(pred);
+  }
+
+  protected T getData() {
+    return this.data;
+  }
+  
+}
+
+class ComesBefore implements Predicate<String> {
+  String first;
+  ComesBefore(String first) { this.first = first; }
+  
+  public boolean test(String second) { 
+    return this.first.compareTo(second) > 0;
+  }
+}
+
+class LessThan implements Predicate<Integer> {
+  Integer first;
+  LessThan(Integer first) { this.first = first; }
+
+  public boolean test(Integer second) {
+    return this.first > second;
+  }
+}
+
+class SameData<T> implements Predicate<T> {
+  T data1;
+  SameData(T data1) { this.data1 = data1; }
+  
+  public boolean test(T data2) {
+    if (this.data1 == null) {
+      return false;
+    }
+    return this.data1.equals(data2);
+  }
+}
+
+
+class DequeForwardIterator<T> implements Iterator<T> {
+  Deque<T> items;
+  ANode<T> item;
+
+  public DequeForwardIterator(Deque<T> items) {
+    this.items = items;
+    this.item = items.header.next;
+  }
+
+  public boolean hasNext() {
+    return item != items.header;
+  }
+
+  public T next() {
+    ANode<T> current = item;
+    this.item = item.next;
+    return current.getData();
+  }
+}
+
+class DequeReverseIterator<T> implements Iterator<T> {
+  Deque<T> items;
+  ANode<T> item;
+
+  public DequeReverseIterator(Deque<T> items) {
+    this.items = items;
+    this.item = items.header.prev;
+  }
+
+  public boolean hasNext() {
+    return item != items.header;
+  }
+
+  public T next() {
+    ANode<T> current = item;
+    this.item = item.prev;
+    return current.getData();
+  }
+}
+

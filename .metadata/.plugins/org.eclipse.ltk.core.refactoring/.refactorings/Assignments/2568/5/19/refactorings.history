@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy element &apos;Deque.java&apos; to &apos;Lectures/src/lecture30BFSandDFS&apos;&#x0D;&#x0A;- Original project: &apos;Assignments&apos;&#x0D;&#x0A;- Destination element: &apos;Lectures/src/lecture30BFSandDFS&apos;&#x0D;&#x0A;- Original element: &apos;assignment8.Deque.java&apos;" description="Copy compilation unit" destination="=Lectures/src&lt;lecture30BFSandDFS" element1="/src&lt;assignment8{Deque.java" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1746589902818" units="1" version="1.0"/>
+</session>
