@@ -1,7 +1,0 @@
-package lecture26hashing;
-
-// Represents one word in a dictionary, together with its definition
-class DictEntry {
-  String word;
-  String meaning;
-}

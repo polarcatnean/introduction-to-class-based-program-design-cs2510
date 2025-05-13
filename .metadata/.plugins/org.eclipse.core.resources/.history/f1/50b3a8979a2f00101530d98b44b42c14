@@ -1,0 +1,53 @@
+package lecture28quickmergesort;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import tester.Tester;
+
+class Solution {
+  HashMap<Character, String> letterMap = this.alphabetMap();
+  
+  public int lengthAfterTransformations(String s, int t) {
+    int length = transformHelper(s, t).length();  
+    return (int) (length % (Math.pow(10, 9) + 7));
+    
+  }
+
+  private String transformHelper(String s, int t) {
+    if (t == 0) {
+      return s;  // Base case
+    }
+    
+    StringBuilder transformed = new StringBuilder();
+    char[] source = s.toCharArray();
+
+    for (char c : source) {
+      transformed.append(letterMap.get(c));
+    }
+
+    return transformHelper(transformed.toString(), t - 1);
+  }
+  
+  private HashMap<Character, String> alphabetMap() {
+    HashMap<Character, String> letterMap = new HashMap<>();
+    
+    for (char c = 'a'; c < 'z'; c++) {
+      letterMap.put(c, String.valueOf((char)(c + 1)));
+    }  
+    letterMap.put('z', "ab");
+    
+    return letterMap;
+  }
+  
+}
+
+class ExamplesLeet {
+  Solution solution = new Solution();
+ 
+  void testTransform(Tester t) {
+    
+    System.out.println(solution.lengthAfterTransformations("abcyy", 2));
+    System.out.println(solution.lengthAfterTransformations("azbk", 1));
+  }
+}

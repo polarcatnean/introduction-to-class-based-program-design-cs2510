@@ -5,6 +5,74 @@ import java.util.Comparator;
 
 class ArrayUtils {
   
+  //EFFECT : Sorts the provided list according to the given comparator
+  <T> void mergesort(ArrayList<T> arr, Comparator<T> comp) {
+    ArrayList<T> temp = new ArrayList<T>();
+    // Make sure the temporary array is exactly as big as the given array
+    for (int i = 0; i < arr.size(); i = i + 1) {
+      temp.add(arr.get(i));
+    }
+    mergesortHelp(arr, temp, comp, 0, arr.size());
+  }
+  
+  
+  
+  private <T >void mergesortHelp(ArrayList<T> source, ArrayList<T> temp, Comparator<T> comp, 
+                                 int loIdx, int hiIdx) {
+    // Base case
+    if (hiIdx - loIdx <= 1) {
+      return;  // one element in the list, nothing to sort
+    }
+    // Step 1: find the middle index
+    int midIdx = (loIdx + hiIdx) / 2;
+    
+    // Step 2: recursively sort both halves
+    mergesortHelp(source, temp, comp, loIdx, midIdx);
+    mergesortHelp(source, temp, comp, midIdx, hiIdx);
+    
+    // Step 3: merge the two sorted halves
+    merge(source, temp, comp, loIdx, midIdx, hiIdx);
+  }
+
+
+  private <T> void merge(ArrayList<T> source, ArrayList<T> temp, Comparator<T> comp, 
+                         int loIdx, int midIdx, int hiIdx) {
+    int currentLo = loIdx;
+    int currentHi = midIdx;
+    int currentCopy = loIdx;
+    
+    while (currentLo < midIdx && currentHi < hiIdx) {
+      if (comp.compare(source.get(currentLo), source.get(currentHi)) < 0) {
+        temp.set(currentCopy, source.get(currentLo));
+        currentLo++;
+      }
+      else {
+        temp.set(currentCopy, source.get(currentHi));
+        currentHi++;
+      }
+      currentCopy++;
+    }
+    
+    // copy all the remaining items from one of the two halves
+    while (currentLo < midIdx) {
+      temp.set(currentCopy, source.get(currentLo));
+      currentLo++;
+      currentCopy++;
+    }
+    while (currentHi < hiIdx) {
+      temp.set(currentCopy, source.get(currentHi));
+      currentHi++;
+      currentCopy++;
+    }
+    
+    // copy everything back to the source
+    for (int i = loIdx; i < hiIdx; i++) {
+      source.set(i, temp.get(i));
+    }
+  }
+
+
+
   // EFFECT: Sorts the given ArrayList according to the given comparator
   <T> void quicksortCopying(ArrayList<T> arr, Comparator<T> comp) {
     // Create a temporary array
@@ -91,7 +159,7 @@ class ArrayUtils {
       swap(source, currentLo, currentHi);
       
     }
-    swap(source, loIdx, currentHi); // place the pivot in the remaining spot (first index)
+    swap(source, loIdx, currentHi); // place the pivot in the remaining spot (currentHi)
     return currentHi;
   }
   
@@ -123,5 +191,23 @@ class ArrayUtils {
     arr.set(index1, item2);
   }
   
+  <T> int findMinIndex(ArrayList<T> arr, int startFrom, Comparator<T> comp) {
+    T minSoFar = arr.get(startFrom);
+    int bestSoFar = startFrom;
+    for (int i = startFrom; i < arr.size(); i = i + 1) {
+      if (comp.compare(arr.get(i), minSoFar) < 0) {
+        minSoFar = arr.get(i);
+        bestSoFar = i;
+      }
+    }
+    return bestSoFar;
+  }
+  
+  <T> void selectionSort(ArrayList<T> arr, Comparator<T> comp) {
+    for (int i = 0; i < arr.size(); i = i + 1) {
+      int minIdx = findMinIndex(arr, i, comp);
+      swap(arr, i, minIdx);
+    }
+  }
 }
 

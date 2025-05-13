@@ -1,0 +1,127 @@
+package lecture28quickmergesort;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+
+class ArrayUtils {
+  
+  // EFFECT: Sorts the given ArrayList according to the given comparator
+  <T> void quicksortCopying(ArrayList<T> arr, Comparator<T> comp) {
+    // Create a temporary array
+    ArrayList<T> temp = new ArrayList<T>();
+    
+    // Make sure the temporary array is exactly as big as the given array
+    for (int i = 0; i < arr.size(); i++) {
+      temp.add(arr.get(i));
+    }
+    quicksortCopyingHelp(arr, temp, comp, 0, arr.size());
+  }
+
+  // EFFECT: sorts the source array according to comp, in the range of indices [loIdx, hiIdx)
+  private <T> void quicksortCopyingHelp(ArrayList<T> source, ArrayList<T> temp, Comparator<T> comp, 
+                                        int lowIndex, int highIndex) { 
+    // Step 0: base case (completion)
+    if (lowIndex >= highIndex) {
+      return;
+    }
+    
+    // Step 1: select pivot
+    T pivot = source.get(lowIndex);
+    
+    // Step 2: partition items to lower or upper portions of the temp list
+    int pivotIndex = partitionCopying(source, temp, comp, lowIndex, highIndex, pivot);
+    
+    // Step 4: sort both halves of the list
+    quicksortCopyingHelp(source, temp, comp, lowIndex, pivotIndex);
+    quicksortCopyingHelp(source, temp, comp, pivotIndex + 1, highIndex);
+  }
+  
+  // produce the index where the pivot element ultimately ends up in the sorted source
+  // EFFECT: Modifies the source and comp lists in the range [loIdx, hiIdx) such that
+  //         all values to the left of the pivot are less than (or equal to) the pivot
+  //         and all values to the right of the pivot are greater than it
+  <T> int partitionCopying(ArrayList<T> source, ArrayList<T> temp, Comparator<T> comp,
+                           int loIdx, int hiIdx, T pivot) {
+    int currentLo = loIdx;
+    int currentHi = hiIdx - 1;
+    
+    // skip loIdx since we set that to the pivot
+    for (int i = loIdx + 1; i < hiIdx; i++) {
+      if (comp.compare(source.get(i), pivot) <= 0) {  // current item lower than pivot
+        temp.set(currentLo, source.get(i));
+        currentLo = currentLo + 1;  // advance the current lower index
+      }
+      else {
+        temp.set(currentHi, source.get(i));
+        currentHi = currentHi - 1;  // advance the current upper index
+      }
+    }
+    // When we’re done, currentLo == currentHi
+    // and they both equal the index where the pivot should be placed.
+    temp.set(currentLo, pivot);  // place the pivot in the remaining spot
+    
+    // Step 3: copy all items from temp back into the source (modify the source)
+    for (int i = loIdx; i < hiIdx; i++) {
+      source.set(i, temp.get(i));
+    }
+    
+    return currentLo;
+  }
+  
+  
+  // Returns the index where the pivot element ultimately ends up in the sorted source
+  // without copying from temp array
+  // EFFECT: Modifies the source and comp lists in the range [loIdx, hiIdx) such that
+  //         all values to the left of the pivot are less than (or equal to) the pivot
+  //         and all values to the right of the pivot are greater than it
+  <T> int partition(ArrayList<T> source, Comparator<T> comp, int loIdx, int hiIdx, T pivot) {
+    int currentLo = loIdx;
+    int currentHi = hiIdx - 1;
+    
+    while (currentLo < currentHi) {
+      // Advance curLo until we find a bigger value than our pivot value
+      // (or overshoot the end of the list)
+      while (currentLo < hiIdx && comp.compare(source.get(currentLo), pivot) <= 0) {
+        currentLo = currentLo + 1;
+      }
+      // Advance curLo until we find a smaller value than our pivot value
+      while (currentHi >= loIdx && comp.compare(source.get(currentHi), pivot) > 0) {
+        currentHi = currentHi - 1;
+      }
+      swap(source, currentLo, currentHi);
+      
+    }
+    swap(source, loIdx, currentHi); // place the pivot in the remaining spot (first index)
+    return currentHi;
+  }
+  
+  // EFFECT: Sorts the given ArrayList according to the given comparator
+  <T> void quicksort(ArrayList<T> arr, Comparator<T> comp) {
+    quicksortHelp(arr, comp, 0, arr.size());
+  }
+  
+  // EFFECT: sorts the source array according to comp, in the range of indices [loIdx, hiIdx)
+  <T> void quicksortHelp(ArrayList<T> source, Comparator<T> comp, int loIdx, int hiIdx) {
+    // Step 0: check for completion
+    if (loIdx >= hiIdx) {
+      return; // There are no items to sort
+    }
+    // Step 1: select pivot
+    T pivot = source.get(loIdx);
+    // Step 2: partition items to lower or upper portions of the temp list
+    int pivotIdx = partition(source, comp, loIdx, hiIdx, pivot);
+    // Step 3: sort both halves of the list
+    quicksortHelp(source, comp, loIdx, pivotIdx);
+    quicksortHelp(source, comp, pivotIdx + 1, hiIdx);
+  }
+  
+  // EFFECT: swap the elements at given indices in an ArrayList 
+  <T >void swap(ArrayList<T> arr, int index1, int index2) {
+    T item1 = arr.get(index1);
+    T item2 = arr.get(index2);
+    arr.set(index2, item1);
+    arr.set(index1, item2);
+  }
+  
+}
+
