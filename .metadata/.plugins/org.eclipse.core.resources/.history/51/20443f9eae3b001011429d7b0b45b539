@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.Set;
 
 import tester.Tester;
 
@@ -112,35 +113,34 @@ class Graph {
    
     while (hasManyTrees(representatives)) {
       Edge nextEdge = worklist.poll();
-      String ultimateRepOfFrom = find(representatives, nextEdge.from.name);
-      String ultimateRepOfTo = find(representatives, nextEdge.to.name);
+      String repOfFrom = find(representatives, nextEdge.from.name);
+      String repOfTo = find(representatives, nextEdge.to.name);
       
-      if (ultimateRepOfFrom.equals(ultimateRepOfTo)) {  // already connected/in the same tree
+      if (repOfFrom.equals(repOfTo)) {  // already connected/in the same tree
         continue;
       }
       else {
         edgesInTree.add(nextEdge);
-        union(representatives, ultimateRepOfFrom, ultimateRepOfTo);  // set repOfFrom -> repOfTo
+        union(representatives, repOfFrom, repOfTo);  // set repOfFrom -> repOfTo
       }
     }
     return edgesInTree;
   }
 
-  // EFFECT: set rep1's ultimate rep to rep2's ultimate rep
+  // EFFECT: set rep1's rep to rep2's rep
   private void union(HashMap<String, String> representatives, String rep1, String rep2) {
     String repOfRep1 = find(representatives, rep1);
     String repOfRep2 = find(representatives, rep2);
     representatives.put(repOfRep1, repOfRep2);
   }
 
-  // produce the ultimate rep of the vertex, given a vertex's name
   private String find(HashMap<String, String> representatives, String vertex) {
     String rep = representatives.get(vertex);
-    
     // Base case: if a node name maps to itself, then it is the representative
     if (rep.equals(vertex)) {
       return vertex;
-    }    
+    }
+    
     return find(representatives, rep);
   }
 
