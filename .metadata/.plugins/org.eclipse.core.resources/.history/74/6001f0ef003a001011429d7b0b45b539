@@ -1,0 +1,202 @@
+package lecture31dijkstra;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+
+import tester.Tester;
+
+class WeightedItem<T> {
+  T data;
+  int weight; 
+  
+  WeightedItem(T data, int weight) {
+    this.data = data;
+    this.weight = weight;
+  }
+  
+  @Override
+  public String toString() {
+    return "{" + data.toString() + ": " + weight + "}";
+  }
+}
+
+class Heap<T> {
+  ArrayList<WeightedItem<T>> items;
+  Comparator<WeightedItem<T>> comparator; // for custom ordering
+  int lastHeapIdx;  
+  
+  Heap(ArrayList<WeightedItem<T>> source, Comparator<WeightedItem<T>> comparator) {
+    this.items = new ArrayList<>();
+    this.comparator = comparator;
+    this.lastHeapIdx = source.size() - 1;
+    buildHeap(source);
+  }
+  
+  // default comparator type: MinHeap
+  Heap(ArrayList<WeightedItem<T>> source) {
+    this(source, new MinHeapComparator<T>());
+  }
+
+  // METHODS:
+  // EFFECT: build heap by producing heap from the source 
+  // using downheap-based solution, then assign to this.items
+  private void buildHeap(ArrayList<WeightedItem<T>> source) {
+    if (source.isEmpty()) {
+      return;
+    }
+    
+    // TODO optimise
+    // copy the source to heap
+    for (WeightedItem<T> item : source) {
+      items.add(item);
+    }
+    
+    // counting from the first half down to 0
+    for (int i = source.size()/2 - 1; i >= 0; i--) {
+      downheap(i);
+    }
+  }
+
+  // EFFECT: upheap the item at the given index in this heap
+  public void upheap(int index) {
+    int parentIdx = (int) Math.floor((index - 1) / 2);
+    WeightedItem<T> currentItem = this.items.get(index);
+    WeightedItem<T> parent = this.items.get(parentIdx);
+
+    if (comparator.compare(currentItem, parent) < 0) {
+      // swap current item with its parent
+      swap(index, parentIdx);
+
+      // keep upheaping until <= parent
+      upheap(parentIdx);
+    }
+  }
+
+  // Produce the maximum item from this heap
+  // EFFECT: Swap the item at index 0 with the item at the index of the last heap item
+  public WeightedItem<T> remove() {
+    WeightedItem<T> maxItem = items.get(0);
+
+    swap(0, this.lastHeapIdx);
+    this.lastHeapIdx--;
+    
+    downheap(0);
+
+    return maxItem;
+  }
+
+  // EFFECT: downheap the item at the given index in this heap
+  public void downheap(int index) {
+    int largestIdx = index; // Assume current node is the largest
+    int leftIdx = (2 * index) + 1;
+    int rightIdx = (2 * index) + 2;
+    int size = this.lastHeapIdx + 1;
+    
+    // Check if left child has higher priority than current node
+    if (leftIdx < size 
+        && this.comparator.compare(items.get(leftIdx), items.get(largestIdx)) < 0) {
+      largestIdx = leftIdx;
+    }
+ 
+    // Check if right child is larger than current largest node
+    if (rightIdx < size 
+        && this.comparator.compare(items.get(rightIdx), items.get(largestIdx)) < 0) {
+      largestIdx = rightIdx;
+    }
+    
+    // If the largest is not the current node, swap and recurse
+    if (largestIdx != index) {
+      swap(index, largestIdx);
+      downheap(largestIdx);
+    }
+  }
+  
+  // produce an ArrayList of this heap, sorted
+  // EFFECT: sort the heap by removing all the items from the heap 
+  public ArrayList<WeightedItem<T>> sort() {
+    int size = items.size();
+    for (int i = 0; i < size; i++) {
+      remove();
+    }
+    return this.items;
+  }
+  
+
+  // EFFECT: swap two elements in the heap
+  private void swap(int i, int j) {
+     WeightedItem<T> temp = items.get(i);
+     items.set(i, items.get(j));
+     items.set(j, temp);
+  }
+
+  // EFFECT: add a weighted item into this heap & maintain the heap-ordering
+  public void add(WeightedItem<T> item) {
+    lastHeapIdx++;
+    items.add(lastHeapIdx, item);
+    upheap(lastHeapIdx);
+  }
+}
+
+class MinHeap<T> extends Heap<T> {
+  MinHeap(ArrayList<WeightedItem<T>> source) {
+    super(source);
+  }
+}
+
+class MaxHeap<T> extends Heap<T> {
+  MaxHeap(ArrayList<WeightedItem<T>> source) {
+    super(source, new MaxHeapComparator<T>());
+  }
+}
+
+class PriorityQueue<T> extends Heap<T> {
+  PriorityQueue(ArrayList<WeightedItem<T>> source) {
+    super(source);
+  } 
+}
+
+class ExampleHeaps {
+  private ArrayList<WeightedItem<String>> createTestItems() {
+    ArrayList<WeightedItem<String>> items = new ArrayList<>();
+    items.add(new WeightedItem<>("A", 5));
+    items.add(new WeightedItem<>("B", 3));
+    items.add(new WeightedItem<>("C", 7));
+    items.add(new WeightedItem<>("D", 1));
+    items.add(new WeightedItem<>("E", 2));
+    return items;
+}
+  
+  void testHeap(Tester t) {
+    Heap<String> heap = new Heap<>(createTestItems());
+    System.out.println("MinHeap: " + heap.items);
+    heap.sort();
+    System.out.println("Heapsort, min: " + heap.items);
+    
+    Heap<String> maxHeap = new MaxHeap<>(createTestItems());
+    System.out.println("MaxHeap: " + heap.items);
+    maxHeap.sort();
+    System.out.println("Heapsort, max: " + heap.items);
+  }
+  
+  //--- MinHeap Tests ---
+  void testMinHeapRemove(Tester t) {
+    MinHeap<String> heap = new MinHeap<>(createTestItems());
+    
+    t.checkExpect(heap.remove(), new WeightedItem<>("D", 1));
+    t.checkExpect(heap.remove(), new WeightedItem<>("E", 2));
+    t.checkExpect(heap.remove(), new WeightedItem<>("B", 3));
+  }
+  
+  void testMinHeapAdd(Tester t) {
+    MinHeap<String> heap = new MinHeap<>(createTestItems());
+    heap.add(new WeightedItem<>("X", 4));   
+    heap.add(new WeightedItem<>("Y", 0));
+    t.checkExpect(heap.remove(), new WeightedItem<>("Y", 0));
+    t.checkExpect(heap.remove(), new WeightedItem<>("D", 1));
+    t.checkExpect(heap.remove(), new WeightedItem<>("E", 2));
+    t.checkExpect(heap.remove(), new WeightedItem<>("B", 3));
+    t.checkExpect(heap.remove(), new WeightedItem<>("X", 4));
+
+  }
+  
+}

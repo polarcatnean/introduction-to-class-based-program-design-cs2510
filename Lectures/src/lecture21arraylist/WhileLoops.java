@@ -1,4 +1,4 @@
-package lecture21arraylist;
+package lecture21arrayList;
 
 import java.util.ArrayList;
 

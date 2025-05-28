@@ -1,0 +1,205 @@
+package lecture32minSpanningTree;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Set;
+
+import tester.Tester;
+
+
+class Vertex {
+  String name;
+  ArrayList<Edge> outEdges;
+  
+  Vertex(String name) {
+    this.outEdges = new ArrayList<>();
+    this.name = name;
+  }
+  
+  @Override
+  public String toString() {
+    return name;
+  }
+}
+
+class Edge implements Comparable<Edge>{
+  Vertex from, to;
+  int weight;
+  
+  Edge(Vertex from, Vertex to, int weight) {
+    this.from = from;
+    this.to = to;
+    this.weight = weight;
+  }
+  
+  @Override
+  public String toString() {
+    return "(" + from + "->" + to + ":" + weight + ")";
+  }
+  
+  @Override
+  public int compareTo(Edge other) {
+    return Integer.compare(this.weight, other.weight);
+  }
+}
+
+class Graph {
+  List<Vertex> vertices;
+  
+  Graph(List<Vertex> vertices) {
+    this.vertices = vertices;
+  }
+  
+  // produce from this graph, a "minimun spanning tree", by growing a single tree
+  // by picking the next globally cheapest edge
+  public List<Edge> prim() {
+    ArrayList<Edge> tree = new ArrayList<Edge>();
+    HashMap<Vertex, Boolean> connected = new HashMap<Vertex, Boolean>(); // true = connected to tree
+    PriorityQueue<Edge> frontier = new PriorityQueue<Edge>();
+    
+    if (this.vertices.isEmpty()) {
+      return tree;
+    }
+    
+    // initialise connected map: map each vertex -> false; O(V)
+    for (Vertex vertex: vertices) {
+      connected.put(vertex, false);
+    }
+    
+    // initialise frontier
+    // add a vertex to the tree and add its out-edges to the priority queue
+    Vertex firstVertex = vertices.get(0);
+    connected.replace(firstVertex, true);
+    for (Edge outEdge : firstVertex.outEdges) {
+      frontier.offer(outEdge);
+    }
+    
+    // while some Vertex is not connected, pick the next cheapest edge from frontier; O(V)
+    while(connected.containsValue(false) && !frontier.isEmpty()) {
+      Edge nextEdge = frontier.poll(); //O(V log V); Performed V times (once per vertex), each taking O(log V)
+      Vertex nextVertex = nextEdge.to;
+      // to avoid cycles, check if nextVertex is already connected
+      if (connected.get(nextVertex)) {
+        continue;
+      }
+      
+      tree.add(nextEdge);
+      connected.put(nextVertex, true);
+      
+      // add out-edges to frontier
+      // only if its endpoint was not already connected
+      for (Edge outEdge : nextVertex.outEdges) {
+        if (!connected.get(outEdge.to)) {
+          frontier.offer(outEdge);  //O(E log V); Performed up to E times (once per edge), each taking O(log V)
+        }       
+      }
+    }  
+    return tree;
+  }
+  
+  public List<Edge> kruskal() {    
+    HashMap<String, String> representatives = new HashMap<String, String>();
+    PriorityQueue<Edge> worklist = new PriorityQueue<Edge>();
+    List<Edge> edgesInTree = new ArrayList<Edge>();
+    
+    // Initialise (1) worklist: all edges in graph, sorted by edge weights ASC
+    //            (2) every node's representatives to itself
+    for (Vertex vertex : vertices) {
+      worklist.addAll(vertex.outEdges);
+      representatives.put(vertex.name, vertex.name);
+    }
+   
+    while (hasManyTrees(representatives)) {
+      Edge nextEdge = worklist.poll();
+      String repOfFrom = find(representatives, nextEdge.from.name);
+      String repOfTo = find(representatives, nextEdge.to.name);
+      
+      if (repOfFrom.equals(repOfTo)) {  // already connected/in the same tree
+        continue;
+      }
+      else {
+        edgesInTree.add(nextEdge);
+        union(representatives, repOfFrom, repOfTo);  // set repOfFrom -> repOfTo
+      }
+    }
+    return edgesInTree;
+  }
+
+  // EFFECT: set rep1's rep to rep2's rep
+  private void union(HashMap<String, String> representatives, String rep1, String rep2) {
+    String repOfRep1 = find(representatives, rep1);
+    String repOfRep2 = find(representatives, rep2);
+    representatives.put(repOfRep1, repOfRep2);
+  }
+
+  private String find(HashMap<String, String> representatives, String vertex) {
+    String rep = representatives.get(vertex);
+    // Base case: if a node name maps to itself, then it is the representative
+    if (rep.equals(vertex)) {
+      return vertex;
+    }
+    
+    return find(representatives, rep);
+  }
+
+  // return true if the given Map has more than one representative
+  private boolean hasManyTrees(HashMap<String, String> representatives) {
+    
+    // pick the first vertex's rep
+    String rep = find(representatives,
+                      representatives.get(vertices.get(0).name));
+    
+    for (int i = 1; i < vertices.size(); i++) {
+      if (!find(representatives, representatives.get(vertices.get(i).name)).equals(rep)) {
+        return true;
+      }
+    }    
+    return false;
+  }
+}
+
+class ExampleGraphs {
+  Vertex A = new Vertex("A");
+  Vertex B = new Vertex("B");
+  Vertex C = new Vertex("C");
+  Vertex D = new Vertex("D");
+  Vertex E = new Vertex("E");
+  Vertex F = new Vertex("F");
+  Graph g = new Graph(List.of(A, B, C, D, E, F));
+  
+  void makeGraph() {
+    A.outEdges.add(new Edge(A, B, 30));
+    A.outEdges.add(new Edge(A, E, 50));
+
+    B.outEdges.add(new Edge(B, A, 30));
+    B.outEdges.add(new Edge(B, C, 40));    
+    B.outEdges.add(new Edge(B, E, 35));
+    B.outEdges.add(new Edge(B, F, 50));
+    
+    C.outEdges.add(new Edge(C, B, 40));
+    C.outEdges.add(new Edge(C, D, 25));
+    C.outEdges.add(new Edge(C, E, 15));
+    
+    D.outEdges.add(new Edge(D, C, 25));
+    D.outEdges.add(new Edge(D, F, 50));
+    
+    E.outEdges.add(new Edge(E, A, 50));
+    E.outEdges.add(new Edge(E, B, 35));
+    E.outEdges.add(new Edge(E, C, 15));
+    
+    F.outEdges.add(new Edge(F, B, 50));
+    F.outEdges.add(new Edge(F, D, 50));
+  }
+  
+  void testPrim(Tester t) {
+    makeGraph();
+    System.out.println("Prim: " + g.prim());
+  }
+  
+  void testKruskal(Tester t) {
+    makeGraph();
+    System.out.println("Kruskal: " + g.kruskal());
+  }
+}

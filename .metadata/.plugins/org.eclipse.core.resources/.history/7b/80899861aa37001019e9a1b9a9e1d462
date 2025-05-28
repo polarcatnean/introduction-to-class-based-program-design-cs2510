@@ -1,0 +1,47 @@
+package lab11;
+
+import java.util.ArrayList;
+
+class Curriculum {
+  ArrayList<Course> courses;
+  
+  Curriculum() { this.courses = new ArrayList<Course>(); }
+  
+  // EFFECT: adds another course to the set of known courses
+  void addCourse(Course c) { 
+    this.courses.add(c); 
+  }
+  
+}
+
+class Course {
+  String name;
+  ArrayList<Course> prereqs;
+  
+  Course(String name) { 
+    this.name = name; 
+    this.prereqs = new ArrayList<Course>(); 
+  }
+  
+  // EFFECT: adds a course as a prereq to this one
+  void addPrereq(Course c) { 
+    this.prereqs.add(c); 
+  }
+}
+
+class ExampleCurriculums {
+  Course fundies1 = new Course("Fundamentals 1");
+  Course fundies2 = new Course("Fundamentals 2");
+  Course dd = new Course("Database Design");
+  Course algo = new Course("Algorithms and Data");
+  Course computer = new Course("Computer Systems");
+  Course ood = new Course("Object-Oriented Design");
+  Course theory = new Course("Theory of Computation");
+  Course parallel = new Course("Large-Scale Parallel Data Processing");
+  Course lang = new Course("Programming Languages");
+  Course compliers = new Course("Compilers");
+  
+  void initPrereqs() {
+    
+  }
+}

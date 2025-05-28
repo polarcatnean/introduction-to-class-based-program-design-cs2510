@@ -1,0 +1,87 @@
+package lecture29heappriorityqueue;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import tester.Tester;
+
+class Heap {
+  ArrayList<Integer> source;
+  ArrayList<Integer> heap;
+  
+  Heap(ArrayList<Integer> source) {
+    this.source = source;
+  }
+  
+  // EFFECT: modify this heap by producing heap from the source
+  public void buildHeap() {
+    heap = new ArrayList<>();
+    heap.add(this.source.get(0));
+    
+    for (int i = 1; i < this.source.size(); i++) {
+      heap.add(this.source.get(i));
+      upheap(i);
+    }
+
+  }
+
+  public void upheap(int index) {
+    int parentIdx = (int) Math.floor((index - 1) / 2);
+    int currentItem = this.heap.get(index);
+    int parent = this.heap.get(parentIdx);
+    
+    if (currentItem > parent) {
+      // swap current item with its parent
+      this.heap.set(index, parent);
+      this.heap.set(parentIdx, currentItem);
+      
+      // keep upheaping until <= parent
+      upheap(parentIdx);
+    }
+  }
+  
+  
+}
+
+
+class ExamplesHeap {
+  
+  ArrayList<Integer> list1 = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+  ArrayList<Integer> list2 = new ArrayList<>(Arrays.asList(9, 8, 7, 6, 5, 4, 3, 2, 1));
+  
+  void testBuildHeap(Tester t) {
+    Heap heap1 = new Heap(list1);
+    heap1.buildHeap();    
+    System.out.println(heap1.source);
+    System.out.println(heap1.heap);
+    
+    Heap heap2 = new Heap(list2);
+    heap2.buildHeap();   
+    System.out.println(heap2.source);
+    System.out.println(heap2.heap);
+  }
+  
+  void testUpheap(Tester t) {  
+    // upheaping index=1 (2)
+    Heap heap1 = new Heap(list1);
+    heap1.heap = new ArrayList<>(Arrays.asList(1, 2));
+    heap1.upheap(1);
+    t.checkExpect(heap1.heap, new ArrayList<>(Arrays.asList(2, 1)));
+    
+    // upheaping index=2 (3)
+    heap1.heap.add(3);
+    heap1.upheap(2);
+    t.checkExpect(heap1.heap, new ArrayList<>(Arrays.asList(3, 1, 2)));
+    
+    // upheaping index=3 (4)
+    heap1.heap.add(4);
+    heap1.upheap(3);
+    t.checkExpect(heap1.heap, new ArrayList<>(Arrays.asList(4, 3, 2, 1)));
+    
+    // upheaping index=4 (5)
+    heap1.heap.add(5);
+    heap1.upheap(4);
+    t.checkExpect(heap1.heap, new ArrayList<>(Arrays.asList(5 ,4, 2, 1, 3)));
+  }
+  
+}

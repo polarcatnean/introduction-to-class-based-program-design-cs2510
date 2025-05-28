@@ -5,7 +5,7 @@
  *  visitor = a function object for union data
  */  
 
-package lecture15abstracttypes;
+package lecture15abstractTypes;
 import tester.Tester;
 
 

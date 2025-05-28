@@ -1,4 +1,4 @@
-package lecture05selfreflist;
+package lecture05selfRefList;
 
 class Book {
     String name;

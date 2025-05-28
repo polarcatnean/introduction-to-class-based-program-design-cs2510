@@ -1,0 +1,17 @@
+package lecture31dijkstra;
+
+import java.util.Comparator;
+
+class MinHeapComparator<T> implements Comparator<WeightedItem<T>> {
+  @Override
+  public int compare(WeightedItem<T> o1, WeightedItem<T> o2) {
+    return Integer.compare(o1.weight, o2.weight);
+  }
+}
+
+class MaxHeapComparator<T> implements Comparator<WeightedItem<T>> {
+  @Override
+  public int compare(WeightedItem<T> o1, WeightedItem<T> o2) {
+    return Integer.compare(o2.weight, o1.weight);
+  }
+}

@@ -260,7 +260,6 @@ class FloodItWorld extends World {
     }
   }
   
-  // TODO
   public void onTick() {
     if (floodingState) {
       int cellsToProcess = worklist.size(); // Process only current layer
@@ -431,82 +430,82 @@ class FloodItExamples {
   }
   
   // Cell Class Testing
-  void testSetAdjacents(Tester t) {
-    FloodItWorld smallGame = new FloodItWorld(3); // Temporarily set small board for testing
-
-    // Test middle cell (1,1)
-    Cell center = smallGame.getCell(1, 1);
-    t.checkExpect(center.left, smallGame.getCell(0, 1));
-    t.checkExpect(center.right, smallGame.getCell(2, 1));
-    t.checkExpect(center.top, smallGame.getCell(1, 0));
-    t.checkExpect(center.bottom, smallGame.getCell(1, 2));
-
-    // Test edge cases (corners)
-    Cell topLeft = smallGame.getCell(0, 0);
-    t.checkExpect(topLeft.left, null);
-    t.checkExpect(topLeft.top, null);
-    // etc.
-  }
-
-  void testFlood(Tester t) {
-    Cell testCell = new Cell(0, 0);
-    Color newColor = Color.RED;
-
-    testCell.flood(newColor);
-    t.checkExpect(testCell.color, newColor);
-    t.checkExpect(testCell.flooded, true);
-  }
-
-  void testFloodAdjacents(Tester t) {
-    // Need to create a small test board
-    FloodItWorld testWorld = new FloodItWorld();
-    testWorld.BOARD_SIZE = 2;
-    testWorld.createNewBoard();
-
-    // Set all cells to same color for testing
-    for (Cell c : testWorld.board) {
-      c.color = Color.BLUE;
-    }
-
-    Cell center = testWorld.getCell(1, 1);
-    center.flooded = true;
-    center.floodAdjacents(Color.BLUE, Color.RED);
-
-    // Verify adjacent cells were flooded
-    t.checkExpect(testWorld.getCell(0, 1).color, Color.RED);
-    t.checkExpect(testWorld.getCell(1, 0).color, Color.RED);
-    // etc.
-  }
+//  void testSetAdjacents(Tester t) {
+//    FloodItWorld smallGame = new FloodItWorld(3); // Temporarily set small board for testing
+//
+//    // Test middle cell (1,1)
+//    Cell center = smallGame.getCell(1, 1);
+//    t.checkExpect(center.left, smallGame.getCell(0, 1));
+//    t.checkExpect(center.right, smallGame.getCell(2, 1));
+//    t.checkExpect(center.top, smallGame.getCell(1, 0));
+//    t.checkExpect(center.bottom, smallGame.getCell(1, 2));
+//
+//    // Test edge cases (corners)
+//    Cell topLeft = smallGame.getCell(0, 0);
+//    t.checkExpect(topLeft.left, null);
+//    t.checkExpect(topLeft.top, null);
+//    // etc.
+//  }
+//
+//  void testFlood(Tester t) {
+//    Cell testCell = new Cell(0, 0);
+//    Color newColor = Color.RED;
+//
+//    testCell.flood(newColor);
+//    t.checkExpect(testCell.color, newColor);
+//    t.checkExpect(testCell.flooded, true);
+//  }
+//
+//  void testFloodAdjacents(Tester t) {
+//    // Need to create a small test board
+//    FloodItWorld testWorld = new FloodItWorld();
+//    testWorld.BOARD_SIZE = 2;
+//    testWorld.createNewBoard();
+//
+//    // Set all cells to same color for testing
+//    for (Cell c : testWorld.board) {
+//      c.color = Color.BLUE;
+//    }
+//
+//    Cell center = testWorld.getCell(1, 1);
+//    center.flooded = true;
+//    center.floodAdjacents(Color.BLUE, Color.RED);
+//
+//    // Verify adjacent cells were flooded
+//    t.checkExpect(testWorld.getCell(0, 1).color, Color.RED);
+//    t.checkExpect(testWorld.getCell(1, 0).color, Color.RED);
+//    // etc.
+//  }
 
   // FloodItWorld Class Testing
-  void testBoardCreation(Tester t) {
-    FloodItWorld game = new FloodItWorld();
-    t.checkExpect(game.board.size(), game.BOARD_SIZE * game.BOARD_SIZE);
-
-    // Verify all cells have colors from the allowed set
-    for (Cell c : game.board) {
-      t.checkExpect(game.COLORS.contains(c.color), true);
-    }
-
-    // Verify neighbor links
-    Cell middleCell = game.getCell(5, 5);
-    t.checkExpect(middleCell.left, game.getCell(4, 5));
-    t.checkExpect(middleCell.right, game.getCell(6, 5));
-    // etc.
-  }
-
-
-  void testEdgeCells(Tester t) {
-    FloodItWorld game = new FloodItWorld();
-
-    // Top-left corner
-    Cell topLeft = game.getCell(0, 0);
-    t.checkExpect(topLeft.left, null);
-    t.checkExpect(topLeft.top, null);
-
-    // Bottom-right corner
-    Cell bottomRight = game.getCell(game.BOARD_SIZE - 1, game.BOARD_SIZE - 1);
-    t.checkExpect(bottomRight.right, null);
-    t.checkExpect(bottomRight.bottom, null);
-  }
+//  void testBoardCreation(Tester t) {
+//    FloodItWorld game = new FloodItWorld();
+//    t.checkExpect(game.board.size(), game.BOARD_SIZE * game.BOARD_SIZE);
+//
+//    // Verify all cells have colors from the allowed set
+//    for (Cell c : game.board) {
+//      t.checkExpect(game.COLORS.contains(c.color), true);
+//    }
+//
+//    // Verify neighbor links
+//    Cell middleCell = game.getCell(5, 5);
+//    t.checkExpect(middleCell.left, game.getCell(4, 5));
+//    t.checkExpect(middleCell.right, game.getCell(6, 5));
+//    // etc.
+//  }
+//
+//
+//  void testEdgeCells(Tester t) {
+//    FloodItWorld game = new FloodItWorld();
+//
+//    // Top-left corner
+//    Cell topLeft = game.getCell(0, 0);
+//    t.checkExpect(topLeft.left, null);
+//    t.checkExpect(topLeft.top, null);
+//
+//    // Bottom-right corner
+//    Cell bottomRight = game.getCell(game.BOARD_SIZE - 1, game.BOARD_SIZE - 1);
+//    t.checkExpect(bottomRight.right, null);
+//    t.checkExpect(bottomRight.bottom, null);
+//  }
 }

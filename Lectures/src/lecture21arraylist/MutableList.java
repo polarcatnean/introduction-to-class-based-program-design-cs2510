@@ -1,4 +1,4 @@
-package lecture21arraylist;
+package lecture21arrayList;
 
 import tester.Tester;
 import java.util.ArrayList;
@@ -63,7 +63,7 @@ class Util {
   
   <T, R> R foldrForEach(ArrayList<T> arrayList, R base, IFunc2<T, R, R> func) {
     R result = base;
-    int lastIndex = arrayList.size() - 1;
+    // int lastIndex = arrayList.size() - 1;
     
     // how to foldr??? can't seem to
     for (T element : arrayList) {

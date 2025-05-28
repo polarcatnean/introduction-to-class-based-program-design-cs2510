@@ -1,0 +1,353 @@
+package lecture31dijkstra;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import tester.Tester;
+
+class Vertex {
+  String name;
+  List<Edge> outEdges;
+  WeightedItem<Vertex> ref;
+  
+  Vertex(List<Edge> outEdges, String name) {
+    this.name = name;
+    this.outEdges = outEdges;  
+  }
+  
+  @Override
+  public String toString() {
+    return "{" + name + "}";
+  }
+  
+  boolean hasPathTo(Vertex dest) {
+    return this.hasPathToHelper(dest, new ArrayList<Vertex>());
+  }
+
+  private boolean hasPathToHelper(Vertex dest, ArrayList<Vertex> visited) {
+    for (Edge e : this.outEdges) {
+      // check for cycles
+      if (!visited.contains(e.to)) {
+        visited.add(e.to);
+        
+        if (e.to == dest || e.to.hasPathToHelper(dest, visited)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+}
+
+class Edge {
+  Vertex from;
+  Vertex to;
+  int weight;
+  
+  Edge(Vertex from, Vertex to, int weight) {
+    this.from = from;
+    this.to = to;
+    this.weight = weight;
+  }
+  
+  @Override
+  public String toString() {
+    return "[" + from + " -> " + to + ": " + weight + "]";
+  }
+}
+
+class Graph {
+  List<Vertex> allVertices;
+  
+  Graph(List<Vertex> allVertices) {
+    this.allVertices = allVertices;
+  }
+  
+  // METHODS:
+  // computes the list of vertices that reach the given vertex
+  List<Vertex> inEdges(Vertex v) {
+    List<Vertex> vertices = new ArrayList<>();
+    
+    for (Vertex vertex : allVertices) {
+      for (Edge outEdge : vertex.outEdges) {
+        if (outEdge.to.equals(v)) {
+          vertices.add(vertex);
+          break;
+        }
+      }
+    }
+    return vertices;
+  }
+  
+  boolean hasPathBetween(Vertex from, Vertex to) {
+    Deque<Vertex> visited = new Deque<Vertex>();
+    Deque<Vertex> worklist = new Deque<Vertex>();
+    
+    // initialise the worklist by adding the first item
+    worklist.addAtHead(from);
+    
+    while(!worklist.isEmpty()) {
+      Vertex vertex = worklist.removeFromHead();
+      if (vertex.equals(to)) {
+        return true;
+      }
+      else if (visited.contains(vertex)) {
+        // do nothing
+      }
+      else {
+        for (Edge outEdge : vertex.outEdges) {
+          worklist.addAtHead(outEdge.to);
+        }
+        visited.addAtHead(vertex);
+      }
+    }
+    return false;
+  }
+  
+  // Returns the path from one vertex to another, or null if there is no such path
+  List<Vertex> findCheapestPath(Vertex from, Vertex to) {
+    List<Vertex> visited = new ArrayList<Vertex>();
+    PriorityQueue<Vertex> worklist = new PriorityQueue<Vertex>();
+    Map<Vertex, Vertex> predecessors = new HashMap<>();
+    
+    // Initialise the worklist with the from vertex
+    worklist.add(from, 0);
+    
+    while (!worklist.isEmpty()) {
+      int weightSoFar = worklist.items.get(0).weight;
+      Vertex vertex = worklist.remove();
+      
+      if (vertex.equals(to)) {
+        return buildPath(predecessors, to);  // success!
+      }
+      else if (visited.contains(vertex)) {
+        // do nothing
+      }
+      else {
+        // add all the current neighbours to the worklist for further processing
+        for (Edge edge : vertex.outEdges) {
+          worklist.add(edge.to, edge.weight + weightSoFar);
+          predecessors.put(edge.to, vertex);
+        }
+        // add vertex to visited
+        visited.add(vertex);
+      }
+    }
+    // We haven't found the to vertex, and there are no more to try
+    return new ArrayList<Vertex>();
+  }
+
+  List<Vertex> findDijkstraPath(Vertex from, Vertex to) {
+    List<Vertex> visited = new ArrayList<Vertex>();
+    PriorityQueue<Vertex> worklist = new PriorityQueue<Vertex>();
+    Map<Vertex, Vertex> predecessors = new HashMap<>();
+    
+    // Initialise the worklist with the from vertex
+    worklist.add(from, 0);
+    
+    while (!worklist.isEmpty()) {
+      int weightSoFar = worklist.items.get(0).weight;
+      Vertex vertex = worklist.remove();
+      
+      if (vertex.equals(to)) {
+        return buildPath(predecessors, to);
+      }
+      else if (visited.contains(vertex)) {
+        // do nothing
+      }
+      else {
+        // add all the current neighbours to the worklist for further processing
+        for (Edge edge : vertex.outEdges) {
+          int currentWeight = edge.weight + weightSoFar;
+          WeightedItem<Vertex> vertexToAdd = new WeightedItem<>(edge.to, currentWeight);
+          // if neighbouring vertex not already in worklist
+          if (edge.to.ref == null) {
+            worklist.add(vertexToAdd);  // add vertex with weight so far
+            edge.to.ref = vertexToAdd;
+            edge.to.ref.heapIndex = worklist.lastHeapIdx;
+          }
+          
+          // IF found better path
+          // vertexToAdd already in worklist heap
+          // but on this current path vertexToAdd has higher priority -> upheap          
+          else if (worklist.comparator.compare(vertexToAdd, edge.to.ref) > 0) {
+            edge.to.ref.weight = vertexToAdd.weight;
+            worklist.upheap(edge.to.ref.heapIndex);
+          }
+          
+          predecessors.put(edge.to, vertex);  // log edge taken from this vertex       
+        }
+        // add vertex to visited
+        visited.add(vertex);
+      }
+    }
+    // We haven't found the to vertex, and there are no more to try
+    return new ArrayList<>();
+  }
+  
+  private List<Vertex> buildPath(Map<Vertex, Vertex> predecessors, Vertex to) {
+    List<Vertex> path = new ArrayList<>();
+    Vertex current = to;
+    
+    while (current != null) {
+      path.add(current);
+      current = predecessors.get(current);
+    }
+    Collections.reverse(path);
+    return path;
+  }
+}
+
+
+class ExampleGraphs {
+  
+  private Graph createTestGraph() {
+    Vertex a = new Vertex(new ArrayList<>(), "A");
+    Vertex b = new Vertex(new ArrayList<>(), "B");
+    Vertex c = new Vertex(new ArrayList<>(), "C");
+    Vertex d = new Vertex(new ArrayList<>(), "D");
+    
+    // Create edges
+    a.outEdges.add(new Edge(a, b, 1));
+    a.outEdges.add(new Edge(a, c, 4));
+    b.outEdges.add(new Edge(b, c, 2));
+    b.outEdges.add(new Edge(b, d, 5));
+    c.outEdges.add(new Edge(c, d, 1));
+    
+    return new Graph(new ArrayList<Vertex>(Arrays.asList(a, b, c, d)));
+  }
+  
+  // A -> B
+  void testDirectPath(Tester t) {
+    Graph g = createTestGraph();
+    Vertex a = g.allVertices.get(0); // A
+    Vertex b = g.allVertices.get(1); // B
+
+    t.checkExpect(g.findCheapestPath(a, b), List.of(a, b));
+    t.checkExpect(g.findDijkstraPath(a, b), List.of(a, b));
+  }
+  
+  // A -> D
+  void testMultiHopPath(Tester t) {
+    Graph g = createTestGraph();
+    Vertex a = g.allVertices.get(0); // A
+    Vertex b = g.allVertices.get(1); // B
+    Vertex c = g.allVertices.get(2); // C
+    Vertex d = g.allVertices.get(3); // D
+    
+    // Should take A->B->C->D(cost 4) instead of A->B->D(cost 6) or A->C->D(5)
+    t.checkExpect(g.findCheapestPath(a, d), List.of(a, b, c, d));
+    // t.checkExpect(g.findDijkstraPath(a, d), List.of(a, b, c, d));
+    System.out.println(g.findDijkstraPath(a, d) + " Should take A->B->C->D(cost 4)");
+  }
+  
+  void testSameSourceAndTarget(Tester t) {
+    Graph g = createTestGraph();
+    Vertex a = g.allVertices.get(0); // A
+
+    t.checkExpect(g.findCheapestPath(a, a), List.of(a));
+    t.checkExpect(g.findDijkstraPath(a, a), List.of(a));
+  }
+  
+  void testUnreachableNode(Tester t) {
+    Graph g = createTestGraph();
+    Vertex a = g.allVertices.get(0); // A
+    
+    // Create isolated vertex
+    Vertex isolated = new Vertex(new ArrayList<>(), "Isolated");
+    g.allVertices.add(isolated);
+    
+    List<Vertex> path = g.findCheapestPath(a, isolated);
+    List<Vertex> pathD = g.findDijkstraPath(a, isolated);
+    t.checkExpect(path.isEmpty(), true);
+    t.checkExpect(pathD.isEmpty(), true);
+  }
+  
+  void testEqualCostPaths(Tester t) {
+    Vertex x = new Vertex(new ArrayList<>(), "X");
+    Vertex y = new Vertex(new ArrayList<>(), "Y");
+    Vertex z = new Vertex(new ArrayList<>(), "Z");
+    
+    // X->Y->Z (cost 1+1 = 2)
+    // X->Z (cost 2)
+    x.outEdges.add(new Edge(x, y, 1));
+    x.outEdges.add(new Edge(x, z, 2));
+    y.outEdges.add(new Edge(y, z, 1));
+    
+    Graph g = new Graph(List.of(x, y, z));
+    
+    List<Vertex> path = g.findCheapestPath(x, z);
+    // Both paths have same cost, implementation can choose either
+    List<List<Vertex>> expected = new ArrayList<>(Arrays.asList(List.of(x, z), List.of(x, y, z)));
+    t.checkExpect(expected.contains(path), true);
+    t.checkExpect(expected.contains(g.findDijkstraPath(x, z)), true);
+  }
+  
+  void testNegativeWeights(Tester t) {
+    Vertex u = new Vertex(new ArrayList<>(), "U");
+    Vertex v = new Vertex(new ArrayList<>(), "V");
+    
+    u.outEdges.add(new Edge(u, v, -1));
+    
+    Graph g = new Graph(List.of(u, v));
+    
+    t.checkExpect(g.findCheapestPath(u, v), List.of(u, v));
+    t.checkExpect(g.findDijkstraPath(u, v), List.of(u, v));
+  }
+  
+  void testComplexGraph(Tester t) {
+    // More complex graph with multiple paths
+    Vertex a = new Vertex(new ArrayList<>(), "A");
+    Vertex b = new Vertex(new ArrayList<>(), "B");
+    Vertex c = new Vertex(new ArrayList<>(), "C");
+    Vertex d = new Vertex(new ArrayList<>(), "D");
+    Vertex e = new Vertex(new ArrayList<>(), "E");
+    
+    a.outEdges.addAll(List.of(
+        new Edge(a, b, 3),
+        new Edge(a, c, 1)
+    ));
+    b.outEdges.add(new Edge(b, d, 2));
+    c.outEdges.addAll(List.of(
+        new Edge(c, b, 1),
+        new Edge(c, d, 4)
+    ));
+    d.outEdges.add(new Edge(d, e, 2));
+    
+    Graph g = new Graph(List.of(a, b, c, d, e));
+    
+    // Expected path: A->C->B->D->E (cost 1+1+2+2 = 6)
+    t.checkExpect(g.findCheapestPath(a, e), List.of(a, c, b, d, e));
+    // t.checkExpect(g.findDijkstraPath(a, e), List.of(a, c, b, d, e));    
+    System.out.println("N " + g.findCheapestPath(a, e));
+    System.out.println("D " +g.findDijkstraPath(a, e));
+  }
+  
+  void testLectureGraph(Tester t) {
+    Vertex a = new Vertex(new ArrayList<>(), "A");
+    Vertex b = new Vertex(new ArrayList<>(), "B");
+    Vertex c = new Vertex(new ArrayList<>(), "C");
+    Vertex d = new Vertex(new ArrayList<>(), "D");
+    Vertex e = new Vertex(new ArrayList<>(), "E");
+    Vertex f = new Vertex(new ArrayList<>(), "F");
+    
+    a.outEdges.add(new Edge(a, b, 1));
+    a.outEdges.add(new Edge(a, f, 3));   
+    b.outEdges.add(new Edge(b, c, 1));
+    c.outEdges.add(new Edge(c, d, 1));
+    d.outEdges.add(new Edge(d, e, 1));
+    e.outEdges.add(new Edge(e, f, 1));
+    
+    Graph g = new Graph(List.of(a, b, c, d, e, f));
+    
+    // Expected path: A->F (cost 3)
+    t.checkExpect(g.findCheapestPath(a, f), List.of(a, f));
+    t.checkExpect(g.findDijkstraPath(a, f), List.of(a, f)); 
+//    System.out.println("normal " + g.findCheapestPath(a, f));
+    System.out.println("Dijkstra " + g.findDijkstraPath(a, f) + " Expected A->F");
+  }
+}

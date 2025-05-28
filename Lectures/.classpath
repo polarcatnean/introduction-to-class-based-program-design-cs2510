@@ -6,8 +6,8 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="F:/CBPD/EclipseJars/javalib.jar"/>
-	<classpathentry kind="lib" path="F:/CBPD/EclipseJars/tester.jar"/>
+	<classpathentry kind="lib" path="E:/OSSU/intro-to-class-based-program-design-cs2510/EclipseJars/javalib.jar"/>
+	<classpathentry kind="lib" path="E:/OSSU/intro-to-class-based-program-design-cs2510/EclipseJars/tester.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Lab"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

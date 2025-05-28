@@ -1,0 +1,147 @@
+package lab11;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import tester.Tester;
+
+class Curriculum {
+  ArrayList<Course> courses;
+  
+  Curriculum() { this.courses = new ArrayList<Course>(); }
+  
+  // EFFECT: adds another course to the set of known courses
+  void addCourse(Course c) { 
+    this.courses.add(c); 
+  }
+  
+  // produce true if the provided Course appears in the schedule 
+  // AFTER all of its prerequisites do
+  // and all the prerequisites appear in the schedule
+  boolean comesAfterPrereqs(ArrayList<Course> schedule, Course c) {
+    for (Course prereq : c.prereqs) {
+      if (schedule.indexOf(c) < schedule.indexOf(prereq) || !schedule.contains(prereq)) {
+        return false;
+      }
+    }  
+    return true;
+  }
+  
+  // produce true if the schedule is valid for all the courses in it
+  boolean validSchedule(ArrayList<Course> schedule) {
+    for (Course course : schedule) {
+      if (!comesAfterPrereqs(schedule, course)) {
+        return false;
+      }
+    }
+    return true;    
+  }
+  
+  ArrayList<Course> topSort(ArrayList<Course> courses) {
+    ArrayList<Course> result = new ArrayList<>();
+    
+    for (Course course : courses) {
+      course.process(result);
+    }
+    
+    return result;    
+  }
+  
+}
+
+class Course {
+  String name;
+  ArrayList<Course> prereqs;
+  
+  Course(String name) { 
+    this.name = name; 
+    this.prereqs = new ArrayList<Course>(); 
+  }
+  
+  // EFFECT: adds a course as a prereq to this one
+  void addPrereq(Course c) { 
+    this.prereqs.add(c); 
+  }
+  
+  @Override
+  public String toString() {
+      return "{" + name + "}";
+  }
+  
+  // add the current course in the list
+  // then visit its neighbours
+  void process(ArrayList<Course> processed) {
+    // If the vertex is not yet in the sorted result list, 
+    // process all of its neighbors
+    if (!processed.contains(this)) {
+      for (Course prereq : this.prereqs) {
+        prereq.process(processed);
+      }
+      // then add the vertex to the result list.
+      processed.add(this);
+    }
+  }
+}
+
+class ExampleCurriculums {
+  Curriculum c1 = new Curriculum();
+  
+  Course fundies1 = new Course("Fundamentals 1");
+  Course fundies2 = new Course("Fundamentals 2");
+  Course dd = new Course("Database Design");
+  Course algo = new Course("Algorithms and Data");
+  Course sys = new Course("Computer Systems");
+  Course ood = new Course("Object-Oriented Design");
+  Course theory = new Course("Theory of Computation");
+  Course parallel = new Course("Large-Scale Parallel Data Processing");
+  Course lang = new Course("Programming Languages");
+  Course compilers = new Course("Compilers");
+  
+  void initPrereqs() {   
+    c1.courses = new ArrayList<Course>(
+        Arrays.asList(fundies1, fundies2, dd, algo, sys, ood, theory, parallel, lang, compilers));
+    
+    dd.addPrereq(fundies1);
+    fundies2.addPrereq(fundies1);
+    algo.addPrereq(fundies2);
+    sys.addPrereq(fundies2);
+    ood.addPrereq(fundies2);
+    theory.addPrereq(fundies2);
+    parallel.addPrereq(algo); parallel.addPrereq(sys);
+    lang.addPrereq(ood); lang.addPrereq(theory);
+    compilers.addPrereq(lang);
+  }
+  
+  void testTopSort(Tester t) {
+    initPrereqs();
+    System.out.println(c1.topSort(c1.courses));
+  }
+  
+  void testComesAfterPrereqs(Tester t) {
+    initPrereqs();
+    // ArrayList<Course> s0 = new ArrayList<Course>(); // empty list
+    ArrayList<Course> s1 = new ArrayList<Course>(Arrays.asList(fundies1)); 
+    ArrayList<Course> s2 = new ArrayList<Course>(Arrays.asList(fundies1, fundies2)); 
+    ArrayList<Course> s3 = new ArrayList<Course>(Arrays.asList(fundies2)); 
+    ArrayList<Course> s4 = new ArrayList<Course>(
+        Arrays.asList(fundies1, fundies2, ood, theory, lang, compilers)); 
+    ArrayList<Course> s5 = new ArrayList<Course>(
+        Arrays.asList(fundies1, fundies2, ood, lang, compilers)); 
+    ArrayList<Course> s6 = new ArrayList<Course>(
+        Arrays.asList(fundies1, fundies2, ood, lang, theory, compilers));  
+    
+    t.checkExpect(c1.comesAfterPrereqs(s1, fundies1), true); // no prereq
+    t.checkExpect(c1.comesAfterPrereqs(s2, fundies2), true); // correct 1 prereq
+    t.checkExpect(c1.comesAfterPrereqs(s3, fundies2), false); // missing a prereq
+    t.checkExpect(c1.comesAfterPrereqs(s4, compilers), true); // correct order prereqs
+    t.checkExpect(c1.comesAfterPrereqs(s5, lang), false);     // correct order, missing one prereq
+    t.checkExpect(c1.comesAfterPrereqs(s6, compilers), true); // wrong order, but appears after all prereqs
+    
+    t.checkExpect(c1.validSchedule(s1), true);  // no prereq
+    t.checkExpect(c1.validSchedule(s2), true);  // correct 1 prereq
+    t.checkExpect(c1.validSchedule(s3), false); // missing a prereq
+    t.checkExpect(c1.validSchedule(s4), true);  // correct order prereqs
+    t.checkExpect(c1.validSchedule(s5), false); // correct order, missing one prereq
+    t.checkExpect(c1.validSchedule(s6), false); // wrong order, but appears after all prereqs
+  }
+}

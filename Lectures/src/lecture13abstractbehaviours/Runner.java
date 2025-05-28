@@ -1,4 +1,4 @@
-package lecture13abstractbehaviours;
+package lecture13abstractBehaviours;
 import tester.*;
 
 interface ICompareRunners {

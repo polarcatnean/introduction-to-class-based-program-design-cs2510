@@ -4,7 +4,7 @@
 	<item key="org.eclipse.jdt.ui.last.selected.execution.enviroment" value="JavaSE-11"/>
 	<item key="org.eclipse.jdt.ui.last.selected.create.moduleinfo.comments" value="false"/>
 	<item key="org.eclipse.jdt.ui.last.selected.create.moduleinfo" value="false"/>
-	<item key="org.eclipse.jdt.ui.lastextjar" value="F:\CBPD\EclipseJars"/>
+	<item key="org.eclipse.jdt.ui.lastextjar" value="E:\OSSU\intro-to-class-based-program-design-cs2510\EclipseJars"/>
 	<section name="org.eclipse.jdt.internal.ui.packageview.PackageExplorerPart">
 		<item key="group_libraries" value="true"/>
 		<item key="layout" value="1"/>
@@ -22,7 +22,7 @@
 	<section name="JavaElementSearchActions">
 	</section>
 	<section name="BuildPathsPropertyPage">
-		<item key="pageIndex" value="1"/>
+		<item key="pageIndex" value="2"/>
 	</section>
 	<section name="completion_proposal_size">
 	</section>

@@ -1,0 +1,137 @@
+package lecture32minSpanningTree;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.PriorityQueue;
+
+import tester.Tester;
+
+
+class Vertex {
+  String name;
+  ArrayList<Edge> outEdges;
+  
+  Vertex(String name) {
+    this.outEdges = new ArrayList<>();
+    this.name = name;
+  }
+  
+  @Override
+  public String toString() {
+    return name;
+  }
+}
+
+class Edge implements Comparable<Edge>{
+  Vertex from, to;
+  int weight;
+  
+  Edge(Vertex from, Vertex to, int weight) {
+    this.from = from;
+    this.to = to;
+    this.weight = weight;
+  }
+  
+  @Override
+  public String toString() {
+    return "(" + from + "->" + to + ":" + weight + ")";
+  }
+  
+  @Override
+  public int compareTo(Edge other) {
+    return Integer.compare(this.weight, other.weight);
+  }
+}
+
+class Graph {
+  List<Vertex> vertices;
+  
+  Graph(List<Vertex> vertices) {
+    this.vertices = vertices;
+  }
+  
+  // produce from this graph, a "minimun spanning tree", by growing a single tree
+  // by picking the next globally cheapest edge
+  public ArrayList<Edge> prim() {
+    ArrayList<Edge> tree = new ArrayList<Edge>();
+    HashMap<Vertex, Boolean> connected = new HashMap<Vertex, Boolean>(); // true = connected to tree
+    PriorityQueue<Edge> frontier = new PriorityQueue<Edge>();
+    
+    if (this.vertices.isEmpty()) {
+      return tree;
+    }
+    
+    // initialise connected map: map each vertex -> false
+    for (Vertex vertex: vertices) {
+      connected.put(vertex, false);
+    }
+    
+    // initialise frontier
+    // add a vertex to the tree and add its out-edges to the priority queue
+    Vertex firstVertex = vertices.get(0);
+    connected.replace(firstVertex, true);
+    for (Edge outEdge : firstVertex.outEdges) {
+      frontier.offer(outEdge);
+    }
+    
+    // while some Vertex is not connected, pick the next cheapest edge from frontier
+    while(connected.containsValue(false) && !frontier.isEmpty()) {
+      Edge nextEdge = frontier.poll();
+      Vertex nextVertex = nextEdge.to;
+      // to avoid cycles, check if nextVertex is already connected
+      if (connected.get(nextVertex)) {
+        continue;
+      }
+      
+      tree.add(nextEdge);
+      connected.put(nextVertex, true);
+      
+      // add out-edges to frontier
+      for (Edge outEdge : nextVertex.outEdges) {
+        frontier.offer(outEdge);
+      }
+    }  
+    
+    return tree;
+  }
+}
+
+class ExampleGraphs {
+  Vertex A = new Vertex("A");
+  Vertex B = new Vertex("B");
+  Vertex C = new Vertex("C");
+  Vertex D = new Vertex("D");
+  Vertex E = new Vertex("E");
+  Vertex F = new Vertex("F");
+  Graph g = new Graph(List.of(A, B, C, D, E, F));
+  
+  void makeGraph() {
+    A.outEdges.add(new Edge(A, B, 30));
+    A.outEdges.add(new Edge(A, E, 50));
+
+    B.outEdges.add(new Edge(B, A, 30));
+    B.outEdges.add(new Edge(B, C, 40));    
+    B.outEdges.add(new Edge(B, E, 35));
+    B.outEdges.add(new Edge(B, F, 50));
+    
+    C.outEdges.add(new Edge(C, B, 40));
+    C.outEdges.add(new Edge(C, D, 25));
+    C.outEdges.add(new Edge(C, E, 15));
+    
+    D.outEdges.add(new Edge(D, C, 25));
+    D.outEdges.add(new Edge(D, F, 50));
+    
+    E.outEdges.add(new Edge(E, A, 50));
+    E.outEdges.add(new Edge(E, B, 35));
+    E.outEdges.add(new Edge(E, C, 15));
+    
+    F.outEdges.add(new Edge(F, B, 50));
+    F.outEdges.add(new Edge(F, D, 50));
+  }
+  
+  void testPrim(Tester t) {
+    makeGraph();
+    System.out.println(g.prim());
+  }
+}

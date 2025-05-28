@@ -1,0 +1,130 @@
+package lecture31dijkstra;
+
+import java.util.ArrayList;
+
+class HeapItem<T> {
+  T data;
+  int weight;
+  
+  HeapItem(T data, int weight) {
+    this.data = data;
+    this.weight = weight;
+  }
+}
+
+class Heap {
+  ArrayList<Integer> source;
+  ArrayList<Integer> heap;
+  ArrayList<Integer> sortedHeap;
+  int lastHeapIdx;
+
+  Heap(ArrayList<Integer> source) {
+    this.source = source;
+    this.heap = new ArrayList<>();
+    this.sortedHeap = new ArrayList<>();
+    this.lastHeapIdx = this.source.size() - 1;
+  }
+
+  // EFFECT: modify this heap by producing heap from the source
+  // using upheap-based solution
+  public void buildHeap() {
+    if (this.source.isEmpty()) {
+      return;
+    }
+    
+    heap.add(this.source.get(0));
+
+    for (int i = 1; i < this.source.size(); i++) {
+      heap.add(this.source.get(i));
+      upheap(i);
+    }
+  }
+  
+  // EFFECT: modify this heap by producing heap from the source
+  // downheap-based solution
+  public void buildHeapAlt() {
+    if (this.source.isEmpty()) {
+      return;
+    }
+    
+    // copy source to heap
+    for (int item : this.source ) {
+      this.heap.add(item);
+    }
+    
+    // counting from the first half down to 0
+    for (int i = this.heap.size()/2 - 1; i >= 0; i--) {
+      downheap(i);
+    }
+  }
+
+  // EFFECT: upheap the item at the given index in this heap
+  public void upheap(int index) {
+    int parentIdx = (int) Math.floor((index - 1) / 2);
+    int currentItem = this.heap.get(index);
+    int parent = this.heap.get(parentIdx);
+
+    if (currentItem > parent) {
+      // swap current item with its parent
+      swap(index, parentIdx);
+
+      // keep upheaping until <= parent
+      upheap(parentIdx);
+    }
+  }
+
+  // Produce the maximum item from this heap
+  // EFFECT: Swap the item at index 0 with the item at the index of the last heap item
+  public int remove() {
+    int maxItem = this.heap.get(0);
+
+    swap(0, this.lastHeapIdx);
+    this.lastHeapIdx--;
+    
+    downheap(0);
+
+    return maxItem;
+  }
+
+  // EFFECT: downheap the item at the given index in this heap
+  public void downheap(int index) {
+    int largestIdx = index; // Assume current node is the largest
+    int leftIdx = (2 * index) + 1;
+    int rightIdx = (2 * index) + 2;
+    int size = this.lastHeapIdx + 1;
+    
+    // Check if left child is larger than current node
+    if (leftIdx < size && heap.get(leftIdx) > heap.get(largestIdx)) {
+      largestIdx = leftIdx;
+    }
+ 
+    // Check if right child is larger than current node
+    if (rightIdx < size && heap.get(rightIdx) > heap.get(largestIdx)) {
+      largestIdx = rightIdx;
+    }
+    
+    // If the largest is not the current node, swap and recurse
+    if (largestIdx != index) {
+      swap(index, largestIdx);
+      downheap(largestIdx);
+    }
+  }
+  
+  // EFFECT: sort the heap by removing all the items from the heap 
+  // and assign it to this sortedHeap
+  public void heapSort() {
+    int size = this.heap.size();
+    for (int i = 0; i < size; i++) {
+      removeMax();
+    }
+  }
+  
+
+  // EFFECT: swap two elements in the heap
+  private void swap(int i, int j) {
+     int temp = heap.get(i);
+     heap.set(i, heap.get(j));
+     heap.set(j, temp);
+  }
+
+}

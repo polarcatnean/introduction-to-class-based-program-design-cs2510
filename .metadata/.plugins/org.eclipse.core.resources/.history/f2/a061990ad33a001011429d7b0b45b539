@@ -1,0 +1,71 @@
+package lecture31dijkstra;
+
+import java.util.Deque;
+import java.util.ArrayDeque;
+import java.util.Collection;
+
+// Represents a mutable collection of items
+interface ICollection<T> {
+  // Is this collection empty?
+  boolean isEmpty();
+
+  // EFFECT: adds the item to the collection with the given priority
+  void add(T item, int priority);
+  
+  // Returns the first item of the collection
+  // EFFECT: removes that first item
+  T remove();
+  
+  Collection<T> getData();
+}
+
+
+
+class Stack<T> implements ICollection<T> {
+  Deque<T> items;
+
+  Stack() {
+    this.items = new ArrayDeque<T>();
+  }
+
+  public boolean isEmpty() {
+    return this.items.isEmpty();
+  }
+
+  public T remove() {
+    return this.items.removeFirst();
+  }
+
+  public void add(T item, int priority) {
+    this.items.push(item);    
+  }
+
+  public Collection<T> getData() {
+    return this.items;
+  }
+}
+
+class Queue<T> implements ICollection<T> {
+  Deque<T> items;
+
+  Queue() {
+    this.items = new ArrayDeque<T>();
+  }
+
+  public boolean isEmpty() {
+    return this.items.isEmpty();
+  }
+
+  public T remove() {
+    return this.items.removeFirst();
+  }
+
+  public void add(T item, int priority) {
+    items.addLast(item);    
+  }
+
+  public Collection<T> getData() {
+    return this.items;
+  }
+}
+
