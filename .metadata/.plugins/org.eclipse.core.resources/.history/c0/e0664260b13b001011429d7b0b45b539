@@ -126,8 +126,10 @@ class Graph {
     return edgesInTree;
   }
 
-  // EFFECT: set rep1's rep to rep2
+  // EFFECT: set rep1's ultimate rep to rep2's ultimate rep
   private void union(HashMap<String, String> representatives, String rep1, String rep2) {
+    String ultimateRepOfRep1 = find(representatives, rep1);
+    String ultimateRepOfRep2 = find(representatives, rep2);
     representatives.put(rep1, rep2);
   }
 

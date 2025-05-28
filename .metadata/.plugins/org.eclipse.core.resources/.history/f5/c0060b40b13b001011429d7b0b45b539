@@ -126,9 +126,11 @@ class Graph {
     return edgesInTree;
   }
 
-  // EFFECT: set rep1's rep to rep2
+  // EFFECT: set rep1's ultimate rep to rep2's ultimate rep
   private void union(HashMap<String, String> representatives, String rep1, String rep2) {
-    representatives.put(rep1, rep2);
+    String repOfRep1 = find(representatives, rep1);
+    String repOfRep2 = find(representatives, rep2);
+    representatives.put(repOfRep1, repOfRep2);
   }
 
   // produce the ultimate rep of the vertex, given a vertex's name
