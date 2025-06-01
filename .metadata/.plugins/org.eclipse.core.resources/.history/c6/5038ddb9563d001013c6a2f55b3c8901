@@ -1,0 +1,229 @@
+package assignment10;
+
+import java.util.ArrayList;
+import tester.*;
+import javalib.impworld.*;
+import java.awt.Color;
+import javalib.worldimages.*;
+
+
+class Maze extends World {
+  int width, height;  // numbers of cells
+  Cell startCell, endCell;
+  ArrayList<Cell> cells;
+  ArrayList<Edge> mstEdges;
+  ArrayList<Cell> path;
+  ArrayList<Cell> exploringCells;
+  ArrayList<Integer> cellsToProcess;
+  boolean mazeMakingState;
+  boolean pathFindingState;
+  boolean pathFoundState;
+  int cellExplored;  
+  
+  // Constants
+  static int CELL_SIZE = 20;
+  static int BORDER_SIZE = 2;
+  static int PADDING = 10;
+  int MAZE_WIDTH, MAZE_HEIGHT;     // in px
+  int WINDOW_WIDTH, WINDOW_HEIGHT; 
+  static Color DEFAULT_COLOR = Color.LIGHT_GRAY;
+  static Color tryingPathColor = new Color(201, 235, 239);   // light blue
+  static Color correctPathColor = new Color(105, 166, 209);  // dark blue
+  static Color START_CELL_COLOR = new Color(218, 217, 250);  // pastel purple
+  static Color END_CELL_COLOR = new Color(199, 233, 237);    // pastel green
+  static double TICK_RATE = 0.002; 
+
+  Maze(int width, int height) {
+    this.width = width;
+    this.height = height;
+    this.cells = new ArrayList<Cell>();
+    this.mstEdges = new ArrayList<Edge>();
+    this.path = new ArrayList<Cell>();
+    this.exploringCells = new ArrayList<Cell>();
+    this.cellsToProcess = new ArrayList<Integer>();
+    this.mazeMakingState = true;
+    this.pathFindingState = false;
+    this.pathFoundState = false;
+    this.cellExplored = 0;
+    this.MAZE_WIDTH = width * CELL_SIZE;
+    this.MAZE_HEIGHT = height * CELL_SIZE;
+    this.WINDOW_WIDTH = MAZE_WIDTH + (PADDING * 2);
+    this.WINDOW_HEIGHT = MAZE_HEIGHT + (PADDING * 2);
+    makeMaze();
+  }
+  
+  public void makeMaze() {
+    cells = new ArrayList<Cell>();
+    generateCells();  // generate blank cells & add to board
+    initCells();      // initialise all cells (set neighbours & id)
+    makeMST();        // find mininum spanning tree, using Kruskal's
+    mazeMakingState = true;
+    pathFindingState = false;
+    pathFoundState = false;
+    path = new ArrayList<Cell>();
+    startCell = cells.get(0);
+    startCell.color = Maze.START_CELL_COLOR;
+    endCell = cells.get(cells.size() - 1);
+    endCell.color = Maze.END_CELL_COLOR;
+  }
+
+  private void generateCells() {
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        cells.add(new Cell(x, y));
+      }
+    }   
+  }
+  
+  private void initCells() {
+    for (int i = 0; i < cells.size(); i++) {
+      Cell cell = cells.get(i);
+      cell.id = i;
+      cell.setAdjacents(cells, i, width, height);     
+    }
+  }
+
+  private void makeMST() {
+    Graph g = new Graph(cells);
+    mstEdges = g.kruskal();
+  }
+
+  
+  // ImpWORLD METHODS:
+  public void launchGame() {
+    super.bigBang(WINDOW_WIDTH, WINDOW_HEIGHT, TICK_RATE);
+  }
+  
+  @Override
+  public WorldScene makeScene() {
+    WorldScene scene = this.getEmptyScene();
+    WorldImage maze = drawBoard(scene);
+    scene.placeImageXY(maze, PADDING, PADDING);
+    
+    return scene;
+  }
+
+  private WorldImage drawBoard(WorldScene scene) {
+    WorldImage canvas = new RectangleImage(MAZE_WIDTH, MAZE_HEIGHT, OutlineMode.SOLID, Color.WHITE)
+                          .movePinhole(-MAZE_WIDTH/2, -MAZE_HEIGHT/2);
+    
+    for (Cell cell : cells) {
+      canvas = new OverlayImage(cell.draw(CELL_SIZE, BORDER_SIZE), canvas);
+    }
+    return canvas;
+  }
+ 
+  public void onTick() {
+    if (mazeMakingState) {
+      if (mstEdges.isEmpty()) {
+        mazeMakingState = false;
+        System.out.println("Maze making completed.");
+        return;
+      }
+      
+      // Process only some edges to show animation
+      int edgesToProcess = (cells.size() - 1) / 4;
+      int remainingEdges = mstEdges.size();
+      int edgesToRemove = remainingEdges > edgesToProcess  ? edgesToProcess : remainingEdges; 
+
+      // start animating by going through the worklist
+      for (int i = 0; i < edgesToRemove; i++) {
+        Edge currentEdge = mstEdges.remove(0);
+        currentEdge.src.removeBorder(currentEdge.dest);
+      }
+      
+      int percent = mstEdges.size() * 100 /cells.size() - 1;
+      System.out.println("Maze making " + (99 - percent) + "% done.");
+    }
+    
+    if (pathFindingState) {
+      if (exploringCells.isEmpty()) {
+        pathFindingState = false;
+        pathFoundState = true;
+        return;
+      }
+      int cellsToProcess = 0;
+      cellsToProcess = exploringCells.size();
+      
+//      if (this.cellsToProcess.size() > 5) {
+//        for (int i = 0; i < 5; i++) {
+//          cellsToProcess = this.cellsToProcess.remove(0);
+//        }
+//      }
+//      else {
+//        cellsToProcess = exploringCells.size();
+//      }
+      
+      for (int i = 0; i < cellsToProcess; i++) {
+        exploringCells.remove(0).color = Maze.tryingPathColor;
+      }     
+    }
+    
+    if (pathFoundState) {     
+      if (path.isEmpty()) {
+        pathFoundState = false;
+        return;
+      }
+      
+      int n = path.size() > 3 ? 3 : path.size();
+      for (int i = 0; i < n; i++) {
+        Cell cell = path.remove(0);
+        cell.color = Maze.correctPathColor;
+      }      
+    }
+  }
+
+  public void onKeyEvent(String key) {
+    if (mazeMakingState) {
+      System.out.println("Still generating maze.");
+      return;
+    }
+    
+    // start a new maze
+    if (key.equals("r")) {
+      mazeMakingState = true;
+      makeMaze();
+      System.out.println("Maze reset.");
+      System.out.println(mstEdges);
+    }   
+    // BFS path finding
+    if (key.equals("b")) {
+      resetPath();   
+      path = new Graph(cells).findPathBFS(startCell, endCell, this);
+      pathFindingState = true;
+      System.out.println("BFS explored " + cellExplored + " cells.");
+      System.out.println("BFS path " + path.size() + " cells.");
+    }
+    // DFS path finding
+    if (key.equals("d")) {
+      resetPath();
+      path = new Graph(cells).findPathDFS(startCell, endCell, this);
+      pathFindingState = true;
+      System.out.println("DFS explored " + cellExplored + " cells.");
+      System.out.println("DFS path " + path.size() + " cells.");
+    }
+  }
+
+  private void resetPath() {
+    exploringCells.clear();
+    cellsToProcess.clear();
+    pathFoundState = false;
+    cellExplored = 0;
+    // reset colour
+    for (Cell cell : cells) {
+      cell.color = Maze.DEFAULT_COLOR;
+    }
+    startCell.color = Maze.START_CELL_COLOR;
+    endCell.color = Maze.END_CELL_COLOR;
+  }
+}
+
+
+class ExampleMaze {
+  Maze test = new Maze(30, 20);
+  
+  void testLaunchGame(Tester t) {
+    test.launchGame();
+  }
+
+}

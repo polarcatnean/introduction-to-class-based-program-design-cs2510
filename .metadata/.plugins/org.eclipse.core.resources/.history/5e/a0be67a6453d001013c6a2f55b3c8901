@@ -1,0 +1,284 @@
+package assignment10;
+
+import java.awt.Color;
+import javalib.worldimages.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+
+class Cell {
+  int x, y; // grid indices
+  int id;   // index in board
+  Color color;
+  ArrayList<Edge> outEdges;
+  HashMap<String, Boolean> borders;
+
+  Cell(int x, int y) {
+    this.x = x;
+    this.y = y;
+    this.color = Maze.DEFAULT_COLOR;
+    this.outEdges = new ArrayList<>();
+    this.borders = new HashMap<>(Map.of(
+        "top", true, 
+        "left", true,
+        "bottom", true,
+        "right", true));
+  }
+  
+  @Override
+  public String toString() {
+    return "[" + x + ", " + y +"]";
+  }
+
+  // EFFECT: set pointers to the adjacent neighbour cells, 
+  // given a board and this cell's index
+  void setAdjacents(ArrayList<Cell> board, int index, int width, int height) {
+    // Set only right and bottom neighbours to avoid adding the same edge twice
+    // since edges are bidirectional
+
+    // Right neighbour (if not in the last column)
+    if (x < width - 1) {
+      Cell neighbourRight = board.get(index + 1);
+      outEdges.add(new Edge(this, neighbourRight, 1));
+    }
+
+    // Bottom neighbour (if not in the last row)
+    if (y < height - 1) {
+      Cell neighbourBottom = board.get(index + width);
+      outEdges.add(new Edge(this, neighbourBottom, 1));
+    }
+  }
+  
+  // produce an image of this cell
+  public WorldImage draw(int cellSize, int borderSize) {
+    int offsetX = (this.x * cellSize) + (cellSize / 2);
+    int offsetY = (this.y * cellSize) + (cellSize / 2);
+    
+    WorldImage cellImg = new RectangleImage(cellSize, cellSize, OutlineMode.SOLID, this.color);
+    WorldImage cellWithBorders = drawBorders(cellImg, cellSize, borderSize);
+    // WorldImage label = new TextImage(this.toString(), 10, Color.BLACK);
+    
+    WorldImage cellImgOffsetPinhole = //new OverlayImage(label, cellWithBorders)
+                                      cellWithBorders
+                                       .movePinholeTo(new Posn(-offsetX, -offsetY));  
+    return cellImgOffsetPinhole;
+  }
+  
+  public WorldImage drawBorders(WorldImage cellImg, int cellSize, int borderSize) {
+    // TODO refactor
+    WorldImage result = cellImg;
+    int halfCell = cellSize/2;
+
+    WorldImage vBorder = new RectangleImage(borderSize, cellSize, OutlineMode.SOLID, Color.BLACK);
+    WorldImage vBorderB = new RectangleImage(borderSize, cellSize -borderSize*2, OutlineMode.SOLID, this.color);
+    WorldImage hBorder = new RectangleImage(cellSize, borderSize, OutlineMode.SOLID, Color.BLACK);
+    WorldImage hBorderB = new RectangleImage(cellSize -borderSize*2, borderSize, OutlineMode.SOLID, this.color);
+
+    if (borders.get("top")) {
+      result = new OverlayOffsetImage(hBorder, 0, (halfCell - borderSize/2), result);
+    } else {
+      result = new OverlayOffsetImage(hBorderB, 0, (halfCell - borderSize/2), result);
+    }
+    if (borders.get("bottom")) {
+      result = new OverlayOffsetImage(hBorder, 0, -(halfCell - borderSize/2), result);
+    } else {
+      result = new OverlayOffsetImage(hBorderB, 0, -(halfCell - borderSize/2), result);
+    }
+    if (borders.get("left")) {
+      result = new OverlayOffsetImage(vBorder, (halfCell - borderSize/2), 0, result);
+    } else {
+      result = new OverlayOffsetImage(vBorderB, (halfCell - borderSize/2), 0, result);
+    }
+    if (borders.get("right")) {
+      result = new OverlayOffsetImage(vBorder, -(halfCell - borderSize/2), 0, result);
+    } else {
+      result = new OverlayOffsetImage(vBorderB, -(halfCell - borderSize/2), 0, result);
+    }
+    return result;
+  }
+
+  public void removeBorder(Cell dest) {
+    if (dest.y == this.y - 1) {
+      borders.put("top", false);
+      dest.borders.put("bottom", false);
+    }
+    else if (dest.y == this.y + 1) {
+      borders.put("bottom", false);
+      dest.borders.put("top", false);
+    }
+    else if (dest.x == this.x - 1) {
+      borders.put("left", false);
+      dest.borders.put("right", false);
+    }
+    else if (dest.x == this.x + 1) {
+      borders.put("right", false);
+      dest.borders.put("left", false);
+    }    
+  }
+}
+
+class Edge implements Comparable<Edge>{
+  Cell src, dest;
+  int weight;
+  
+  Edge(Cell src, Cell dest, int weight) {
+    this.src = src;
+    this.dest = dest;
+    this.weight = weight;
+  }
+  
+  @Override
+  public String toString() {
+    return "(" + src + "->" + dest + ")\n";
+  }
+  
+  @Override
+  public int compareTo(Edge other) {
+    return Integer.compare(this.src.id, other.src.id);
+  }
+  
+}
+
+class Graph {
+  List<Cell> vertices;
+  
+  Graph(List<Cell> vertices) {
+    this.vertices = vertices;
+  }
+  
+  
+  public ArrayList<Edge> kruskal() {    
+    HashMap<Integer, Integer> representatives = new HashMap<Integer, Integer>();
+    ArrayList<Edge> worklist = new ArrayList<Edge>();
+    ArrayList<Edge> edgesInTree = new ArrayList<Edge>();
+    
+    // Initialise (1) worklist: all edges in graph, sorted by edge weights ASC
+    //            (2) every node's representatives to itself
+    for (Cell vertex : vertices) {
+      representatives.put(vertex.id, vertex.id);
+      worklist.addAll(vertex.outEdges);
+      vertex.outEdges.clear();
+    }
+   
+    Collections.shuffle(worklist);  // random maze
+    
+    // find the shortest edge that does not create a cycle
+    while (spanningTreeIncomplete(edgesInTree)) {
+      Edge nextEdge = worklist.remove(0);
+      int root1 = find(representatives, nextEdge.src.id);
+      int root2 = find(representatives, nextEdge.dest.id);
+      
+      if (root1 == root2) {  // already connected/in the same tree
+        continue;
+      }
+      else {
+        edgesInTree.add(nextEdge);
+        union(representatives, root1, root2);  // set root to the same (connect)
+        
+        // set new outedges to source Cell, bidirectional
+        nextEdge.src.outEdges.add(nextEdge);
+        nextEdge.dest.outEdges.add(new Edge(nextEdge.dest, nextEdge.src, 1));
+      }
+    }
+    return edgesInTree;
+  }
+
+  private boolean spanningTreeIncomplete(List<Edge> edgesInTree) {
+    return edgesInTree.size() < vertices.size() - 1;
+  }
+
+
+  private int find(HashMap<Integer, Integer> representatives, int vertexId) {
+    int parent = representatives.get(vertexId);
+    
+    // Path compression: recursively finds the root and sets vertexId’s parent to the root.
+    if (parent != vertexId) {
+      representatives.put(vertexId, find(representatives, parent));
+    }    
+    return representatives.get(vertexId);  // return new root
+  }
+  
+  private void union(HashMap<Integer, Integer> representatives, int root1, int root2) {
+    if (root1 == root2) return;
+    
+    // Simple union (without rank)
+    representatives.put(root1, root2);
+  }
+
+
+  // Generic find path for BFS, DFS 
+  ArrayList<Cell> findPath(Cell src, Cell dest, Maze game, boolean useBFS) {
+    Set<Cell> visited = new HashSet<Cell>();
+    Map<Cell, Cell> predecessors = new HashMap<>();
+    Deque<Cell> worklist = new ArrayDeque<>();
+
+    // Initialise the worklist
+    worklist.addLast(src);
+
+    while (!worklist.isEmpty()) {
+      Cell vertex = useBFS? worklist.removeFirst() : worklist.removeLast();
+      
+      // update game state
+      game.cellExplored++;
+      vertex.color = Maze.tryingPathColor;
+
+      if (vertex.equals(dest)) {
+        System.out.println("Reached end");
+        game.pathFoundState = true;
+        return reconstructPath(predecessors, src, dest);
+      }
+      else {
+        for (Edge edge : vertex.outEdges) {
+          Cell neighbour = edge.dest;
+          // process neighbour only if not already visited
+          if (!visited.contains(neighbour)) {
+            visited.add(neighbour);               // add vertex to visited early
+            worklist.add(neighbour);
+            predecessors.put(neighbour, vertex);  
+            
+            game.exploringCells.add(neighbour);
+          }
+        }
+        // Animate after adding all neighbours (flood the neighbours)
+        game.pathFindingState = true;
+      }
+    }
+    // We haven't found the to vertex, and there are no more to try
+    return new ArrayList<Cell>();
+  }
+ 
+  private ArrayList<Cell> reconstructPath(Map<Cell, Cell> predecessors, Cell start, Cell end) {
+    ArrayList<Cell> path = new ArrayList<>();
+    Cell current = end; 
+    
+    while (!current.equals(start)) {
+      path.add(current);
+      Cell step = predecessors.get(current);
+      
+      if (step == null) { 
+        return new ArrayList<>();  // not found
+      }
+      
+      current = step;
+    }
+  
+    path.add(start);
+    Collections.reverse(path);
+    return path;
+  }
+
+  ArrayList<Cell> findPathBFS(Cell src, Cell dest, Maze game) {
+    return findPath(src, dest, game, true);
+  }
+  
+  ArrayList<Cell> findPathDFS(Cell src, Cell dest, Maze game) {
+    return findPath(src, dest, game, false);
+  }
+}

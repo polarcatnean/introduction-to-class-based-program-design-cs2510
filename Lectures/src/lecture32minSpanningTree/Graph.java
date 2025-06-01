@@ -159,15 +159,18 @@ class Graph {
 }
 
 class ExampleGraphs {
-  Vertex A = new Vertex("A");
-  Vertex B = new Vertex("B");
-  Vertex C = new Vertex("C");
-  Vertex D = new Vertex("D");
-  Vertex E = new Vertex("E");
-  Vertex F = new Vertex("F");
-  Graph g = new Graph(List.of(A, B, C, D, E, F));
+  Vertex A, B, C, D, E, F;
+  Graph g;
   
   void makeGraph() {
+    A = new Vertex("A");
+    B = new Vertex("B");
+    C = new Vertex("C");
+    D = new Vertex("D");
+    E = new Vertex("E");
+    F = new Vertex("F");
+    g = new Graph(List.of(A, B, C, D, E, F));
+    
     A.outEdges.add(new Edge(A, B, 30));
     A.outEdges.add(new Edge(A, E, 50));
 
