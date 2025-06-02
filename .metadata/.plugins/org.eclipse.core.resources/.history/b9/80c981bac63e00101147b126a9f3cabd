@@ -127,7 +127,7 @@ class FloodItWorld extends World {
   Color floodColour;
 
   // Defines int constants 
-  static int BOARD_SIZE = 14; // 14 cells
+  static int BOARD_SIZE = 10; // 14 cells
   static int CELL_SIZE = 30; // 20 px
   static int BOARD_WIDTH = BOARD_SIZE * CELL_SIZE;
   static int PADDING_X = 100;
@@ -151,12 +151,12 @@ class FloodItWorld extends World {
 
   // constructor
   FloodItWorld() {
-    FloodItWorld.BOARD_SIZE = 14;
+    this.BOARD_SIZE = 10;
     this.createNewBoard();    
   }
   
   FloodItWorld(int size) {
-    FloodItWorld.BOARD_SIZE = size;
+    this.BOARD_SIZE = size;
     this.createNewBoard();    
   }
   
@@ -345,19 +345,19 @@ class FloodItWorld extends World {
      return (int) Math.floor((posY - PADDING_Y) / CELL_SIZE);
    }
   
-//  // OLD implementation without waterfall effect
-//  // EFFECT: modify the board by "flooding" the board with the colour of clicked cell
-//   private void floodCells(Color colourClicked) {
-//    // starting from top-left
-//    Color oldColour = board.get(0).color;
-//    
-//    for (Cell cell : board) {
-//      if (cell.flooded) {
-//        cell.color = colourClicked;
-//        cell.floodAdjacents(oldColour, colourClicked);
-//      }
-//    }
-//  }
+  // OLD implementation without waterfall effect
+  // EFFECT: modify the board by "flooding" the board with the colour of clicked cell
+   private void floodCells(Color colourClicked) {
+    // starting from top-left
+    Color oldColour = board.get(0).color;
+    
+    for (Cell cell : board) {
+      if (cell.flooded) {
+        cell.color = colourClicked;
+        cell.floodAdjacents(oldColour, colourClicked);
+      }
+    }
+  }
   
   
   public WorldEnd worldEnds() {

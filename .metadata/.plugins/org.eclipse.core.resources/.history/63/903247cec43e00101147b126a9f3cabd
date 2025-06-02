@@ -219,7 +219,7 @@ class ExampleMaze {
   Maze test = new Maze(40, 30);
   
   void testLaunchGame(Tester t) {
-    //test.launchGame();
+    test.launchGame();
   }
   
   void testDFS(Tester t) {

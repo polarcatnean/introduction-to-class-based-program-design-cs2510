@@ -73,25 +73,29 @@ class Cell {
     WorldImage vNoBorder = new RectangleImage(Maze.BORDER_SIZE, Maze.CELL_SIZE -Maze.BORDER_SIZE*2, OutlineMode.SOLID, this.color);
     WorldImage hNoBorder = new RectangleImage(Maze.CELL_SIZE -Maze.BORDER_SIZE*2, Maze.BORDER_SIZE, OutlineMode.SOLID, this.color);
 
-    if (borders.get("top")) {
-      result = new OverlayOffsetImage(Maze.hBorder, 0, (halfCell - Maze.BORDER_SIZE/2), result);
-    } else {
-      result = new OverlayOffsetImage(hNoBorder, 0, (halfCell - Maze.BORDER_SIZE/2), result);
-    }
-    if (borders.get("bottom")) {
-      result = new OverlayOffsetImage(Maze.hBorder, 0, -(halfCell - Maze.BORDER_SIZE/2), result);
-    } else {
-      result = new OverlayOffsetImage(hNoBorder, 0, -(halfCell - Maze.BORDER_SIZE/2), result);
-    }
-    if (borders.get("left")) {
-      result = new OverlayOffsetImage(Maze.vBorder, (halfCell - Maze.BORDER_SIZE/2), 0, result);
-    } else {
-      result = new OverlayOffsetImage(vNoBorder, (halfCell - Maze.BORDER_SIZE/2), 0, result);
-    }
-    if (borders.get("right")) {
-      result = new OverlayOffsetImage(Maze.vBorder, -(halfCell - Maze.BORDER_SIZE/2), 0, result);
-    } else {
-      result = new OverlayOffsetImage(vNoBorder, -(halfCell - Maze.BORDER_SIZE/2), 0, result);
+    // Define the four sides with their properties
+    String[] sides = {"top", "bottom", "left", "right"};
+    int[][] offsets = {
+        {0,  halfCell - Maze.BORDER_SIZE / 2},     // top
+        {0, -(halfCell - Maze.BORDER_SIZE / 2)},   // bottom
+        { halfCell - Maze.BORDER_SIZE / 2, 0},     // left
+        {-(halfCell - Maze.BORDER_SIZE / 2), 0}    // right
+    };
+    WorldImage[] defaultBorders = {
+        Maze.hBorder, Maze.hBorder, Maze.vBorder, Maze.vBorder
+    };
+    WorldImage[] fallbackBorders = {
+        hNoBorder, hNoBorder, vNoBorder, vNoBorder
+    };
+    
+    // Compose image by adding each side's border
+    for (int i = 0; i < 4; i++) {
+      String side = sides[i];
+      int dx = offsets[i][0];
+      int dy = offsets[i][1];
+
+      WorldImage borderImg = borders.get(side) ? defaultBorders[i] : fallbackBorders[i];
+      result = new OverlayOffsetImage(borderImg, dx, dy, result);
     }
     return result;
   }
@@ -168,14 +172,14 @@ class Graph {
       int root2 = find(representatives, nextEdge.dest.id);
 //      int root1 = uf.find(nextEdge.src.id);
 //      int root2 = uf.find(nextEdge.dest.id);
-      
+//      
       if (root1 == root2) {  // already connected/in the same tree
         continue;
       }
       else {
         edgesInTree.add(nextEdge);
-        union(representatives, root1, root2);  // set root to the same (connect)
-//        uf.union(root1, root2);
+        //union(representatives, root1, root2);  // set root to the same (connect)
+        uf.union(root1, root2);
         
         // set new outedges to source Cell, bidirectional
         nextEdge.src.outEdges.add(nextEdge);

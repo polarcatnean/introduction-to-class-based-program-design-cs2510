@@ -151,7 +151,7 @@ class FloodItWorld extends World {
 
   // constructor
   FloodItWorld() {
-    FloodItWorld.BOARD_SIZE = 14;
+    FloodItWorld.BOARD_SIZE = 10;
     this.createNewBoard();    
   }
   
@@ -345,19 +345,19 @@ class FloodItWorld extends World {
      return (int) Math.floor((posY - PADDING_Y) / CELL_SIZE);
    }
   
-//  // OLD implementation without waterfall effect
-//  // EFFECT: modify the board by "flooding" the board with the colour of clicked cell
-//   private void floodCells(Color colourClicked) {
-//    // starting from top-left
-//    Color oldColour = board.get(0).color;
-//    
-//    for (Cell cell : board) {
-//      if (cell.flooded) {
-//        cell.color = colourClicked;
-//        cell.floodAdjacents(oldColour, colourClicked);
-//      }
-//    }
-//  }
+  // OLD implementation without waterfall effect
+  // EFFECT: modify the board by "flooding" the board with the colour of clicked cell
+   private void floodCells(Color colourClicked) {
+    // starting from top-left
+    Color oldColour = board.get(0).color;
+    
+    for (Cell cell : board) {
+      if (cell.flooded) {
+        cell.color = colourClicked;
+        cell.floodAdjacents(oldColour, colourClicked);
+      }
+    }
+  }
   
   
   public WorldEnd worldEnds() {

@@ -21,8 +21,8 @@ class Maze extends World {
   int cellExplored;  
   
   // Constants
-  static int CELL_SIZE = 20;
-  static int BORDER_SIZE = 2;
+  static int CELL_SIZE = 10;
+  static int BORDER_SIZE = 1;
   static int PADDING = 10;
   int MAZE_WIDTH, MAZE_HEIGHT;     // in px
   int WINDOW_WIDTH, WINDOW_HEIGHT; 
@@ -219,7 +219,7 @@ class ExampleMaze {
   Maze test = new Maze(40, 30);
   
   void testLaunchGame(Tester t) {
-    //test.launchGame();
+    test.launchGame();
   }
   
   void testDFS(Tester t) {
